@@ -96,7 +96,7 @@ class RightDrawerContent extends StatelessWidget {
               children: [
                 SettingsTile.sliderTile(
                   title: '当前播放速度',
-                  details: '${speed.toStringAsFixed(2)}x',
+                  details: '${speed.toStringAsFixed(2)}X',
                   silderValue: speed,
                   silderMin: 0.25,
                   silderMax: 4,
@@ -107,7 +107,7 @@ class RightDrawerContent extends StatelessWidget {
                 ),
                 SettingsTile.sliderTile(
                   title: '默认播放速度',
-                  details: '${defaultSpeed.toStringAsFixed(2)}x',
+                  details: '${defaultSpeed.toStringAsFixed(2)}X',
                   silderValue: defaultSpeed,
                   silderMin: 0.25,
                   silderMax: 4,
@@ -118,7 +118,7 @@ class RightDrawerContent extends StatelessWidget {
                 ),
                 SettingsTile.sliderTile(
                   title: '长按加速播放速度',
-                  details: '${doubleSpeed.toStringAsFixed(2)}x',
+                  details: '${doubleSpeed.toStringAsFixed(2)}X',
                   silderValue: doubleSpeed,
                   silderMin: 1,
                   silderMax: 8,

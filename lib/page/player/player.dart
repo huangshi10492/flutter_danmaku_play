@@ -498,13 +498,19 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                 // 右侧按钮组
                 Row(
                   children: [
-                    IconButton(
+                    TextButton.icon(
                       icon: const Icon(Icons.fast_forward, size: 24),
+                      style: TextButton.styleFrom(
+                        textStyle: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      label: Text('快进85秒'),
                       onPressed: () {
                         _playerService.value.seekRelative(
                           const Duration(seconds: 85),
                         );
-                        _globalService.showNotification('快进85秒');
                       },
                     ),
                     // 速度控制
@@ -514,9 +520,12 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                         onPressed:
                             () => _showRightDrawer(RightDrawerType.speed),
                         style: TextButton.styleFrom(
-                          textStyle: const TextStyle(fontSize: 16),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                        child: Text('${speed.toStringAsFixed(2)}x'),
+                        child: Text('${speed.toStringAsFixed(2)}X'),
                       );
                     }),
                     // 选集
