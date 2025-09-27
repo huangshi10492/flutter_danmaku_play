@@ -71,7 +71,9 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     AutoOrientation.fullAutoMode();
     // 释放音量和亮度控制服务
     BrightnessVolumeService.dispose();
-    windowManager.setFullScreen(false);
+    if (Utils.isDesktop()) {
+      windowManager.setFullScreen(false);
+    }
     super.dispose();
   }
 

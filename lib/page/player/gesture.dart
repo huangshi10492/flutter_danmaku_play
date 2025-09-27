@@ -61,12 +61,12 @@ class _VideoPlayerGestureDetectorState
       },
       onPanStart: (details) {
         // 防止边缘误触
-        if (details.localPosition.dx < screenSize.width * 0.05 ||
-            details.localPosition.dx > screenSize.width * 0.95) {
+        if (details.localPosition.dx < 64 ||
+            details.localPosition.dx > screenSize.width - 64) {
           return;
         }
-        if (details.localPosition.dy < screenSize.height * 0.05 ||
-            details.localPosition.dy > screenSize.height * 0.95) {
+        if (details.localPosition.dy < 64 ||
+            details.localPosition.dy > screenSize.height - 64) {
           return;
         }
         _dragStartPosition = details.localPosition;
