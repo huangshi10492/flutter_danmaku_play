@@ -1,0 +1,300 @@
+import 'package:dio/dio.dart';
+import 'package:fldanplay/model/history.dart';
+import 'package:fldanplay/model/storage.dart';
+import 'package:fldanplay/model/stream_media.dart';
+import 'package:fldanplay/model/video_info.dart';
+import 'package:fldanplay/service/global.dart';
+import 'package:fldanplay/utils/log.dart';
+import 'package:get_it/get_it.dart';
+import 'package:signals_flutter/signals_flutter.dart';
+
+abstract class StreamMediaExplorerProvider {
+  Future<List<MediaItem>> getItems(String parentId);
+  Future<MediaDetail> getMediaDetail(String itemId);
+  Map<String, String> get headers;
+  String getImageUrl(String itemId, {String tag = 'Primary'});
+  Future<String> getStreamUrl(String itemId);
+  void dispose();
+}
+
+class StreamMediaExplorerService {
+  late StreamMediaExplorerProvider provider;
+  late String libraryId;
+  Storage? storage;
+  List<EpisodeInfo> episodeList = [];
+  final _logger = Logger('StreamMediaExplorerService');
+
+  late FutureSignal<List<MediaItem>> items = futureSignal(() async {
+    try {
+      return await provider.getItems(libraryId);
+    } catch (e) {
+      throw Exception(e);
+    }
+  });
+
+  static void register() {
+    final service = StreamMediaExplorerService();
+    GetIt.I.registerSingleton<StreamMediaExplorerService>(service);
+  }
+
+  void setProvider(StreamMediaExplorerProvider newProvider, Storage storage) {
+    this.storage = storage;
+    provider = newProvider;
+    libraryId = storage.mediaLibraryId!;
+    items.refresh();
+    _logger.info('setProvider', '设置新的媒体库提供者');
+  }
+
+  void setVideoList(SeasonInfo seasonInfo) {
+    episodeList = seasonInfo.episodes;
+  }
+
+  Future<VideoInfo> getVideoInfo(int index) async {
+    final episode = episodeList[index];
+    final playbackUrl = await getPlaybackUrl(episode.id);
+    return VideoInfo(
+      currentVideoPath: playbackUrl,
+      virtualVideoPath: episode.id,
+      historiesType: HistoriesType.streamMediaStorage,
+      storageKey: storage!.uniqueKey,
+      name: episode.name,
+      videoName: '${episode.seriesName} ${episode.indexNumber}',
+      subtitle: '${episode.seriesName} ${episode.indexNumber}',
+      listLength: episodeList.length,
+      videoIndex: index,
+      canSwitch: true,
+    );
+  }
+
+  Future<VideoInfo> getVideoInfoFromHistory(History history) async {
+    final playbackUrl = await getPlaybackUrl(history.url!);
+    return VideoInfo(
+      currentVideoPath: playbackUrl,
+      virtualVideoPath: history.url!,
+      historiesType: HistoriesType.streamMediaStorage,
+      storageKey: storage!.uniqueKey,
+      name: history.name,
+      videoName: history.name,
+      subtitle: history.subtitle,
+    );
+  }
+
+  Future<List<MediaItem>> getItems(String parentId) async {
+    return provider.getItems(parentId);
+  }
+
+  String getImageUrl(String itemId, {String tag = 'Primary'}) {
+    return provider.getImageUrl(itemId, tag: tag);
+  }
+
+  Future<String> getPlaybackUrl(String itemId) async {
+    return provider.getStreamUrl(itemId);
+  }
+
+  Future<MediaDetail> getMediaDetail(String itemId) async {
+    return provider.getMediaDetail(itemId);
+  }
+}
+
+class JellyfinStreamMediaExplorerProvider
+    implements StreamMediaExplorerProvider {
+  final String url;
+  final String token;
+  late String auth;
+  late Dio dio;
+  late final Logger _logger = Logger('JellyfinStreamMediaExplorerProvider');
+
+  JellyfinStreamMediaExplorerProvider(this.url, this.token, String uniqueKey) {
+    final globalService = GetIt.I.get<GlobalService>();
+    auth =
+        'MediaBrowser Client="fldanplay-$uniqueKey", Device="${globalService.device}", DeviceId="${globalService.deviceId}", Version="0.0.1", Token="$token"';
+    dio = getDio(url, token: token);
+  }
+
+  @override
+  Map<String, String> get headers => {'Authorization': auth};
+
+  @override
+  Future<List<MediaItem>> getItems(String parentId) async {
+    try {
+      final response = await dio.get(
+        '/Items',
+        queryParameters: {
+          'parentId': parentId,
+          'SortBy': 'SortName,ProductionYear',
+          'SortOrder': 'Ascending',
+          'IncludeItemTypes': 'Movie,Series',
+          'Recursive': 'true',
+          'ImageTypeLimit': '1',
+          'EnableImageTypes': 'Primary',
+        },
+      );
+      List<MediaItem> res = [];
+      for (var item in response.data['Items']) {
+        res.add(MediaItem.fromJson(item));
+      }
+      return res;
+    } on DioException catch (e) {
+      _logger.error('getItems', '获取失败', error: e);
+      throw Exception('获取失败: ${e.message}');
+    } catch (e) {
+      _logger.error('getItems', '获取失败', error: e);
+      throw Exception('获取失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  String getImageUrl(String itemId, {String tag = 'Primary'}) {
+    return '$url/Items/$itemId/Images/$tag';
+  }
+
+  @override
+  Future<String> getStreamUrl(String itemId) async {
+    return '$url/Videos/$itemId/stream?static=true';
+  }
+
+  @override
+  Future<MediaDetail> getMediaDetail(String itemId) async {
+    try {
+      final response = await dio.get('/Items/$itemId');
+      final detail = MediaDetail.fromJson(response.data);
+
+      // 如果是系列，获取季度信息
+      if (detail.type == MediaType.series) {
+        detail.seasons = await getSeasons(dio, itemId);
+      }
+      if (detail.type == MediaType.movie) {
+        detail.seasons = [
+          SeasonInfo(
+            id: detail.id,
+            name: detail.name,
+            episodes: [
+              EpisodeInfo(
+                id: detail.id,
+                name: detail.name,
+                indexNumber: 0,
+                seriesName: detail.name,
+                runTimeTicks: detail.runTimeTicks,
+              ),
+            ],
+          ),
+        ];
+      }
+
+      return detail;
+    } on DioException catch (e) {
+      _logger.error('getMediaDetail', '获取失败', error: e);
+      throw Exception('获取媒体详情失败: ${e.message}');
+    } catch (e) {
+      _logger.error('getMediaDetail', '获取失败', error: e);
+      throw Exception('获取媒体详情失败: ${e.toString()}');
+    }
+  }
+
+  Dio getDio(String url, {String? token}) {
+    final globalService = GetIt.I.get<GlobalService>();
+    String auth =
+        'MediaBrowser Client="fldanplay", Device="${globalService.device}", DeviceId="${globalService.deviceId}", Version="0.0.1"';
+    if (token != null) {
+      auth += ', Token="$token"';
+    }
+    return Dio(BaseOptions(baseUrl: url, headers: {'Authorization': auth}));
+  }
+
+  Future<String> login(Dio dio, String username, String password) async {
+    try {
+      final response = await dio.post(
+        '/Users/AuthenticateByName',
+        data: {'Username': username, 'Pw': password},
+      );
+      return response.data['AccessToken'];
+    } on DioException catch (e) {
+      _logger.error('login', '登录失败', error: e);
+      throw Exception('登录失败: ${e.message}');
+    } catch (e) {
+      _logger.error('login', '登录失败', error: e);
+      throw Exception('登录失败: ${e.toString()}');
+    }
+  }
+
+  Future<List<CollectionItem>> getUserViews(Dio dio) async {
+    try {
+      final response = await dio.get('/UserViews');
+      List<CollectionItem> res = [];
+      for (var item in response.data['Items']) {
+        res.add(CollectionItem.fromJson(item));
+      }
+      return res;
+    } on DioException catch (e) {
+      _logger.error('getUserViews', '获取用户视图失败', error: e);
+      throw Exception('获取用户视图失败: ${e.message}');
+    } catch (e) {
+      _logger.error('getUserViews', '获取用户视图失败', error: e);
+      throw Exception('获取用户视图失败: ${e.toString()}');
+    }
+  }
+
+  Future<List<SeasonInfo>> getSeasons(Dio dio, String seriesId) async {
+    try {
+      final response = await dio.get(
+        '/Items',
+        queryParameters: {'parentId': seriesId},
+      );
+
+      List<SeasonInfo> seasons = [];
+      for (var item in response.data['Items']) {
+        final season = SeasonInfo.fromJson(item);
+        final episodes = await getEpisodes(dio, season.id);
+        seasons.add(
+          SeasonInfo(
+            id: season.id,
+            name: season.name,
+            indexNumber: season.indexNumber,
+            episodes: episodes,
+          ),
+        );
+      }
+
+      // 按季度编号排序
+      seasons.sort(
+        (a, b) => (a.indexNumber ?? 0).compareTo(b.indexNumber ?? 0),
+      );
+      return seasons;
+    } on DioException catch (e) {
+      _logger.error('getSeasons', '获取季度信息失败', error: e);
+      throw Exception('获取季度信息失败: ${e.message}');
+    } catch (e) {
+      _logger.error('getSeasons', '获取季度信息失败', error: e);
+      throw Exception('获取季度信息失败: ${e.toString()}');
+    }
+  }
+
+  Future<List<EpisodeInfo>> getEpisodes(Dio dio, String seasonId) async {
+    try {
+      final response = await dio.get(
+        '/Items',
+        queryParameters: {'parentId': seasonId},
+      );
+
+      List<EpisodeInfo> episodes = [];
+      for (var item in response.data['Items']) {
+        episodes.add(EpisodeInfo.fromJson(item));
+      }
+
+      // 按集数编号排序
+      episodes.sort(
+        (a, b) => (a.indexNumber ?? 0).compareTo(b.indexNumber ?? 0),
+      );
+      return episodes;
+    } on DioException catch (e) {
+      _logger.error('getEpisodes', '获取集数信息失败', error: e);
+      throw Exception('获取集数信息失败: ${e.message}');
+    } catch (e) {
+      _logger.error('getEpisodes', '获取集数信息失败', error: e);
+      throw Exception('获取集数信息失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  void dispose() {}
+}

@@ -1,0 +1,252 @@
+import 'dart:io';
+
+import 'package:fldanplay/utils/utils.dart';
+import 'package:fldanplay/widget/network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
+import 'package:path_provider/path_provider.dart';
+import '../model/history.dart';
+
+class FileImageEx extends FileImage {
+  late final int fileSize;
+  FileImageEx(File file, {double scale = 1.0}) : super(file, scale: scale) {
+    fileSize = file.lengthSync();
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType) return false;
+    return other is FileImageEx &&
+        other.file.path == file.path &&
+        other.scale == scale &&
+        other.fileSize == fileSize;
+  }
+}
+
+class VideoItem extends StatefulWidget with FItemMixin {
+  final History? history;
+  final String name;
+  final void Function() onPress;
+  final void Function()? onLongPress;
+  final int refreshKey;
+  final String? imageUrl;
+  final Map<String, String>? headers;
+  const VideoItem({
+    super.key,
+    required this.history,
+    required this.name,
+    required this.onPress,
+    this.onLongPress,
+    required this.refreshKey,
+    this.imageUrl,
+    this.headers,
+  });
+  @override
+  State<VideoItem> createState() => _VideoItemState();
+}
+
+class _VideoItemState extends State<VideoItem> {
+  late Future<Widget> _prefixFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _prefixFuture = _buildPrefix(widget.history);
+  }
+
+  @override
+  void didUpdateWidget(VideoItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.refreshKey != widget.refreshKey) {
+      setState(() {
+        _prefixFuture = _buildPrefix(widget.history);
+      });
+    }
+  }
+
+  Widget _buildEmtpyPrefix() {
+    return LayoutBuilder(
+      builder: (context, boxConstraints) {
+        final double maxWidth = boxConstraints.maxWidth;
+        final double maxHeight = boxConstraints.maxHeight;
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            color: const Color.fromARGB(255, 25, 25, 25),
+          ),
+          width: maxWidth,
+          height: maxHeight,
+          child: Center(
+            child: const Icon(
+              Icons.play_circle_outline,
+              size: 30,
+              color: Colors.grey,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<Widget> _buildPrefix(History? history) async {
+    if (history != null) {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/screenshots/${history.uniqueKey}');
+      if (!await file.exists()) {
+        return _buildEmtpyPrefix();
+      }
+      return LayoutBuilder(
+        builder: (context, boxConstraints) {
+          final double maxWidth = boxConstraints.maxWidth;
+          final double maxHeight = boxConstraints.maxHeight;
+          return Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Image(
+                  image: FileImageEx(file),
+                  fit: BoxFit.fitHeight,
+                  width: maxWidth,
+                  height: maxHeight,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _buildEmtpyPrefix();
+                  },
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(128),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(4),
+                      bottomRight: Radius.circular(4),
+                    ),
+                  ),
+                  child: Text(
+                    Utils.formatTime(history.position, history.duration),
+                    style: const TextStyle(color: Colors.white, fontSize: 11),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+    if (widget.imageUrl != null) {
+      return LayoutBuilder(
+        builder: (context, boxConstraints) {
+          final double maxWidth = boxConstraints.maxWidth;
+          final double maxHeight = boxConstraints.maxHeight;
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: NetworkImageWidget(
+              url: widget.imageUrl!,
+              headers: widget.headers,
+              maxWidth: maxWidth,
+              maxHeight: maxHeight,
+              errorWidget: _buildEmtpyPrefix(),
+            ),
+          );
+        },
+      );
+    }
+    return _buildEmtpyPrefix();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double progress = 0;
+    int progressPercent = 0;
+    String lastWatchTime = '';
+    if (widget.history != null) {
+      progress =
+          widget.history!.duration > 0
+              ? (widget.history!.position / widget.history!.duration).clamp(
+                0.0,
+                1.0,
+              )
+              : 0.0;
+      progressPercent = (progress * 100).round();
+      lastWatchTime = Utils.formatLastWatchTime(widget.history!.updateTime);
+    }
+    final subtitleStyle = context.theme.itemStyle.contentStyle.subtitleTextStyle
+        .resolve({});
+    return FItem(
+      prefix: SizedBox(
+        width: 95,
+        height: 65,
+        child: FutureBuilder(
+          future: _prefixFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            }
+            if (snapshot.hasData) {
+              return snapshot.data!;
+            }
+            return _buildEmtpyPrefix();
+          },
+        ),
+      ),
+      title: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 65),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FTooltip(
+              tipBuilder:
+                  (context, controller) => Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width - 50,
+                    ),
+                    child: Text(widget.name),
+                  ),
+              child: Text(
+                widget.name,
+                style: context.theme.typography.base,
+                maxLines: 2,
+              ),
+            ),
+            widget.history != null
+                ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    widget.history!.subtitle == null
+                        ? const SizedBox()
+                        : Text(widget.history!.subtitle!, style: subtitleStyle),
+                    const SizedBox(height: 4),
+                    FProgress(
+                      value: progress,
+                      duration: Duration.zero,
+                      style:
+                          (style) => style.copyWith(
+                            constraints: style.constraints.copyWith(
+                              minHeight: 4,
+                              maxHeight: 4,
+                            ),
+                          ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(style: subtitleStyle, lastWatchTime),
+                        Text(style: subtitleStyle, '$progressPercent%'),
+                      ],
+                    ),
+                  ],
+                )
+                : Text(style: subtitleStyle, '未观看'),
+          ],
+        ),
+      ),
+      onPress: widget.onPress,
+      onLongPress: widget.onLongPress,
+    );
+  }
+}
