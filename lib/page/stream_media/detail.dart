@@ -6,7 +6,6 @@ import 'package:fldanplay/service/global.dart';
 import 'package:fldanplay/service/history.dart';
 import 'package:fldanplay/service/stream_media_explorer.dart';
 import 'package:fldanplay/utils/crypto_utils.dart';
-import 'package:fldanplay/utils/utils.dart';
 import 'package:fldanplay/widget/network_image.dart';
 import 'package:fldanplay/widget/rating_bar.dart';
 import 'package:fldanplay/widget/video_item.dart';
@@ -186,7 +185,7 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildMediaInfoWithLoading(),
+                              _buildMediaInfoWithLoading(isLandscape: true),
                               const SizedBox(height: 16),
                               _buildDetail(),
                             ],
@@ -331,7 +330,7 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
     );
   }
 
-  Widget _buildMediaInfoWithLoading() {
+  Widget _buildMediaInfoWithLoading({bool isLandscape = false}) {
     final provider = _service.provider;
     return SizedBox(
       height: 300,
@@ -376,7 +375,7 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                     child: InkWell(
                       borderRadius: BorderRadius.circular(8),
                       onTap: () {
-                        if (Utils.isDesktop()) {
+                        if (isLandscape) {
                           return;
                         }
                         showModalBottomSheet(
