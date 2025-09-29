@@ -90,7 +90,6 @@ class RightDrawerContent extends StatelessWidget {
           child: Watch((context) {
             final speed = playerService.playbackSpeed.value;
             final configure = GetIt.I.get<ConfigureService>();
-            final defaultSpeed = configure.defaultPlaySpeed.value;
             final doubleSpeed = configure.doublePlaySpeed.value;
             return SettingsSection(
               children: [
@@ -103,17 +102,6 @@ class RightDrawerContent extends StatelessWidget {
                   silderDivisions: 15,
                   onSilderChange: (value) {
                     playerService.setPlaybackSpeed(value);
-                  },
-                ),
-                SettingsTile.sliderTile(
-                  title: '默认播放速度',
-                  details: '${defaultSpeed.toStringAsFixed(2)}X',
-                  silderValue: defaultSpeed,
-                  silderMin: 0.25,
-                  silderMax: 4,
-                  silderDivisions: 15,
-                  onSilderChange: (value) {
-                    configure.defaultPlaySpeed.value = value;
                   },
                 ),
                 SettingsTile.sliderTile(

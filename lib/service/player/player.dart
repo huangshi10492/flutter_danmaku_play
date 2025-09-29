@@ -112,8 +112,8 @@ class VideoPlayerService {
       configuration: PlayerConfiguration(
         bufferSize:
             _configureService.lowMemoryMode.value
-                ? 15 * 1024 * 1024
-                : 1500 * 1024 * 1024,
+                ? 25 * 1024 * 1024
+                : 500 * 1024 * 1024,
         logLevel:
             _configureService.playerDebugMode.value
                 ? MPVLogLevel.debug

@@ -105,6 +105,7 @@ class PlayerSettingsPage extends StatelessWidget {
                     children: [
                       SettingsTile.switchTile(
                         title: '低内存模式',
+                        subtitle: '默认缓存500MB，开启后缓存25MB，适用于低内存设备',
                         switchValue: configure.lowMemoryMode.value,
                         onBoolChange: (value) {
                           configure.lowMemoryMode.value = value;

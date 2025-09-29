@@ -13,7 +13,7 @@ class AppearanceSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final configure = GetIt.I<ConfigureService>();
     return Scaffold(
-      appBar: SysAppBar(title: '外观设置'),
+      appBar: SysAppBar(title: '界面设置'),
       body: Padding(
         padding: context.theme.scaffoldStyle.childPadding,
         child: SingleChildScrollView(
