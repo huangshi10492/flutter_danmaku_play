@@ -9,7 +9,14 @@ import 'package:get_it/get_it.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
 abstract class StreamMediaExplorerProvider {
-  Future<List<MediaItem>> getItems(String parentId);
+  Future<List<MediaItem>> getItems(
+    String parentId, {
+    required String searchTerm,
+    required String years,
+    required String seriesStatus,
+    required String sortBy,
+    required bool sortOrder,
+  });
   Future<MediaDetail> getMediaDetail(String itemId);
   Map<String, String> get headers;
   String getImageUrl(String itemId, {String tag = 'Primary'});
@@ -24,9 +31,23 @@ class StreamMediaExplorerService {
   List<EpisodeInfo> episodeList = [];
   final _logger = Logger('StreamMediaExplorerService');
 
+  String searchTerm = '';
+  String years = '';
+  String seriesStatus = '';
+  String sortBy = 'SortName';
+  // true: 升序，false: 降序
+  bool sortOrder = true;
+
   late FutureSignal<List<MediaItem>> items = futureSignal(() async {
     try {
-      return await provider.getItems(libraryId);
+      return await provider.getItems(
+        libraryId,
+        searchTerm: searchTerm,
+        years: years,
+        seriesStatus: seriesStatus,
+        sortBy: sortBy,
+        sortOrder: sortOrder,
+      );
     } catch (e) {
       throw Exception(e);
     }
@@ -43,6 +64,18 @@ class StreamMediaExplorerService {
     libraryId = storage.mediaLibraryId!;
     items.refresh();
     _logger.info('setProvider', '设置新的媒体库提供者');
+  }
+
+  void refresh() {
+    items.refresh();
+  }
+
+  void resetFilter() {
+    searchTerm = '';
+    years = '';
+    seriesStatus = '';
+    sortBy = 'SortName';
+    sortOrder = true;
   }
 
   void setVideoList(SeasonInfo seasonInfo) {
@@ -79,10 +112,6 @@ class StreamMediaExplorerService {
     );
   }
 
-  Future<List<MediaItem>> getItems(String parentId) async {
-    return provider.getItems(parentId);
-  }
-
   String getImageUrl(String itemId, {String tag = 'Primary'}) {
     return provider.getImageUrl(itemId, tag: tag);
   }
@@ -115,20 +144,29 @@ class JellyfinStreamMediaExplorerProvider
   Map<String, String> get headers => {'Authorization': auth};
 
   @override
-  Future<List<MediaItem>> getItems(String parentId) async {
+  Future<List<MediaItem>> getItems(
+    String parentId, {
+    required String searchTerm,
+    required String years,
+    required String seriesStatus,
+    required String sortBy,
+    required bool sortOrder,
+  }) async {
     try {
-      final response = await dio.get(
-        '/Items',
-        queryParameters: {
-          'parentId': parentId,
-          'SortBy': 'SortName,ProductionYear',
-          'SortOrder': 'Ascending',
-          'IncludeItemTypes': 'Movie,Series',
-          'Recursive': 'true',
-          'ImageTypeLimit': '1',
-          'EnableImageTypes': 'Primary',
-        },
-      );
+      final params = <String, dynamic>{
+        'parentId': parentId,
+        'limit': 300,
+        'recursive': true,
+        'searchTerm': searchTerm,
+        'includeItemTypes': 'Movie,Series',
+        'sortBy': sortBy,
+        'years': years,
+        'sortOrder': sortOrder ? 'Ascending' : 'Descending',
+        'seriesStatus': seriesStatus,
+        'imageTypeLimit': '1',
+        'enableImageTypes': 'Primary',
+      };
+      final response = await dio.get('/Items', queryParameters: params);
       List<MediaItem> res = [];
       for (var item in response.data['Items']) {
         res.add(MediaItem.fromJson(item));

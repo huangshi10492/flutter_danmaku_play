@@ -1,5 +1,6 @@
 import 'package:fldanplay/model/storage.dart';
 import 'package:fldanplay/model/stream_media.dart';
+import 'package:fldanplay/page/stream_media/filter_sheet.dart';
 import 'package:fldanplay/router.dart';
 import 'package:fldanplay/service/storage.dart';
 import 'package:fldanplay/service/stream_media_explorer.dart';
@@ -22,6 +23,39 @@ class StreamMediaExplorerPage extends StatefulWidget {
 
 class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
   late StreamMediaExplorerProvider provider;
+
+  void _openConfigSheet(StreamMediaExplorerService service) {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      useSafeArea: true,
+      context: context,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: context.theme.colors.background,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(8),
+              topRight: Radius.circular(8),
+            ),
+          ),
+          child: DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.8,
+            minChildSize: 0.4,
+            builder: (context, scrollController) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: StreamMediaFilterSheet(service: service),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildMediaCard(MediaItem mediaItem) {
     return Card(
@@ -125,6 +159,20 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
                               return _buildMediaCard(items[index]);
                             }, childCount: items.length),
                           ),
+                          if (items.length == 300)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Text(
+                                  '最多显示300个结果，更多结果请使用筛选',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       );
                     },
@@ -139,6 +187,11 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
             );
           },
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openConfigSheet(streamMediaExplorerService),
+        shape: CircleBorder(),
+        child: const Icon(FIcons.listFilter),
       ),
     );
   }
