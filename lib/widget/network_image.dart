@@ -36,6 +36,12 @@ class NetworkImageWidget extends StatelessWidget {
           }
           return Container();
         },
+        placeholder: (context, url) {
+          if (errorWidget != null) {
+            return errorWidget!;
+          }
+          return Container();
+        },
         filterQuality: FilterQuality.high,
         fit: BoxFit.cover,
         fadeInDuration: const Duration(milliseconds: 0),
