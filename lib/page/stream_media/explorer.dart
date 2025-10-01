@@ -30,27 +30,33 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
       useSafeArea: true,
       context: context,
       builder: (context) {
-        return Container(
-          decoration: BoxDecoration(
-            color: context.theme.colors.background,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(8),
-              topRight: Radius.circular(8),
-            ),
+        return AnimatedPadding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          child: DraggableScrollableSheet(
-            expand: false,
-            initialChildSize: 0.8,
-            minChildSize: 0.4,
-            builder: (context, scrollController) {
-              return SingleChildScrollView(
-                controller: scrollController,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: StreamMediaFilterSheet(service: service),
-                ),
-              );
-            },
+          duration: Duration.zero,
+          child: Container(
+            decoration: BoxDecoration(
+              color: context.theme.colors.background,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
+            child: DraggableScrollableSheet(
+              expand: false,
+              initialChildSize: 0.8,
+              minChildSize: 0.4,
+              builder: (context, scrollController) {
+                return SingleChildScrollView(
+                  controller: scrollController,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: StreamMediaFilterSheet(service: service),
+                  ),
+                );
+              },
+            ),
           ),
         );
       },
