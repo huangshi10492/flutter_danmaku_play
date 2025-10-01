@@ -9,6 +9,9 @@ import 'package:get_it/get_it.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
 abstract class StreamMediaExplorerProvider {
+  Dio getDio(String url, {UserInfo? userInfo});
+  Future<UserInfo> login(Dio dio, String username, String password);
+  Future<List<CollectionItem>> getUserViews();
   Future<List<MediaItem>> getItems(
     String parentId, {
     required String searchTerm,
@@ -128,16 +131,16 @@ class StreamMediaExplorerService {
 class JellyfinStreamMediaExplorerProvider
     implements StreamMediaExplorerProvider {
   final String url;
-  final String token;
+  final UserInfo userInfo;
   late String auth;
   late Dio dio;
   late final Logger _logger = Logger('JellyfinStreamMediaExplorerProvider');
 
-  JellyfinStreamMediaExplorerProvider(this.url, this.token, String uniqueKey) {
+  JellyfinStreamMediaExplorerProvider(this.url, this.userInfo) {
     final globalService = GetIt.I.get<GlobalService>();
     auth =
-        'MediaBrowser Client="fldanplay-$uniqueKey", Device="${globalService.device}", DeviceId="${globalService.deviceId}", Version="0.0.1", Token="$token"';
-    dio = getDio(url, token: token);
+        'MediaBrowser Client="fldanplay", Device="${globalService.device}", DeviceId="${globalService.deviceId}", Version="0.0.1", Token="${userInfo.token}"';
+    dio = getDio(url, userInfo: userInfo);
   }
 
   @override
@@ -229,23 +232,25 @@ class JellyfinStreamMediaExplorerProvider
     }
   }
 
-  Dio getDio(String url, {String? token}) {
+  @override
+  Dio getDio(String url, {UserInfo? userInfo}) {
     final globalService = GetIt.I.get<GlobalService>();
     String auth =
         'MediaBrowser Client="fldanplay", Device="${globalService.device}", DeviceId="${globalService.deviceId}", Version="0.0.1"';
-    if (token != null) {
-      auth += ', Token="$token"';
+    if (userInfo != null) {
+      auth += ', Token="${userInfo.token}"';
     }
     return Dio(BaseOptions(baseUrl: url, headers: {'Authorization': auth}));
   }
 
-  Future<String> login(Dio dio, String username, String password) async {
+  @override
+  Future<UserInfo> login(Dio dio, String username, String password) async {
     try {
       final response = await dio.post(
         '/Users/AuthenticateByName',
         data: {'Username': username, 'Pw': password},
       );
-      return response.data['AccessToken'];
+      return UserInfo.fromJson(response.data);
     } on DioException catch (e) {
       _logger.error('login', '登录失败', error: e);
       throw Exception('登录失败: ${e.message}');
@@ -255,9 +260,226 @@ class JellyfinStreamMediaExplorerProvider
     }
   }
 
-  Future<List<CollectionItem>> getUserViews(Dio dio) async {
+  @override
+  Future<List<CollectionItem>> getUserViews() async {
     try {
       final response = await dio.get('/UserViews');
+      List<CollectionItem> res = [];
+      for (var item in response.data['Items']) {
+        res.add(CollectionItem.fromJson(item));
+      }
+      return res;
+    } on DioException catch (e) {
+      _logger.error('getUserViews', '获取用户视图失败', error: e);
+      throw Exception('获取用户视图失败: ${e.message}');
+    } catch (e) {
+      _logger.error('getUserViews', '获取用户视图失败', error: e);
+      throw Exception('获取用户视图失败: ${e.toString()}');
+    }
+  }
+
+  Future<List<SeasonInfo>> getSeasons(Dio dio, String seriesId) async {
+    try {
+      final response = await dio.get(
+        '/Items',
+        queryParameters: {'parentId': seriesId},
+      );
+
+      List<SeasonInfo> seasons = [];
+      for (var item in response.data['Items']) {
+        final season = SeasonInfo.fromJson(item);
+        final episodes = await getEpisodes(dio, season.id);
+        seasons.add(
+          SeasonInfo(
+            id: season.id,
+            name: season.name,
+            indexNumber: season.indexNumber,
+            episodes: episodes,
+          ),
+        );
+      }
+
+      // 按季度编号排序
+      seasons.sort(
+        (a, b) => (a.indexNumber ?? 0).compareTo(b.indexNumber ?? 0),
+      );
+      return seasons;
+    } on DioException catch (e) {
+      _logger.error('getSeasons', '获取季度信息失败', error: e);
+      throw Exception('获取季度信息失败: ${e.message}');
+    } catch (e) {
+      _logger.error('getSeasons', '获取季度信息失败', error: e);
+      throw Exception('获取季度信息失败: ${e.toString()}');
+    }
+  }
+
+  Future<List<EpisodeInfo>> getEpisodes(Dio dio, String seasonId) async {
+    try {
+      final response = await dio.get(
+        '/Items',
+        queryParameters: {'parentId': seasonId},
+      );
+
+      List<EpisodeInfo> episodes = [];
+      for (var item in response.data['Items']) {
+        episodes.add(EpisodeInfo.fromJson(item));
+      }
+
+      // 按集数编号排序
+      episodes.sort(
+        (a, b) => (a.indexNumber ?? 0).compareTo(b.indexNumber ?? 0),
+      );
+      return episodes;
+    } on DioException catch (e) {
+      _logger.error('getEpisodes', '获取集数信息失败', error: e);
+      throw Exception('获取集数信息失败: ${e.message}');
+    } catch (e) {
+      _logger.error('getEpisodes', '获取集数信息失败', error: e);
+      throw Exception('获取集数信息失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  void dispose() {}
+}
+
+class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
+  final String url;
+  final UserInfo userInfo;
+  late String auth;
+  late Dio dio;
+  late final Logger _logger = Logger('EmbyStreamMediaExplorerProvider');
+
+  EmbyStreamMediaExplorerProvider(this.url, this.userInfo) {
+    final globalService = GetIt.I.get<GlobalService>();
+    auth =
+        'Emby Client="fldanplay", Device="${globalService.device}", DeviceId="${globalService.deviceId}", Version="0.0.1", Token="${userInfo.token}"';
+    dio = getDio(url, userInfo: userInfo);
+  }
+
+  @override
+  Map<String, String> get headers => {'X-Emby-Authorization': auth};
+
+  @override
+  Future<List<MediaItem>> getItems(
+    String parentId, {
+    required String searchTerm,
+    required String years,
+    required String seriesStatus,
+    required String sortBy,
+    required bool sortOrder,
+  }) async {
+    try {
+      final params = <String, dynamic>{
+        'parentId': parentId,
+        'limit': 300,
+        'recursive': true,
+        'searchTerm': searchTerm,
+        'includeItemTypes': 'Movie,Series',
+        'sortBy': sortBy,
+        'years': years,
+        'sortOrder': sortOrder ? 'Ascending' : 'Descending',
+        'seriesStatus': seriesStatus,
+        'imageTypeLimit': '1',
+        'enableImageTypes': 'Primary',
+      };
+      final response = await dio.get('/Items', queryParameters: params);
+      List<MediaItem> res = [];
+      for (var item in response.data['Items']) {
+        res.add(MediaItem.fromJson(item));
+      }
+      return res;
+    } on DioException catch (e) {
+      _logger.error('getItems', '获取失败', error: e);
+      throw Exception('获取失败: ${e.message}');
+    } catch (e) {
+      _logger.error('getItems', '获取失败', error: e);
+      throw Exception('获取失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  String getImageUrl(String itemId, {String tag = 'Primary'}) {
+    return '$url/Items/$itemId/Images/$tag';
+  }
+
+  @override
+  Future<String> getStreamUrl(String itemId) async {
+    return '$url/Videos/$itemId/stream?static=true&api_key=${userInfo.token}';
+  }
+
+  @override
+  Future<MediaDetail> getMediaDetail(String itemId) async {
+    try {
+      final response = await dio.get('/Users/${userInfo.userId}/Items/$itemId');
+      final detail = MediaDetail.fromJson(response.data);
+
+      // 如果是系列，获取季度信息
+      if (detail.type == MediaType.series) {
+        detail.seasons = await getSeasons(dio, itemId);
+      }
+      if (detail.type == MediaType.movie) {
+        detail.seasons = [
+          SeasonInfo(
+            id: detail.id,
+            name: detail.name,
+            episodes: [
+              EpisodeInfo(
+                id: detail.id,
+                name: detail.name,
+                indexNumber: 0,
+                seriesName: detail.name,
+                runTimeTicks: detail.runTimeTicks,
+              ),
+            ],
+          ),
+        ];
+      }
+
+      return detail;
+    } on DioException catch (e) {
+      _logger.error('getMediaDetail', '获取失败', error: e);
+      throw Exception('获取媒体详情失败: ${e.message}');
+    } catch (e) {
+      _logger.error('getMediaDetail', '获取失败', error: e);
+      throw Exception('获取媒体详情失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Dio getDio(String url, {UserInfo? userInfo}) {
+    final globalService = GetIt.I.get<GlobalService>();
+    String auth =
+        'Emby Client="fldanplay", Device="${globalService.device}", DeviceId="${globalService.deviceId}", Version="0.0.1"';
+    if (userInfo != null) {
+      auth += ', Token="${userInfo.token}"';
+    }
+    return Dio(
+      BaseOptions(baseUrl: url, headers: {'X-Emby-Authorization': auth}),
+    );
+  }
+
+  @override
+  Future<UserInfo> login(Dio dio, String username, String password) async {
+    try {
+      final response = await dio.post(
+        '/Users/AuthenticateByName',
+        data: {'Username': username, 'Pw': password},
+      );
+      return UserInfo.fromJson(response.data);
+    } on DioException catch (e) {
+      _logger.error('login', '登录失败', error: e);
+      throw Exception('登录失败: ${e.message}');
+    } catch (e) {
+      _logger.error('login', '登录失败', error: e);
+      throw Exception('登录失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<CollectionItem>> getUserViews() async {
+    try {
+      final response = await dio.get('/Users/${userInfo.userId}/Views');
       List<CollectionItem> res = [];
       for (var item in response.data['Items']) {
         res.add(CollectionItem.fromJson(item));

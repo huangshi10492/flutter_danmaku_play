@@ -35,8 +35,13 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
         case StorageType.jellyfin:
           provider = JellyfinStreamMediaExplorerProvider(
             storage!.url,
-            storage!.token!,
-            storage!.uniqueKey,
+            UserInfo(userId: storage!.userId!, token: storage!.token!),
+          );
+          break;
+        case StorageType.emby:
+          provider = EmbyStreamMediaExplorerProvider(
+            storage!.url,
+            UserInfo(userId: storage!.userId!, token: storage!.token!),
           );
           break;
         default:
@@ -87,6 +92,30 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
     );
   }
 
+  Widget _buildEmtpyPrefix() {
+    return LayoutBuilder(
+      builder: (context, boxConstraints) {
+        final double maxWidth = boxConstraints.maxWidth;
+        final double maxHeight = boxConstraints.maxHeight;
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            color: const Color.fromARGB(255, 25, 25, 25),
+          ),
+          width: maxWidth,
+          height: maxHeight,
+          child: Center(
+            child: const Icon(
+              Icons.folder_outlined,
+              size: 70,
+              color: Colors.grey,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildMediaCard(MediaItem mediaItem) {
     return Card(
       elevation: 0,
@@ -114,6 +143,7 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
                       headers: provider.headers,
                       maxWidth: maxWidth,
                       maxHeight: maxHeight,
+                      errorWidget: _buildEmtpyPrefix(),
                     ),
                   );
                 },

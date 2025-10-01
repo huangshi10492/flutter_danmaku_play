@@ -244,6 +244,7 @@ class RootPageState extends State<RootPage> {
                                 );
                                 break;
                               case StorageType.jellyfin:
+                              case StorageType.emby:
                                 context.push(
                                   '$streamMediaExplorerPath?key=${storage.key}',
                                 );

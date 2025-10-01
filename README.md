@@ -27,7 +27,7 @@ fldanplay 是一款跨平台的本地/网络媒体播放应用，支持弹幕显
   - [x] 本地文件夹
   - [x] WebDAV
   - [x] Jellyfin
-  - [ ] emby
+  - [x] Emby
   - [ ] FTP
   - [ ] SMB
 - [x] 历史记录

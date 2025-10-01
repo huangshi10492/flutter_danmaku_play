@@ -39,7 +39,7 @@ types:
         index: 6
   Storage:
     typeId: 4
-    nextIndex: 11
+    nextIndex: 12
     fields:
       name:
         index: 0
@@ -61,9 +61,11 @@ types:
         index: 9
       token:
         index: 10
+      userId:
+        index: 11
   StorageType:
     typeId: 5
-    nextIndex: 5
+    nextIndex: 6
     fields:
       webdav:
         index: 0
@@ -75,3 +77,5 @@ types:
         index: 3
       jellyfin:
         index: 4
+      emby:
+        index: 5

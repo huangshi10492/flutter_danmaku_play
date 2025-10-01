@@ -96,6 +96,11 @@ class SelectStorageTypeSheet extends StatelessWidget {
                   prefix: const Icon(FIcons.tv),
                   onPress: () => select(context, StorageType.jellyfin),
                 ),
+                FItem(
+                  title: const Text('Emby'),
+                  prefix: const Icon(FIcons.tv),
+                  onPress: () => select(context, StorageType.emby),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -135,9 +140,9 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
   final Map<String, String> _selectValues = {};
   bool _isLoading = false;
 
-  List<CollectionItem> _jellyfinLibraries = [];
+  List<CollectionItem> _mediaServerLibraries = [];
   String? _selectedLibraryId;
-  bool _isJellyfinLoggedIn = false;
+  bool _isMediaServerLoggedIn = false;
 
   String get title {
     switch (widget.storageType) {
@@ -151,6 +156,8 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
         return '编辑本地媒体库';
       case StorageType.jellyfin:
         return '编辑Jellyfin媒体库';
+      case StorageType.emby:
+        return '编辑Emby媒体库';
     }
   }
 
@@ -255,6 +262,25 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
           _FieldConfig(
             'url',
             'Jellyfin服务器地址',
+            required: true,
+            validator: _validateUrl,
+            description: '例如: http://192.168.1.100:8096',
+          ),
+          _FieldConfig('account', '用户名', required: true),
+          _FieldConfig('password', '密码', required: true, obscureText: true),
+        ];
+      case StorageType.emby:
+        return [
+          _FieldConfig('name', '名称', required: true),
+          _FieldConfig(
+            'uniqueKey',
+            'Key',
+            required: true,
+            validator: _validateUniqueKey,
+          ),
+          _FieldConfig(
+            'url',
+            'Emby服务器地址',
             required: true,
             validator: _validateUrl,
             description: '例如: http://192.168.1.100:8096',
@@ -420,7 +446,8 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
         }
       }
       _storage.storageType = widget.storageType;
-      if (widget.storageType == StorageType.jellyfin) {
+      if (widget.storageType == StorageType.jellyfin ||
+          widget.storageType == StorageType.emby) {
         if (_selectedLibraryId == null) {
           if (context.mounted) {
             showFToast(context: context, title: const Text('请选择媒体库'));
@@ -485,14 +512,15 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
     return null;
   }
 
-  // Jellyfin登录方法
-  Future<void> _loginToJellyfin() async {
-    if (widget.storageType != StorageType.jellyfin) return;
+  Future<void> _loginToMediaServer() async {
+    if (widget.storageType != StorageType.jellyfin &&
+        widget.storageType != StorageType.emby) {
+      return;
+    }
 
     final url = _controllers['url']?.text.trim();
     final username = _controllers['account']?.text.trim();
     final password = _controllers['password']?.text.trim();
-    final uniqueKey = _controllers['uniqueKey']?.text.trim();
 
     if (url == null ||
         url.isEmpty ||
@@ -509,17 +537,35 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
     setState(() => _isLoading = true);
 
     try {
-      final apiUtils = JellyfinStreamMediaExplorerProvider(url, '', uniqueKey!);
-      final dio = apiUtils.getDio(url);
-      final token = await apiUtils.login(dio, username, password);
+      // 根据存储类型创建对应的 Provider
+      StreamMediaExplorerProvider apiUtils;
+      if (widget.storageType == StorageType.jellyfin) {
+        apiUtils = JellyfinStreamMediaExplorerProvider(
+          url,
+          UserInfo(userId: '', token: ''),
+        );
+      } else {
+        apiUtils = EmbyStreamMediaExplorerProvider(
+          url,
+          UserInfo(userId: '', token: ''),
+        );
+      }
 
-      final dioWithToken = apiUtils.getDio(url, token: token);
-      final libraries = await apiUtils.getUserViews(dioWithToken);
+      final dio = apiUtils.getDio(url);
+      final userInfo = await apiUtils.login(dio, username, password);
+
+      if (widget.storageType == StorageType.jellyfin) {
+        apiUtils = JellyfinStreamMediaExplorerProvider(url, userInfo);
+      } else {
+        apiUtils = EmbyStreamMediaExplorerProvider(url, userInfo);
+      }
+      final libraries = await apiUtils.getUserViews();
 
       setState(() {
-        _storage.token = token;
-        _jellyfinLibraries = libraries;
-        _isJellyfinLoggedIn = true;
+        _storage.token = userInfo.token;
+        _storage.userId = userInfo.userId;
+        _mediaServerLibraries = libraries;
+        _isMediaServerLoggedIn = true;
       });
 
       if (mounted) {
@@ -658,8 +704,8 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
               ..._fieldConfigs.map((field) {
                 return _buildFieldWidget(field);
               }),
-              if (widget.storageType == StorageType.jellyfin) ...[
-                // 登录按钮
+              if (widget.storageType == StorageType.jellyfin ||
+                  widget.storageType == StorageType.emby) ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -667,14 +713,14 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                   ),
                   child: FButton(
                     style:
-                        _isJellyfinLoggedIn
+                        _isMediaServerLoggedIn
                             ? FButtonStyle.secondary()
                             : FButtonStyle.primary(),
-                    onPress: _isLoading ? null : _loginToJellyfin,
-                    child: Text(_isJellyfinLoggedIn ? '已登录' : '登录并获取媒体库'),
+                    onPress: _isLoading ? null : _loginToMediaServer,
+                    child: Text(_isMediaServerLoggedIn ? '已登录' : '登录并获取媒体库'),
                   ),
                 ),
-                if (_isJellyfinLoggedIn && _jellyfinLibraries.isNotEmpty)
+                if (_isMediaServerLoggedIn && _mediaServerLibraries.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -682,7 +728,7 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                     ),
                     child: FSelectMenuTile.fromMap(
                       Map.fromEntries(
-                        _jellyfinLibraries.map(
+                        _mediaServerLibraries.map(
                           (lib) => MapEntry(lib.name, lib.id),
                         ),
                       ),
@@ -690,7 +736,7 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                       initialValue: _selectedLibraryId,
                       details: Text(
                         _selectedLibraryId != null
-                            ? _jellyfinLibraries
+                            ? _mediaServerLibraries
                                 .firstWhere(
                                   (lib) => lib.id == _selectedLibraryId,
                                 )

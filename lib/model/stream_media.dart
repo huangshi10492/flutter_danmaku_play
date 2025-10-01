@@ -9,6 +9,15 @@ enum MediaType {
   const MediaType(this.name);
 }
 
+class UserInfo {
+  final String userId;
+  final String token;
+  UserInfo({required this.userId, required this.token});
+  factory UserInfo.fromJson(Map<String, dynamic> json) {
+    return UserInfo(userId: json['User']['Id'], token: json['AccessToken']);
+  }
+}
+
 class CollectionItem {
   final String name;
   final CollectionType type;
@@ -98,7 +107,7 @@ class MediaDetail {
       externalUrls: List<ExternalUrl>.from(
         json['ExternalUrls'].map((x) => ExternalUrl.fromJson(x)),
       ),
-      tags: List<String>.from(json["Tags"].map((x) => x)),
+      tags: List<String>.from(json["Tags"]?.map((x) => x as String) ?? []),
     );
   }
 

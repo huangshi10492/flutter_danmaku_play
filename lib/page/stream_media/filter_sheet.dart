@@ -3,8 +3,6 @@ import 'package:fldanplay/widget/icon_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-enum SortKey { name, playDate, communityRating }
-
 class StreamMediaFilterSheet extends StatefulWidget {
   final StreamMediaExplorerService service;
   const StreamMediaFilterSheet({super.key, required this.service});
@@ -15,9 +13,11 @@ class StreamMediaFilterSheet extends StatefulWidget {
 class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
   late TextEditingController searchController;
   late TextEditingController yearsController;
-  late FSelectTileGroupController<String> statusController;
+  late String status;
   late String sortBy;
   late bool sortOrder;
+
+  final statusOptions = {'全部': '', '连载中': 'Continuing', '已完结': 'Ended'};
 
   final sortOptions = {
     '名称': 'SortName',
@@ -35,10 +35,9 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
     setState(() {
       searchController = TextEditingController(text: widget.service.searchTerm);
       yearsController = TextEditingController(text: widget.service.years);
-      statusController = FSelectTileGroupController<String>();
+      status = widget.service.seriesStatus;
       sortBy = widget.service.sortBy;
       sortOrder = widget.service.sortOrder;
-      statusController.value = widget.service.seriesStatus.split(',').toSet();
     });
   }
 
@@ -52,7 +51,7 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
   void _applyFilter() {
     widget.service.searchTerm = searchController.text;
     widget.service.years = yearsController.text;
-    widget.service.seriesStatus = statusController.value.join(',');
+    widget.service.seriesStatus = status;
     widget.service.sortBy = sortBy;
     widget.service.sortOrder = sortOrder;
     widget.service.refresh();
@@ -91,19 +90,17 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
           controller: yearsController,
         ),
         const SizedBox(height: 12),
-        FSelectTileGroup(
-          label: Text(
-            '连载状态',
-            style: context.theme.typography.sm.copyWith(
-              color: context.theme.colors.primary,
-            ),
+        FSelectMenuTile.fromMap(
+          statusOptions,
+          title: Text('连载状态'),
+          initialValue: status,
+          details: Text(
+            statusOptions.entries.firstWhere((e) => e.value == status).key,
           ),
-          selectController: statusController,
-          children: [
-            FSelectTile(title: const Text('连载中'), value: 'Continuing'),
-            FSelectTile(title: const Text('已完结'), value: 'Ended'),
-            FSelectTile(title: const Text('未发布'), value: 'Unreleased'),
-          ],
+          onChange:
+              (value) => setState(() {
+                status = value.first;
+              }),
         ),
         const SizedBox(height: 12),
         FSelectMenuTile.fromMap(

@@ -130,13 +130,14 @@ class StorageAdapter extends TypeAdapter<Storage> {
       isAnonymous: fields[7] as bool?,
       mediaLibraryId: fields[9] as String?,
       token: fields[10] as String?,
+      userId: fields[11] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Storage obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -156,7 +157,9 @@ class StorageAdapter extends TypeAdapter<Storage> {
       ..writeByte(9)
       ..write(obj.mediaLibraryId)
       ..writeByte(10)
-      ..write(obj.token);
+      ..write(obj.token)
+      ..writeByte(11)
+      ..write(obj.userId);
   }
 
   @override
@@ -187,6 +190,8 @@ class StorageTypeAdapter extends TypeAdapter<StorageType> {
         return StorageType.local;
       case 4:
         return StorageType.jellyfin;
+      case 5:
+        return StorageType.emby;
       default:
         return StorageType.webdav;
     }
@@ -205,6 +210,8 @@ class StorageTypeAdapter extends TypeAdapter<StorageType> {
         writer.writeByte(3);
       case StorageType.jellyfin:
         writer.writeByte(4);
+      case StorageType.emby:
+        writer.writeByte(5);
     }
   }
 

@@ -1,6 +1,6 @@
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
-enum StorageType { webdav, ftp, smb, local, jellyfin }
+enum StorageType { webdav, ftp, smb, local, jellyfin, emby }
 
 class Storage extends HiveObject {
   String name;
@@ -13,6 +13,7 @@ class Storage extends HiveObject {
   bool? isAnonymous;
   String? mediaLibraryId;
   String? token;
+  String? userId;
 
   Storage({
     required this.name,
@@ -25,6 +26,7 @@ class Storage extends HiveObject {
     this.isAnonymous,
     this.mediaLibraryId,
     this.token,
+    this.userId,
   });
 
   static Storage create() {
@@ -47,6 +49,7 @@ class Storage extends HiveObject {
     bool? isAnonymous,
     String? mediaLibraryId,
     String? token,
+    String? userId,
   }) {
     return Storage(
       name: name ?? this.name,
@@ -59,6 +62,7 @@ class Storage extends HiveObject {
       isAnonymous: isAnonymous ?? this.isAnonymous,
       mediaLibraryId: mediaLibraryId ?? this.mediaLibraryId,
       token: token ?? this.token,
+      userId: userId ?? this.userId,
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:fldanplay/model/stream_media.dart';
 import 'package:fldanplay/model/video_info.dart';
 import 'package:fldanplay/router.dart';
 import 'package:fldanplay/service/file_explorer.dart';
@@ -175,8 +176,14 @@ class _HistoryPageState extends State<HistoryPage> {
             case StorageType.jellyfin:
               final provider = JellyfinStreamMediaExplorerProvider(
                 storage.url,
-                storage.token!,
-                storage.uniqueKey,
+                UserInfo(userId: storage.userId!, token: storage.token!),
+              );
+              _streamMediaExplorerService.setProvider(provider, storage);
+              break;
+            case StorageType.emby:
+              final provider = EmbyStreamMediaExplorerProvider(
+                storage.url,
+                UserInfo(userId: storage.userId!, token: storage.token!),
               );
               _streamMediaExplorerService.setProvider(provider, storage);
               break;
