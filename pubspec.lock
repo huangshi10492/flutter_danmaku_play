@@ -490,10 +490,10 @@ packages:
     dependency: "direct main"
     description:
       name: hive_ce
-      sha256: "89746b555109029a30780e0a601978460b8065643592667f6e43a238faccb8a4"
+      sha256: d678b1b2e315c18cd7ed8fd79eda25d70a1f3852d6988bfe5461cffe260c60aa
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.13.2"
+    version: "2.14.0"
   hive_ce_flutter:
     dependency: "direct main"
     description:
@@ -922,10 +922,10 @@ packages:
     dependency: transitive
     description:
       name: preact_signals
-      sha256: a5b445796a02244b85fa43d79a7030fbfbbb08f7c48277ee93c636140a8fb2e0
+      sha256: "8bf3cec7fe784d224f1a1132ae7b2f9f3852609046ccb71c4f450a13dd811abf"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.8.3"
+    version: "1.9.3"
   pub_semver:
     dependency: transitive
     description:
@@ -1082,26 +1082,26 @@ packages:
     dependency: "direct main"
     description:
       name: signals
-      sha256: "85225d03e71720b6fff62a8296ba7328a3e363d1ffbb9f3a85efaa05d9e85e67"
+      sha256: a7f5fea3f27708b2705cff501aa0eb32f893552943a7fa8b2851401164459d13
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "6.0.2"
+    version: "6.2.0"
   signals_core:
     dependency: transitive
     description:
       name: signals_core
-      sha256: "5668ff1fb953fe48c88b03d50d43c5fe128cd7c831b932a4157f5f6be868b80f"
+      sha256: "10e527cda3c400703e4156da16aeaea274644ecb7db11abeec7dc7cc9bec9abd"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "6.0.2"
+    version: "6.2.0"
   signals_flutter:
     dependency: "direct main"
     description:
       name: signals_flutter
-      sha256: "66b36ed0b5961cc7d8d0606813bc3fd66758dc1728cbfcffef0d2a97c7a706a2"
+      sha256: d04c973e3feeaddd7d8428f3a8af911297febb3c083091217e1a1fc0c4d6504f
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "6.0.2"
+    version: "6.2.0"
   skeletonizer:
     dependency: "direct main"
     description:
