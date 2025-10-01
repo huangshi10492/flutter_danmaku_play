@@ -257,7 +257,7 @@ class DanmakuService {
   /// 从缓存获取弹幕数据
   Future<List<Danmaku>> _getCachedDanmakus(String uniqueKey) async {
     try {
-      final documentsDir = await getApplicationDocumentsDirectory();
+      final documentsDir = await getApplicationSupportDirectory();
       final cacheDir = Directory('${documentsDir.path}/danmaku');
       final danmakuFile = File('${cacheDir.path}/$uniqueKey.json');
 
@@ -305,7 +305,7 @@ class DanmakuService {
     int animeId,
   ) async {
     try {
-      final documentsDir = await getApplicationDocumentsDirectory();
+      final documentsDir = await getApplicationSupportDirectory();
       final cacheDir = Directory('${documentsDir.path}/danmaku');
       if (!await cacheDir.exists()) {
         await cacheDir.create(recursive: true);

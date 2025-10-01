@@ -15,7 +15,7 @@ class LoggerService {
 
   Future<void> initialize(ConfigureService cs) async {
     try {
-      final appDir = await getApplicationDocumentsDirectory();
+      final appDir = await getApplicationSupportDirectory();
       _logDirectory = Directory(path.join(appDir.path, 'logs'));
 
       if (!await _logDirectory.exists()) {

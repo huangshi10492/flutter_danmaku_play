@@ -209,7 +209,7 @@ class VideoPlayerService {
             : "opensles,audiotrack",
       );
       if (_configureService.subtitleFontName.value.isNotEmpty) {
-        final fontsDir = await getApplicationDocumentsDirectory();
+        final fontsDir = await getApplicationSupportDirectory();
         await pp.setProperty("sub-fonts-dir", '${fontsDir.path}/fonts');
         await pp.setProperty(
           "sub-font",
@@ -333,7 +333,7 @@ class VideoPlayerService {
         return;
       }
       final thumbnail = img.copyResize(image, width: 300);
-      final documentsDir = await getApplicationDocumentsDirectory();
+      final documentsDir = await getApplicationSupportDirectory();
       final dir = Directory('${documentsDir.path}/screenshots');
       await dir.create(recursive: true);
       await img.encodeJpgFile('${dir.path}/${_history.uniqueKey}', thumbnail);

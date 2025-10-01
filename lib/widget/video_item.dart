@@ -90,7 +90,7 @@ class _VideoItemState extends State<VideoItem> {
 
   Future<Widget> _buildPrefix(History? history) async {
     if (history != null) {
-      final directory = await getApplicationDocumentsDirectory();
+      final directory = await getApplicationSupportDirectory();
       final file = File('${directory.path}/screenshots/${history.uniqueKey}');
       if (!await file.exists()) {
         return _buildEmtpyPrefix();

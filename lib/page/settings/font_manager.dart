@@ -58,7 +58,7 @@ class _FontManagerPageState extends State<FontManagerPage> {
 
   Future<void> _downloadAndSelectFont(Map<String, String> font) async {
     // 获取应用文档目录
-    final appDir = await getApplicationDocumentsDirectory();
+    final appDir = await getApplicationSupportDirectory();
     final fontsDir = Directory('${appDir.path}/fonts');
 
     // 创建字体目录（如果不存在）

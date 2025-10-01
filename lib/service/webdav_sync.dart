@@ -214,7 +214,7 @@ class WebDAVSyncService {
     try {
       final historyLock = _historyService.lock;
       return await historyLock.synchronized(() async {
-        final dir = await getApplicationDocumentsDirectory();
+        final dir = await getApplicationSupportDirectory();
         final localTime = _configureService.lastSyncTime.value;
         if (remoteTime > localTime) {
           // 远程更新，需要进行冲突合并
