@@ -22,7 +22,31 @@ class StreamMediaExplorerPage extends StatefulWidget {
 }
 
 class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
+  final storageService = GetIt.I.get<StorageService>();
+  final streamMediaExplorerService = GetIt.I.get<StreamMediaExplorerService>();
   late StreamMediaExplorerProvider provider;
+  Storage? storage;
+
+  @override
+  void initState() {
+    storage = storageService.get(widget.storageKey);
+    if (storage != null) {
+      switch (storage!.storageType) {
+        case StorageType.jellyfin:
+          provider = JellyfinStreamMediaExplorerProvider(
+            storage!.url,
+            storage!.token!,
+            storage!.uniqueKey,
+          );
+          break;
+        default:
+          storage = null;
+          return;
+      }
+      streamMediaExplorerService.setProvider(provider, storage!);
+    }
+    super.initState();
+  }
 
   void _openConfigSheet(StreamMediaExplorerService service) {
     showModalBottomSheet(
@@ -112,27 +136,14 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final storageService = GetIt.I.get<StorageService>();
-    final storage = storageService.get(widget.storageKey);
-    final streamMediaExplorerService =
-        GetIt.I.get<StreamMediaExplorerService>();
     if (storage == null) {
-      return const Center(child: Text('存储配置不存在'));
+      return Scaffold(
+        appBar: SysAppBar(title: '媒体库'),
+        body: const Center(child: Text('媒体库不存在')),
+      );
     }
-    switch (storage.storageType) {
-      case StorageType.jellyfin:
-        provider = JellyfinStreamMediaExplorerProvider(
-          storage.url,
-          storage.token!,
-          storage.uniqueKey,
-        );
-        break;
-      default:
-        return const Center(child: Text('不支持的媒体库类型'));
-    }
-    streamMediaExplorerService.setProvider(provider, storage);
     return Scaffold(
-      appBar: SysAppBar(title: storage.name),
+      appBar: SysAppBar(title: storage!.name),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6),
         child: OrientationBuilder(
