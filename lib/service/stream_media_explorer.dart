@@ -12,19 +12,30 @@ abstract class StreamMediaExplorerProvider {
   Dio getDio(String url, {UserInfo? userInfo});
   Future<UserInfo> login(Dio dio, String username, String password);
   Future<List<CollectionItem>> getUserViews();
-  Future<List<MediaItem>> getItems(
-    String parentId, {
-    required String searchTerm,
-    required String years,
-    required String seriesStatus,
-    required String sortBy,
-    required bool sortOrder,
-  });
+  Future<List<MediaItem>> getItems(String parentId, {required Filter filter});
   Future<MediaDetail> getMediaDetail(String itemId);
   Map<String, String> get headers;
   String getImageUrl(String itemId, {String tag = 'Primary'});
   Future<String> getStreamUrl(String itemId);
   void dispose();
+}
+
+class Filter {
+  String searchTerm = '';
+  String years = '';
+  String seriesStatus = '';
+  String sortBy = 'SortName';
+  // true: 升序，false: 降序
+  bool sortOrder = true;
+  Filter();
+
+  bool isFiltered() {
+    return searchTerm.isNotEmpty ||
+        years.isNotEmpty ||
+        seriesStatus.isNotEmpty ||
+        sortBy != 'SortName' ||
+        sortOrder != true;
+  }
 }
 
 class StreamMediaExplorerService {
@@ -33,28 +44,15 @@ class StreamMediaExplorerService {
   Storage? storage;
   List<EpisodeInfo> episodeList = [];
   final _logger = Logger('StreamMediaExplorerService');
-
-  String searchTerm = '';
-  String years = '';
-  String seriesStatus = '';
-  String sortBy = 'SortName';
-  // true: 升序，false: 降序
-  bool sortOrder = true;
+  final Signal<Filter> filter = signal(Filter());
 
   late FutureSignal<List<MediaItem>> items = futureSignal(() async {
     try {
-      return await provider.getItems(
-        libraryId,
-        searchTerm: searchTerm,
-        years: years,
-        seriesStatus: seriesStatus,
-        sortBy: sortBy,
-        sortOrder: sortOrder,
-      );
+      return await provider.getItems(libraryId, filter: filter.value);
     } catch (e) {
       throw Exception(e);
     }
-  });
+  }, dependencies: [filter]);
 
   static void register() {
     final service = StreamMediaExplorerService();
@@ -62,23 +60,12 @@ class StreamMediaExplorerService {
   }
 
   void setProvider(StreamMediaExplorerProvider newProvider, Storage storage) {
+    filter.value = Filter();
     this.storage = storage;
     provider = newProvider;
     libraryId = storage.mediaLibraryId!;
     items.refresh();
     _logger.info('setProvider', '设置新的媒体库提供者');
-  }
-
-  void refresh() {
-    items.refresh();
-  }
-
-  void resetFilter() {
-    searchTerm = '';
-    years = '';
-    seriesStatus = '';
-    sortBy = 'SortName';
-    sortOrder = true;
   }
 
   void setVideoList(SeasonInfo seasonInfo) {
@@ -149,23 +136,19 @@ class JellyfinStreamMediaExplorerProvider
   @override
   Future<List<MediaItem>> getItems(
     String parentId, {
-    required String searchTerm,
-    required String years,
-    required String seriesStatus,
-    required String sortBy,
-    required bool sortOrder,
+    required Filter filter,
   }) async {
     try {
       final params = <String, dynamic>{
         'parentId': parentId,
         'limit': 300,
         'recursive': true,
-        'searchTerm': searchTerm,
+        'searchTerm': filter.searchTerm,
         'includeItemTypes': 'Movie,Series',
-        'sortBy': sortBy,
-        'years': years,
-        'sortOrder': sortOrder ? 'Ascending' : 'Descending',
-        'seriesStatus': seriesStatus,
+        'sortBy': filter.sortBy,
+        'years': filter.years,
+        'sortOrder': filter.sortOrder ? 'Ascending' : 'Descending',
+        'seriesStatus': filter.seriesStatus,
         'imageTypeLimit': '1',
         'enableImageTypes': 'Primary',
       };
@@ -363,23 +346,19 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
   @override
   Future<List<MediaItem>> getItems(
     String parentId, {
-    required String searchTerm,
-    required String years,
-    required String seriesStatus,
-    required String sortBy,
-    required bool sortOrder,
+    required Filter filter,
   }) async {
     try {
       final params = <String, dynamic>{
         'parentId': parentId,
         'limit': 300,
         'recursive': true,
-        'searchTerm': searchTerm,
+        'searchTerm': filter.searchTerm,
         'includeItemTypes': 'Movie,Series',
-        'sortBy': sortBy,
-        'years': years,
-        'sortOrder': sortOrder ? 'Ascending' : 'Descending',
-        'seriesStatus': seriesStatus,
+        'sortBy': filter.sortBy,
+        'years': filter.years,
+        'sortOrder': filter.sortOrder ? 'Ascending' : 'Descending',
+        'seriesStatus': filter.seriesStatus,
         'imageTypeLimit': '1',
         'enableImageTypes': 'Primary',
       };

@@ -11,6 +11,7 @@ class StreamMediaFilterSheet extends StatefulWidget {
 }
 
 class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
+  late Filter filter = widget.service.filter.value;
   late TextEditingController searchController;
   late TextEditingController yearsController;
   late String status;
@@ -33,11 +34,11 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
 
   void init() {
     setState(() {
-      searchController = TextEditingController(text: widget.service.searchTerm);
-      yearsController = TextEditingController(text: widget.service.years);
-      status = widget.service.seriesStatus;
-      sortBy = widget.service.sortBy;
-      sortOrder = widget.service.sortOrder;
+      searchController = TextEditingController(text: filter.searchTerm);
+      yearsController = TextEditingController(text: filter.years);
+      status = filter.seriesStatus;
+      sortBy = filter.sortBy;
+      sortOrder = filter.sortOrder;
     });
   }
 
@@ -49,12 +50,14 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
   }
 
   void _applyFilter() {
-    widget.service.searchTerm = searchController.text;
-    widget.service.years = yearsController.text;
-    widget.service.seriesStatus = status;
-    widget.service.sortBy = sortBy;
-    widget.service.sortOrder = sortOrder;
-    widget.service.refresh();
+    Filter filter =
+        Filter()
+          ..searchTerm = searchController.text
+          ..years = yearsController.text
+          ..seriesStatus = status
+          ..sortBy = sortBy
+          ..sortOrder = sortOrder;
+    widget.service.filter.value = filter;
     Navigator.pop(context);
   }
 
@@ -69,7 +72,7 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
             FButton(
               style: FButtonStyle.ghost(),
               onPress: () {
-                widget.service.resetFilter();
+                filter = Filter();
                 init();
               },
               child: const Text('重置'),

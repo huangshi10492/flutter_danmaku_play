@@ -7,6 +7,7 @@ import 'package:fldanplay/service/stream_media_explorer.dart';
 import 'package:fldanplay/widget/network_image.dart';
 import 'package:fldanplay/widget/sys_app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:forui/forui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -26,7 +27,7 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
   final streamMediaExplorerService = GetIt.I.get<StreamMediaExplorerService>();
   late StreamMediaExplorerProvider provider;
   Storage? storage;
-
+  bool isFABVisible = true;
   @override
   void initState() {
     storage = storageService.get(widget.storageKey);
@@ -181,65 +182,94 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
             int crossCount = orientation != Orientation.portrait ? 6 : 3;
             return LayoutBuilder(
               builder: (context, constraints) {
-                return Watch((context) {
-                  return streamMediaExplorerService.items.value.map(
-                    data: (items) {
-                      return CustomScrollView(
-                        slivers: [
-                          SliverGrid(
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  // 行间距
-                                  mainAxisSpacing: 6,
-                                  // 列间距
-                                  crossAxisSpacing: 6,
-                                  // 最大列宽
-                                  crossAxisCount: crossCount,
-                                  mainAxisExtent:
-                                      constraints.maxWidth / crossCount / 0.7 +
-                                      36,
-                                ),
-                            delegate: SliverChildBuilderDelegate((
-                              BuildContext context,
-                              int index,
-                            ) {
-                              return _buildMediaCard(items[index]);
-                            }, childCount: items.length),
-                          ),
-                          if (items.length == 300)
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Text(
-                                  '最多显示300个结果，更多结果请使用筛选',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey,
+                return NotificationListener<UserScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification.direction == ScrollDirection.forward) {
+                      setState(() {
+                        isFABVisible = true;
+                      });
+                    }
+                    if (notification.direction == ScrollDirection.reverse) {
+                      setState(() {
+                        isFABVisible = false;
+                      });
+                    }
+                    return false;
+                  },
+                  child: Watch((context) {
+                    return streamMediaExplorerService.items.value.map(
+                      data: (items) {
+                        return CustomScrollView(
+                          slivers: [
+                            SliverGrid(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    // 行间距
+                                    mainAxisSpacing: 6,
+                                    // 列间距
+                                    crossAxisSpacing: 6,
+                                    // 最大列宽
+                                    crossAxisCount: crossCount,
+                                    mainAxisExtent:
+                                        constraints.maxWidth /
+                                            crossCount /
+                                            0.7 +
+                                        36,
+                                  ),
+                              delegate: SliverChildBuilderDelegate((
+                                BuildContext context,
+                                int index,
+                              ) {
+                                return _buildMediaCard(items[index]);
+                              }, childCount: items.length),
+                            ),
+                            if (items.length == 300)
+                              SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text(
+                                    '最多显示300个结果，更多结果请使用筛选',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                        ],
-                      );
-                    },
-                    error:
-                        (error, stack) =>
-                            Center(child: Text('加载失败\n${error.toString()}')),
-                    loading:
-                        () => const Center(child: CircularProgressIndicator()),
-                  );
-                });
+                          ],
+                        );
+                      },
+                      error:
+                          (error, stack) =>
+                              Center(child: Text('加载失败\n${error.toString()}')),
+                      loading:
+                          () =>
+                              const Center(child: CircularProgressIndicator()),
+                    );
+                  }),
+                );
               },
             );
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openConfigSheet(streamMediaExplorerService),
-        shape: CircleBorder(),
-        child: const Icon(FIcons.listFilter),
-      ),
+      floatingActionButton:
+          isFABVisible
+              ? Watch((context) {
+                bool isFiltered =
+                    streamMediaExplorerService.filter.value.isFiltered();
+                return FloatingActionButton(
+                  onPressed: () => _openConfigSheet(streamMediaExplorerService),
+                  shape: CircleBorder(),
+                  child:
+                      isFiltered
+                          ? const Icon(FIcons.listFilterPlus)
+                          : const Icon(FIcons.listFilter),
+                  // backgroundColor: ,
+                );
+              })
+              : null,
     );
   }
 }
