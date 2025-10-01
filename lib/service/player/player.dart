@@ -11,6 +11,7 @@ import 'package:fldanplay/service/global.dart';
 import 'package:fldanplay/service/webdav_sync.dart';
 import 'package:fldanplay/utils/log.dart';
 import 'package:fldanplay/utils/utils.dart';
+import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
 import 'package:media_kit/media_kit.dart';
@@ -135,7 +136,27 @@ class VideoPlayerService {
   Future<void> initialize() async {
     try {
       _log.info('initialize', '开始初始化视频播放器');
-
+      _subscriptions.add(
+        _player.stream.error.listen((e) {
+          final ctx = _globalService.playerContext;
+          if (ctx.mounted) {
+            ScaffoldMessenger.of(ctx)
+              ..removeCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text('播放器发生错误: $e'),
+                  action: SnackBarAction(
+                    label: 'Dismiss',
+                    onPressed: () {
+                      ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
+                    },
+                  ),
+                ),
+              );
+          }
+          _log.error('mpv', '播放器发生错误', error: e);
+        }),
+      );
       await _setProperty();
       playerState.value = PlayerState.loading;
       errorMessage.value = null;
@@ -169,11 +190,6 @@ class VideoPlayerService {
         _player.stream.buffering.listen(_onBufferingStateChanged),
         _player.stream.position.listen((p) => position.value = p),
         _player.stream.buffer.listen((b) => bufferedPosition.value = b),
-        _player.stream.error.listen((e) {
-          playerState.value = PlayerState.error;
-          errorMessage.value = e;
-          _log.error('mpv', '播放器发生错误', error: e);
-        }),
       ]);
       playerLogSubscription = _player.stream.log.listen((event) {
         switch (event.level) {

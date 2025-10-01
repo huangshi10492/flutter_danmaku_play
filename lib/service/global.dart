@@ -15,6 +15,7 @@ class GlobalService {
   });
 
   late BuildContext notificationContext;
+  late BuildContext playerContext;
   Function(String)? updateListener;
   String device = 'Unknown';
   String deviceId = 'Unknown';

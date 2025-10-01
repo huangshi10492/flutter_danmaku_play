@@ -79,6 +79,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
   @override
   Widget build(BuildContext context) {
+    _globalService.playerContext = context;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black,
