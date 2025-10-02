@@ -85,6 +85,30 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
     }
   }
 
+  Widget _buildEmtpyPrefix() {
+    return LayoutBuilder(
+      builder: (context, boxConstraints) {
+        final double maxWidth = boxConstraints.maxWidth;
+        final double maxHeight = boxConstraints.maxHeight;
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            color: const Color.fromARGB(255, 25, 25, 25),
+          ),
+          width: maxWidth,
+          height: maxHeight,
+          child: Center(
+            child: const Icon(
+              Icons.folder_outlined,
+              size: 70,
+              color: Colors.grey,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -363,6 +387,7 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                           maxWidth: maxWidth,
                           maxHeight: maxHeight,
                           large: true,
+                          errorWidget: _buildEmtpyPrefix(),
                         ),
                       );
                     },
@@ -422,8 +447,9 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                           children: [
                             Text('年份:'),
                             Text(
-                              _mediaDetail == null
-                                  ? '2000'
+                              (_mediaDetail == null ||
+                                      _mediaDetail!.productionYear == null)
+                                  ? '未知'
                                   : _mediaDetail!.productionYear.toString(),
                               style: TextStyle(
                                 fontSize: 24,
@@ -435,9 +461,9 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                             const SizedBox(height: 12),
                             Text('评分:'),
                             const SizedBox(height: 6),
-                            _mediaDetail == null
+                            (_mediaDetail == null || _mediaDetail!.rating == 0)
                                 ? Text(
-                                  '********',
+                                  '暂无评分',
                                   style: TextStyle(
                                     fontSize: 20,
                                     height: 1.2,
@@ -448,26 +474,34 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                                 : RatingBar(
                                   rating: _mediaDetail?.rating ?? 0.0,
                                 ),
-                            Text(
-                              _mediaDetail == null
-                                  ? '0.0'
-                                  : _mediaDetail!.rating.toString(),
-                              style: TextStyle(
-                                fontSize: 22,
-                                height: 1.4,
-                                fontWeight: FontWeight.bold,
-                                color: context.theme.colors.primary,
+                            if (_mediaDetail != null &&
+                                _mediaDetail!.rating != 0)
+                              Text(
+                                _mediaDetail!.rating.toStringAsFixed(1),
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  height: 1.4,
+                                  fontWeight: FontWeight.bold,
+                                  color: context.theme.colors.primary,
+                                ),
                               ),
-                            ),
                             const SizedBox(height: 12),
-                            Text('分类:'),
-                            const SizedBox(height: 6),
-                            Text(
-                              _mediaDetail == null
-                                  ? '分类1, 分类2, 分类3' // Skeleton Loader 占位符
-                                  : _mediaDetail!.genres.join(' / '),
-                              style: TextStyle(fontSize: 14, height: 1.25),
-                            ),
+                            if (_mediaDetail != null &&
+                                _mediaDetail!.genres.isNotEmpty)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('分类:'),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    _mediaDetail!.genres.join(' / '),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      height: 1.25,
+                                    ),
+                                  ),
+                                ],
+                              ),
                           ],
                         ),
                       ),
@@ -528,12 +562,15 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
       children: [
         Text('简介', style: context.theme.typography.xl),
         const SizedBox(height: 4),
+
         Text(
-          (_mediaDetail?.overview
-                  ?.replaceAll('<br>', ' ')
-                  .replaceAll('<br/>', ' ')
-                  .replaceAll('<br />', ' ')) ??
-              '',
+          _mediaDetail?.overview == null
+              ? '暂无简介'
+              : (_mediaDetail?.overview
+                      ?.replaceAll('<br>', ' ')
+                      .replaceAll('<br/>', ' ')
+                      .replaceAll('<br />', ' ')) ??
+                  '',
           style: context.theme.typography.base,
         ),
         const SizedBox(height: 16),
