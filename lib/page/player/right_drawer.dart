@@ -27,6 +27,7 @@ enum RightDrawerType {
   speed,
   audioTrack,
   subtitleTrack,
+  metadata,
 }
 
 class RightDrawerContent extends StatelessWidget {
@@ -79,6 +80,8 @@ class RightDrawerContent extends StatelessWidget {
         return TrackPage(playerService: playerService, isAudio: true);
       case RightDrawerType.subtitleTrack:
         return TrackPage(playerService: playerService, isAudio: false);
+      case RightDrawerType.metadata:
+        return _buildMetadataPanel(context);
     }
   }
 
@@ -179,6 +182,11 @@ class RightDrawerContent extends StatelessWidget {
                 title: Text('字幕选择', style: context.theme.typography.base),
                 onPress: () => onDrawerChanged(RightDrawerType.subtitleTrack),
               ),
+              FItem(
+                prefix: const Icon(Icons.info_outlined, size: 20),
+                title: Text('播放信息', style: context.theme.typography.base),
+                onPress: () => onDrawerChanged(RightDrawerType.metadata),
+              ),
             ],
           );
         }),
@@ -273,5 +281,27 @@ class RightDrawerContent extends StatelessWidget {
       );
     }
     return const Center(child: Text('不支持的媒体库类型'));
+  }
+
+  Widget _buildMetadataPanel(BuildContext context) {
+    return ListView(
+      children: [
+        Text('视频来源', style: context.theme.typography.xl),
+        const SizedBox(height: 8),
+        SelectableText(playerService.media.toString()),
+        const SizedBox(height: 16),
+        Text('硬件解码器', style: context.theme.typography.xl),
+        const SizedBox(height: 8),
+        SelectableText(playerService.hwdec),
+        const SizedBox(height: 16),
+        Text('视频信息', style: context.theme.typography.xl),
+        const SizedBox(height: 8),
+        SelectableText(playerService.videoParams.toString()),
+        const SizedBox(height: 16),
+        Text('音频信息', style: context.theme.typography.xl),
+        const SizedBox(height: 8),
+        SelectableText(playerService.audioParams.toString()),
+      ],
+    );
   }
 }

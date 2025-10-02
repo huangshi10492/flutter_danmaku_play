@@ -94,6 +94,10 @@ class VideoPlayerService {
   late DanmakuService danmakuService;
   late History _history;
   StreamSubscription<PlayerLog>? playerLogSubscription;
+  AudioParams? audioParams;
+  VideoParams? videoParams;
+  Media? media;
+  String hwdec = '';
 
   // 定时器组
   late final Map<TimerType, UpdateTimer> _timerGroup = {
@@ -160,12 +164,9 @@ class VideoPlayerService {
       await _setProperty();
       playerState.value = PlayerState.loading;
       errorMessage.value = null;
-      final playable = Media(
-        videoInfo.currentVideoPath,
-        httpHeaders: videoInfo.headers,
-      );
+      media = Media(videoInfo.currentVideoPath, httpHeaders: videoInfo.headers);
       _log.info('initialize', '加载视频: ${videoInfo.currentVideoPath}');
-      await _player.open(playable, play: false);
+      await _player.open(media!, play: false);
       duration = await _player.stream.duration.firstWhere(
         (d) => d != Duration.zero,
       );
@@ -203,6 +204,11 @@ class VideoPlayerService {
             _log.debug('mpv', '${event.prefix}:${event.text}');
         }
       });
+      audioParams = _player.state.audioParams;
+      videoParams = _player.state.videoParams;
+      hwdec = await (_player.platform! as NativePlayer).getProperty(
+        'hwdec-current',
+      );
       play();
       playerState.value = PlayerState.playing;
       _log.info('initialize', '视频播放器初始化完成');
