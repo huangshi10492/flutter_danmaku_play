@@ -89,7 +89,10 @@ class DanmakuService {
         delay = 0;
         if (danmaku.time > position) {
           delay =
-              (danmaku.time.inMilliseconds - position.inMilliseconds) ~/ speed;
+              (danmaku.time.inMilliseconds -
+                  danmakuSettings.value.bilibiliDelay * 1000 -
+                  position.inMilliseconds) ~/
+              speed;
         }
         Future.delayed(
           Duration(milliseconds: delay),
@@ -103,7 +106,10 @@ class DanmakuService {
         delay = 0;
         if (danmaku.time > position) {
           delay =
-              (danmaku.time.inMilliseconds - position.inMilliseconds) ~/ speed;
+              (danmaku.time.inMilliseconds -
+                  danmakuSettings.value.gamerDelay * 1000 -
+                  position.inMilliseconds) ~/
+              speed;
         }
         Future.delayed(
           Duration(milliseconds: delay),
@@ -117,7 +123,10 @@ class DanmakuService {
         delay = 0;
         if (danmaku.time > position) {
           delay =
-              (danmaku.time.inMilliseconds - position.inMilliseconds) ~/ speed;
+              (danmaku.time.inMilliseconds -
+                  danmakuSettings.value.dandanDelay * 1000 -
+                  position.inMilliseconds) ~/
+              speed;
         }
         Future.delayed(
           Duration(milliseconds: delay),
@@ -131,7 +140,10 @@ class DanmakuService {
         delay = 0;
         if (danmaku.time > position) {
           delay =
-              (danmaku.time.inMilliseconds - position.inMilliseconds) ~/ speed;
+              (danmaku.time.inMilliseconds -
+                  danmakuSettings.value.otherDelay * 1000 -
+                  position.inMilliseconds) ~/
+              speed;
         }
         Future.delayed(
           Duration(milliseconds: delay),
