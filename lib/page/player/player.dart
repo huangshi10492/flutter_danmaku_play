@@ -499,21 +499,26 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                 // 右侧按钮组
                 Row(
                   children: [
-                    TextButton.icon(
-                      icon: const Icon(Icons.fast_forward, size: 24),
-                      style: TextButton.styleFrom(
-                        textStyle: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      label: Text('快进85秒'),
-                      onPressed: () {
-                        _playerService.value.seekRelative(
-                          const Duration(seconds: 85),
-                        );
-                      },
-                    ),
+                    Watch((context) {
+                      final chapters = _playerService.value.chapters.value;
+                      return chapters.isEmpty
+                          ? TextButton.icon(
+                            icon: const Icon(Icons.fast_forward, size: 24),
+                            style: TextButton.styleFrom(
+                              textStyle: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            label: Text('快进85秒'),
+                            onPressed: () {
+                              _playerService.value.seekRelative(
+                                const Duration(seconds: 85),
+                              );
+                            },
+                          )
+                          : _buildChapter(chapters);
+                    }),
                     // 速度控制
                     Watch((context) {
                       final speed = _playerService.value.playbackSpeed.value;
@@ -566,6 +571,34 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildChapter(Map<int, String> chapters) {
+    return Watch((context) {
+      final position = _playerService.value.position.value;
+      String text = "";
+      Duration switchSeconds = Duration.zero;
+      chapters.forEach((key, value) {
+        if (switchSeconds != Duration.zero) return;
+        if (key <= position.inSeconds) {
+          text = value;
+        } else {
+          switchSeconds = Duration(seconds: key);
+          text += "(${Utils.formatDuration(switchSeconds)})-> $value";
+          return;
+        }
+      });
+      return TextButton(
+        style: TextButton.styleFrom(
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+        ),
+        child: Text(text),
+        onPressed: () {
+          if (switchSeconds == Duration.zero) return;
+          _playerService.value.seekTo(switchSeconds);
+        },
+      );
+    });
   }
 
   /// 构建视频播放器组件

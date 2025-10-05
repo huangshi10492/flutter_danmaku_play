@@ -14,6 +14,9 @@ import 'package:fldanplay/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
+import 'dart:ffi';
+import 'package:ffi/ffi.dart';
+import 'package:media_kit/generated/libmpv/bindings.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:path_provider/path_provider.dart';
@@ -86,6 +89,7 @@ class VideoPlayerService {
   final Signal<TrackInfo?> externalSubtitle = signal(null);
   final Signal<int> activeAudioTrack = Signal(0);
   final Signal<int> activeSubtitleTrack = Signal(0);
+  final Signal<Map<int, String>> chapters = Signal({});
 
   late final Player _player;
   late final VideoController controller;
@@ -209,6 +213,7 @@ class VideoPlayerService {
       hwdec = await (_player.platform! as NativePlayer).getProperty(
         'hwdec-current',
       );
+      getChapter();
       play();
       playerState.value = PlayerState.playing;
       _log.info('initialize', '视频播放器初始化完成');
@@ -218,6 +223,41 @@ class VideoPlayerService {
       _log.error('initialize', '视频播放器初始化失败', error: e, stackTrace: stackTrace);
       rethrow;
     }
+  }
+
+  void getChapter() {
+    final nativePlayer = (_player.platform as NativePlayer);
+    final ctx = nativePlayer.ctx;
+    final mpv = nativePlayer.mpv;
+    final data = calloc<mpv_node>();
+    mpv.mpv_get_property(
+      ctx,
+      "chapter-list".toNativeUtf8().cast(),
+      mpv_format.MPV_FORMAT_NODE,
+      data.cast(),
+    );
+    final chapters = <int, String>{};
+    if (data.ref.format == mpv_format.MPV_FORMAT_NODE_ARRAY) {
+      for (int i = 0; i < data.ref.u.list.ref.num; i++) {
+        final decoder = data.ref.u.list.ref.values[i];
+        if (decoder.format == mpv_format.MPV_FORMAT_NODE_MAP) {
+          String name = "";
+          for (int j = 0; j < decoder.u.list.ref.num; j++) {
+            final k = decoder.u.list.ref.keys[j].cast<Utf8>().toDartString();
+            final v = decoder.u.list.ref.values[j];
+            if (k == 'title' && v.format == mpv_format.MPV_FORMAT_STRING) {
+              name = v.u.string.cast<Utf8>().toDartString();
+            }
+            if (k == 'time' && v.format == mpv_format.MPV_FORMAT_DOUBLE) {
+              chapters[v.u.double_.round()] = name;
+            }
+          }
+        }
+      }
+    }
+    this.chapters.value = chapters;
+    mpv.mpv_free_node_contents(data);
+    calloc.free(data);
   }
 
   Future<void> _setProperty() async {
