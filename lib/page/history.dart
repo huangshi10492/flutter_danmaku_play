@@ -235,7 +235,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 icon = Icons.cloud_outlined;
                 break;
               case SyncStatus.syncing:
-                return const FProgress.circularIcon();
+                return const FCircularProgress();
               case SyncStatus.success:
                 icon = Icons.cloud_done_outlined;
                 break;

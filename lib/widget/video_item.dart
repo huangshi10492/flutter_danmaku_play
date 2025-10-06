@@ -221,9 +221,8 @@ class _VideoItemState extends State<VideoItem> {
                         ? const SizedBox()
                         : Text(widget.history!.subtitle!, style: subtitleStyle),
                     const SizedBox(height: 4),
-                    FProgress(
+                    FDeterminateProgress(
                       value: progress,
-                      duration: Duration.zero,
                       style:
                           (style) => style.copyWith(
                             constraints: style.constraints.copyWith(

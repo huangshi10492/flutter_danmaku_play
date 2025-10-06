@@ -58,13 +58,12 @@ class StatusIndicator extends StatelessWidget {
   Widget _buildProgressIndicator(double value) {
     return SizedBox(
       width: 100,
-      child: FProgress(
-        duration: Duration.zero,
+      child: FDeterminateProgress(
+        value: value,
         style:
             (style) => style.copyWith(
               constraints: BoxConstraints(minHeight: 8, maxHeight: 8),
             ),
-        value: value,
       ),
     );
   }

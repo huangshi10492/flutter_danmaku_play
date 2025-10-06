@@ -174,7 +174,7 @@ FTileStyle _tileStyle({
     }),
   ),
   tappableStyle: style.tappableStyle.copyWith(
-    bounceTween: FTappableStyle.noBounceTween,
+    motion: FTappableMotion.none.call,
     pressedEnterDuration: Duration.zero,
     pressedExitDuration: const Duration(milliseconds: 25),
   ),

@@ -104,7 +104,7 @@ class _DanmakuSearchPageState extends State<DanmakuSearchPage> {
                   ? const SizedBox(
                     width: 25,
                     height: 25,
-                    child: FProgress.circularIcon(),
+                    child: FCircularProgress(),
                   )
                   : Icon(
                     Icons.search,
