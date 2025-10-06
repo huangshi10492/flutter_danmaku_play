@@ -594,22 +594,41 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
             left: 12,
             right: 12,
           ),
-          child: FTextFormField(
-            readOnly: field.key == 'uniqueKey' && _storage.uniqueKey.isNotEmpty,
-            label: Text(field.label),
-            controller: controller,
-            obscureText: field.obscureText,
-            keyboardType: field.inputType,
-            validator: (value) {
-              if (field.required && (value == null || value.trim().isEmpty)) {
-                return '${field.label}不能为空';
-              }
-              if (field.validator != null) {
-                return field.validator!(value!);
-              }
-              return null;
-            },
-          ),
+          child:
+              field.obscureText
+                  ? FTextFormField.password(
+                    label: Text(field.label),
+                    controller: controller,
+                    keyboardType: field.inputType,
+                    validator: (value) {
+                      if (field.required &&
+                          (value == null || value.trim().isEmpty)) {
+                        return '${field.label}不能为空';
+                      }
+                      if (field.validator != null) {
+                        return field.validator!(value!);
+                      }
+                      return null;
+                    },
+                  )
+                  : FTextFormField(
+                    readOnly:
+                        field.key == 'uniqueKey' &&
+                        _storage.uniqueKey.isNotEmpty,
+                    label: Text(field.label),
+                    controller: controller,
+                    keyboardType: field.inputType,
+                    validator: (value) {
+                      if (field.required &&
+                          (value == null || value.trim().isEmpty)) {
+                        return '${field.label}不能为空';
+                      }
+                      if (field.validator != null) {
+                        return field.validator!(value!);
+                      }
+                      return null;
+                    },
+                  ),
         );
       case _FieldType.toggle:
         return FItem(
