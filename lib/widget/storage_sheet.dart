@@ -10,10 +10,8 @@ import 'package:get_it/get_it.dart';
 import 'package:fldanplay/service/storage.dart';
 import 'package:go_router/go_router.dart';
 
-// 字段类型枚举
-enum _FieldType { text, toggle, select, folder }
+enum _FieldType { text, toggle, select }
 
-// 字段配置类
 class _FieldConfig {
   final String key;
   final String label;
@@ -22,8 +20,8 @@ class _FieldConfig {
   final bool obscureText;
   final TextInputType inputType;
   final String? Function(String)? validator;
-  final Map<String, String>? options; // 用于选择类型
-  final String? description; // 字段描述
+  final Map<String, String>? options;
+  final String? description;
 
   const _FieldConfig(
     this.key,
@@ -63,7 +61,7 @@ class SelectStorageTypeSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: SafeArea(
-        minimum: EdgeInsets.all(8),
+        minimum: const EdgeInsets.all(8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -104,16 +102,231 @@ class SelectStorageTypeSheet extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            FButton(
-              style: FButtonStyle.secondary(),
-              onPress: () => context.pop(),
-              child: Text('取消'),
-            ),
           ],
         ),
       ),
     );
+  }
+}
+
+class _StorageFormData {
+  final Map<String, TextEditingController> controllers = {};
+  final Map<String, bool> toggleValues = {};
+  final Map<String, String> selectValues = {};
+
+  void initialize(List<_FieldConfig> configs) {
+    dispose();
+    for (final field in configs) {
+      switch (field.type) {
+        case _FieldType.text:
+          controllers[field.key] = TextEditingController();
+          break;
+        case _FieldType.toggle:
+          toggleValues[field.key] = false;
+          break;
+        case _FieldType.select:
+          selectValues[field.key] = field.options?.values.first ?? '';
+          break;
+      }
+    }
+  }
+
+  void loadFromStorage(Storage storage, List<_FieldConfig> configs) {
+    for (final field in configs) {
+      switch (field.type) {
+        case _FieldType.text:
+          final controller = controllers[field.key];
+          if (controller != null) {
+            switch (field.key) {
+              case 'url':
+                controller.text = storage.url;
+                break;
+              case 'port':
+                controller.text = storage.port?.toString() ?? '';
+                break;
+              case 'account':
+                controller.text = storage.account ?? '';
+                break;
+              case 'password':
+                controller.text = storage.password ?? '';
+                break;
+            }
+          }
+          break;
+        case _FieldType.toggle:
+          switch (field.key) {
+            case 'isAnonymous':
+              toggleValues[field.key] = storage.isAnonymous ?? false;
+              break;
+          }
+          break;
+        case _FieldType.select:
+          switch (field.key) {
+            case 'ftpMode':
+            case 'smbVersion':
+              selectValues[field.key] = field.options!.values.first;
+              break;
+          }
+          break;
+      }
+    }
+  }
+
+  void saveToStorage(Storage storage, List<_FieldConfig> configs) {
+    for (final field in configs) {
+      switch (field.type) {
+        case _FieldType.text:
+          final controller = controllers[field.key];
+          if (controller != null) {
+            final value = controller.text.trim();
+            switch (field.key) {
+              case 'url':
+                storage.url = value;
+                break;
+              case 'port':
+                storage.port = value.isEmpty ? null : int.tryParse(value);
+                break;
+              case 'account':
+                storage.account = value.isEmpty ? null : value;
+                break;
+              case 'password':
+                storage.password = value.isEmpty ? null : value;
+                break;
+            }
+          }
+          break;
+        case _FieldType.toggle:
+          final value = toggleValues[field.key] ?? false;
+          switch (field.key) {
+            case 'isAnonymous':
+              storage.isAnonymous = value;
+              break;
+          }
+          break;
+        case _FieldType.select:
+          switch (field.key) {
+            case 'ftpMode':
+              selectValues[field.key] =
+                  // _storage.ftpMode ??
+                  field.options!.values.first;
+              break;
+            case 'smbVersion':
+              selectValues[field.key] =
+                  // _storage.smbVersion ??
+                  field.options!.values.first;
+              break;
+          }
+          break;
+      }
+    }
+  }
+
+  void dispose() {
+    for (final controller in controllers.values) {
+      controller.dispose();
+    }
+    controllers.clear();
+    toggleValues.clear();
+    selectValues.clear();
+  }
+}
+
+List<_FieldConfig> _getConfigs(StorageType type) {
+  String? validateUrl(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    final uri = Uri.tryParse(value.trim());
+    if (uri == null || !uri.hasScheme) {
+      return '请输入有效的URL';
+    }
+    return null;
+  }
+
+  String? validatePort(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    final port = int.tryParse(value.trim());
+    if (port == null || port < 1 || port > 65535) {
+      return '请输入有效的端口号(1-65535)';
+    }
+    return null;
+  }
+
+  switch (type) {
+    case StorageType.webdav:
+      return [
+        _FieldConfig('url', 'WebDAV地址', required: true, validator: validateUrl),
+        _FieldConfig('account', '用户名'),
+        _FieldConfig('password', '密码', obscureText: true),
+        _FieldConfig(
+          'isAnonymous',
+          '匿名访问',
+          type: _FieldType.toggle,
+          description: '启用后将不需要用户名和密码',
+        ),
+      ];
+    case StorageType.ftp:
+      return [
+        _FieldConfig('url', 'FTP服务器', required: true, validator: validateUrl),
+        _FieldConfig(
+          'port',
+          '端口',
+          inputType: TextInputType.number,
+          validator: validatePort,
+        ),
+        _FieldConfig('account', '用户名', required: true),
+        _FieldConfig('password', '密码', required: true, obscureText: true),
+        _FieldConfig(
+          'ftpMode',
+          'FTP模式',
+          type: _FieldType.select,
+          options: {'主动模式': 'active', '被动模式': 'passive'},
+          description: '选择FTP连接模式',
+        ),
+      ];
+    case StorageType.smb:
+      return [
+        _FieldConfig('url', 'SMB地址', required: true, validator: validateUrl),
+        _FieldConfig('account', '用户名', required: true),
+        _FieldConfig('password', '密码', required: true, obscureText: true),
+        _FieldConfig(
+          'smbVersion',
+          'SMB版本',
+          type: _FieldType.select,
+          options: {'SMB1': '1', 'SMB2': '2', 'SMB3': '3'},
+          description: '选择SMB协议版本',
+        ),
+      ];
+    case StorageType.local:
+      return [
+        _FieldConfig('url', '本地路径', required: true, validator: validateUrl),
+      ];
+    case StorageType.jellyfin:
+      return [
+        _FieldConfig(
+          'url',
+          'Jellyfin服务器地址',
+          required: true,
+          validator: validateUrl,
+          description: '例如: http://192.168.1.100:8096',
+        ),
+        _FieldConfig('account', '用户名', required: true),
+        _FieldConfig('password', '密码', required: true, obscureText: true),
+      ];
+    case StorageType.emby:
+      return [
+        _FieldConfig(
+          'url',
+          'Emby服务器地址',
+          required: true,
+          validator: validateUrl,
+          description: '例如: http://192.168.1.100:8096',
+        ),
+        _FieldConfig('account', '用户名', required: true),
+        _FieldConfig('password', '密码', required: true, obscureText: true),
+      ];
   }
 }
 
@@ -134,193 +347,42 @@ class EditStorageSheet extends StatefulWidget {
 class _EditStorageSheetState extends State<EditStorageSheet> {
   final _storageService = GetIt.I.get<StorageService>();
   final _formKey = GlobalKey<FormState>();
-  var _storage = Storage.create();
 
-  final Map<String, TextEditingController> _controllers = {};
-  final Map<String, bool> _toggleValues = {};
-  final Map<String, String> _selectValues = {};
+  late final _StorageFormData _formData;
+  late final List<_FieldConfig> _fieldConfigs;
+  late final TextEditingController _nameController;
+  late final TextEditingController _uniqueKeyController;
+
+  var _storage = Storage.create();
   bool _isLoading = false;
 
   List<CollectionItem> _mediaServerLibraries = [];
   String? _selectedLibraryId;
   bool _isMediaServerLoggedIn = false;
-
-  String get title {
+  String get _title {
     switch (widget.storageType) {
       case StorageType.webdav:
-        return '编辑WebDAV媒体库';
+        return 'WebDAV媒体库';
       case StorageType.ftp:
-        return '编辑FTPS媒体库';
+        return 'FTP媒体库';
       case StorageType.smb:
-        return '编辑SMB媒体库';
+        return 'SMB媒体库';
       case StorageType.local:
-        return '编辑本地媒体库';
+        return '本地媒体库';
       case StorageType.jellyfin:
-        return '编辑Jellyfin媒体库';
+        return 'Jellyfin媒体库';
       case StorageType.emby:
-        return '编辑Emby媒体库';
-    }
-  }
-
-  List<_FieldConfig> get _fieldConfigs {
-    switch (widget.storageType) {
-      case StorageType.webdav:
-        return [
-          _FieldConfig('name', '名称', required: true),
-          _FieldConfig(
-            'uniqueKey',
-            'Key',
-            required: true,
-            validator: _validateUniqueKey,
-          ),
-          _FieldConfig(
-            'url',
-            'WebDAV地址',
-            required: true,
-            validator: _validateUrl,
-          ),
-          _FieldConfig('account', '用户名'),
-          _FieldConfig('password', '密码', obscureText: true),
-          _FieldConfig(
-            'isAnonymous',
-            '匿名访问',
-            type: _FieldType.toggle,
-            description: '启用后将不需要用户名和密码',
-          ),
-        ];
-      case StorageType.ftp:
-        return [
-          _FieldConfig('name', '名称', required: true),
-          _FieldConfig(
-            'uniqueKey',
-            'Key',
-            required: true,
-            validator: _validateUniqueKey,
-          ),
-          _FieldConfig(
-            'url',
-            'FTP服务器',
-            required: true,
-            validator: _validateUrl,
-          ),
-          _FieldConfig(
-            'port',
-            '端口',
-            inputType: TextInputType.number,
-            validator: _validatePort,
-          ),
-          _FieldConfig('account', '用户名', required: true),
-          _FieldConfig('password', '密码', required: true, obscureText: true),
-          _FieldConfig(
-            'ftpMode',
-            'FTP模式',
-            type: _FieldType.select,
-            options: {'主动模式': 'active', '被动模式': 'passive'},
-            description: '选择FTP连接模式',
-          ),
-        ];
-      case StorageType.smb:
-        return [
-          _FieldConfig('name', '名称', required: true),
-          _FieldConfig(
-            'uniqueKey',
-            'Key',
-            required: true,
-            validator: _validateUniqueKey,
-          ),
-          _FieldConfig('url', 'SMB地址', required: true, validator: _validateUrl),
-          _FieldConfig('account', '用户名', required: true),
-          _FieldConfig('password', '密码', required: true, obscureText: true),
-          _FieldConfig(
-            'smbVersion',
-            'SMB版本',
-            type: _FieldType.select,
-            options: {'SMB1': '1', 'SMB2': '2', 'SMB3': '3'},
-            description: '选择SMB协议版本',
-          ),
-        ];
-      case StorageType.local:
-        return [
-          _FieldConfig('name', '名称', required: true),
-          _FieldConfig(
-            'uniqueKey',
-            'Key',
-            required: true,
-            validator: _validateUniqueKey,
-          ),
-          _FieldConfig('url', '本地路径', required: true),
-          _FieldConfig('path', '选择文件夹', type: _FieldType.folder),
-        ];
-      case StorageType.jellyfin:
-        return [
-          _FieldConfig('name', '名称', required: true),
-          _FieldConfig(
-            'uniqueKey',
-            'Key',
-            required: true,
-            validator: _validateUniqueKey,
-          ),
-          _FieldConfig(
-            'url',
-            'Jellyfin服务器地址',
-            required: true,
-            validator: _validateUrl,
-            description: '例如: http://192.168.1.100:8096',
-          ),
-          _FieldConfig('account', '用户名', required: true),
-          _FieldConfig('password', '密码', required: true, obscureText: true),
-        ];
-      case StorageType.emby:
-        return [
-          _FieldConfig('name', '名称', required: true),
-          _FieldConfig(
-            'uniqueKey',
-            'Key',
-            required: true,
-            validator: _validateUniqueKey,
-          ),
-          _FieldConfig(
-            'url',
-            'Emby服务器地址',
-            required: true,
-            validator: _validateUrl,
-            description: '例如: http://192.168.1.100:8096',
-          ),
-          _FieldConfig('account', '用户名', required: true),
-          _FieldConfig('password', '密码', required: true, obscureText: true),
-        ];
+        return 'Emby媒体库';
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _initializeControllers();
+    _fieldConfigs = _getConfigs(widget.storageType);
+    _formData = _StorageFormData();
+    _formData.initialize(_fieldConfigs);
     _loadStorage();
-  }
-
-  void _initializeControllers() {
-    for (final controller in _controllers.values) {
-      controller.dispose();
-    }
-    _controllers.clear();
-    _toggleValues.clear();
-    _selectValues.clear();
-    for (final field in _fieldConfigs) {
-      switch (field.type) {
-        case _FieldType.text:
-          _controllers[field.key] = TextEditingController();
-          break;
-        case _FieldType.toggle:
-          _toggleValues[field.key] = false;
-          break;
-        case _FieldType.select:
-          _selectValues[field.key] = field.options?.keys.first ?? '';
-          break;
-        case _FieldType.folder:
-          break;
-      }
-    }
   }
 
   Future<void> _loadStorage() async {
@@ -330,68 +392,16 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
         _storage = result;
       }
     }
-
     setState(() {
-      for (final field in _fieldConfigs) {
-        switch (field.type) {
-          case _FieldType.text:
-            final controller = _controllers[field.key];
-            if (controller != null) {
-              switch (field.key) {
-                case 'name':
-                  controller.text = _storage.name;
-                  break;
-                case 'uniqueKey':
-                  controller.text = _storage.uniqueKey;
-                  break;
-                case 'url':
-                  controller.text = _storage.url;
-                  break;
-                case 'port':
-                  controller.text = _storage.port?.toString() ?? '';
-                  break;
-                case 'account':
-                  controller.text = _storage.account ?? '';
-                  break;
-                case 'password':
-                  controller.text = _storage.password ?? '';
-                  break;
-              }
-            }
-            break;
-          case _FieldType.toggle:
-            switch (field.key) {
-              case 'isAnonymous':
-                _toggleValues[field.key] = _storage.isAnonymous ?? false;
-                break;
-            }
-            break;
-          case _FieldType.select:
-            switch (field.key) {
-              case 'ftpMode':
-                _selectValues[field.key] =
-                    // _storage.ftpMode ??
-                    field.options!.values.first;
-                break;
-              case 'smbVersion':
-                _selectValues[field.key] =
-                    // _storage.smbVersion ??
-                    field.options!.values.first;
-                break;
-            }
-            break;
-          case _FieldType.folder:
-            break;
-        }
-      }
+      _nameController = TextEditingController(text: _storage.name);
+      _uniqueKeyController = TextEditingController(text: _storage.uniqueKey);
+      _formData.loadFromStorage(_storage, _fieldConfigs);
     });
   }
 
   @override
   void dispose() {
-    for (final controller in _controllers.values) {
-      controller.dispose();
-    }
+    _formData.dispose();
     super.dispose();
   }
 
@@ -401,52 +411,7 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
     }
     setState(() => _isLoading = true);
     try {
-      for (final field in _fieldConfigs) {
-        switch (field.type) {
-          case _FieldType.text:
-            final controller = _controllers[field.key];
-            if (controller != null) {
-              final value = controller.text.trim();
-              switch (field.key) {
-                case 'name':
-                  _storage.name = value;
-                  break;
-                case 'uniqueKey':
-                  _storage.uniqueKey = value;
-                  break;
-                case 'url':
-                  _storage.url = value;
-                  break;
-                case 'port':
-                  _storage.port = value.isEmpty ? null : int.tryParse(value);
-                  break;
-                case 'account':
-                  _storage.account = value.isEmpty ? null : value;
-                  break;
-                case 'password':
-                  _storage.password = value.isEmpty ? null : value;
-                  break;
-              }
-            }
-            break;
-          case _FieldType.toggle:
-            final value = _toggleValues[field.key] ?? false;
-            switch (field.key) {
-              case 'isAnonymous':
-                _storage.isAnonymous = value;
-                break;
-            }
-            break;
-          case _FieldType.select:
-            // 选择字段可以保存到扩展属性或新字段中
-            // 例如：final value = _selectValues[field.key] ?? '';
-            // _storage.ftpMode = value;
-            break;
-          case _FieldType.folder:
-            break;
-        }
-      }
-      _storage.storageType = widget.storageType;
+      _formData.saveToStorage(_storage, _fieldConfigs);
       if (widget.storageType == StorageType.jellyfin ||
           widget.storageType == StorageType.emby) {
         if (_selectedLibraryId == null) {
@@ -460,7 +425,7 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
       await _storageService.update(_storage);
       if (context.mounted) {
         showToast(context, title: '媒体库保存成功');
-        for (final controller in _controllers.values) {
+        for (final controller in _formData.controllers.values) {
           controller.clear();
         }
       }
@@ -482,52 +447,14 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
     }
   }
 
-  String? _validateUrl(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return null;
-    }
-
-    final uri = Uri.tryParse(value.trim());
-    if (uri == null || !uri.hasScheme) {
-      return '请输入有效的URL';
-    }
-
-    return null;
-  }
-
-  String? _validatePort(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return null;
-    }
-
-    final port = int.tryParse(value.trim());
-    if (port == null || port < 1 || port > 65535) {
-      return '请输入有效的端口号(1-65535)';
-    }
-    return null;
-  }
-
-  String? _validateUniqueKey(String value) {
-    if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value.trim())) {
-      return '只能输入字母和数字';
-    }
-    final key = value.trim();
-    if (_storageService.exists(key) && key != _storage.uniqueKey) {
-      return 'Key已存在';
-    }
-    return null;
-  }
-
   Future<void> _loginToMediaServer() async {
     if (widget.storageType != StorageType.jellyfin &&
         widget.storageType != StorageType.emby) {
       return;
     }
-
-    final url = _controllers['url']?.text.trim();
-    final username = _controllers['account']?.text.trim();
-    final password = _controllers['password']?.text.trim();
-
+    final url = _formData.controllers['url']?.text.trim();
+    final username = _formData.controllers['account']?.text.trim();
+    final password = _formData.controllers['password']?.text.trim();
     if (url == null ||
         url.isEmpty ||
         username == null ||
@@ -539,11 +466,8 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
       }
       return;
     }
-
     setState(() => _isLoading = true);
-
     try {
-      // 根据存储类型创建对应的 Provider
       StreamMediaExplorerProvider apiUtils;
       if (widget.storageType == StorageType.jellyfin) {
         apiUtils = JellyfinStreamMediaExplorerProvider(
@@ -556,24 +480,20 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
           UserInfo(userId: '', token: ''),
         );
       }
-
       final dio = apiUtils.getDio(url);
       final userInfo = await apiUtils.login(dio, username, password);
-
       if (widget.storageType == StorageType.jellyfin) {
         apiUtils = JellyfinStreamMediaExplorerProvider(url, userInfo);
       } else {
         apiUtils = EmbyStreamMediaExplorerProvider(url, userInfo);
       }
       final libraries = await apiUtils.getUserViews();
-
       setState(() {
         _storage.token = userInfo.token;
         _storage.userId = userInfo.userId;
         _mediaServerLibraries = libraries;
         _isMediaServerLoggedIn = true;
       });
-
       if (mounted) {
         showToast(context, title: '登录成功！请选择媒体库');
       }
@@ -591,14 +511,9 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
   Widget _buildFieldWidget(_FieldConfig field) {
     switch (field.type) {
       case _FieldType.text:
-        final controller = _controllers[field.key]!;
+        final controller = _formData.controllers[field.key]!;
         return Padding(
-          padding: const EdgeInsets.only(
-            top: 6,
-            bottom: 6,
-            left: 12,
-            right: 12,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child:
               field.obscureText
                   ? FTextFormField.password(
@@ -617,9 +532,6 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                     },
                   )
                   : FTextFormField(
-                    readOnly:
-                        field.key == 'uniqueKey' &&
-                        _storage.uniqueKey.isNotEmpty,
                     label: Text(field.label),
                     controller: controller,
                     keyboardType: field.inputType,
@@ -645,62 +557,39 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
             ),
           ),
           suffix: Switch(
-            value: _toggleValues[field.key] ?? false,
+            value: _formData.toggleValues[field.key] ?? false,
             onChanged: (value) {
               setState(() {
-                _toggleValues[field.key] = value;
+                _formData.toggleValues[field.key] = value;
               });
             },
           ),
           onPress: () {
             setState(() {
-              _toggleValues[field.key] = !(_toggleValues[field.key] ?? false);
+              _formData.toggleValues[field.key] =
+                  !(_formData.toggleValues[field.key] ?? false);
             });
           },
         );
       case _FieldType.select:
         return Padding(
-          padding: const EdgeInsets.only(
-            top: 6,
-            bottom: 6,
-            left: 12,
-            right: 12,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: FSelectMenuTile.fromMap(
             field.options!,
             title: Text(field.label),
-            initialValue: _selectValues[field.key],
+            initialValue: _formData.selectValues[field.key],
             details: Text(
               field.options!.entries
-                  .firstWhere((e) => e.value == _selectValues[field.key])
+                  .firstWhere(
+                    (e) => e.value == _formData.selectValues[field.key],
+                  )
                   .key,
             ),
             onChange: (value) {
               setState(() {
-                _selectValues[field.key] = value.first;
+                _formData.selectValues[field.key] = value.first;
               });
             },
-          ),
-        );
-      case _FieldType.folder:
-        return Padding(
-          padding: const EdgeInsets.only(
-            top: 6,
-            bottom: 6,
-            left: 12,
-            right: 12,
-          ),
-          child: FButton(
-            style: FButtonStyle.secondary(),
-            onPress: () async {
-              final path = await FilePicker.platform.getDirectoryPath();
-              if (path != null) {
-                setState(() {
-                  _controllers['url']!.text = path;
-                });
-              }
-            },
-            child: Text(field.label),
           ),
         );
     }
@@ -716,18 +605,112 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.all(12),
-                child: Text(
-                  title,
-                  style: context.theme.typography.lg.copyWith(
-                    color: context.theme.colors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    FButton(
+                      style: FButtonStyle.ghost(),
+                      onPress: () => Navigator.of(context).pop(),
+                      child: const Text('取消'),
+                    ),
+                    Expanded(
+                      child: Text(
+                        _title,
+                        textAlign: TextAlign.center,
+                        style: context.theme.typography.lg.copyWith(
+                          color: context.theme.colors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    FButton(
+                      onPress:
+                          _isLoading
+                              ? null
+                              : () async {
+                                final result = await _saveStorage(context);
+                                if (context.mounted) {
+                                  if (result) {
+                                    Navigator.of(context).pop(result);
+                                  }
+                                }
+                              },
+                      child:
+                          _isLoading
+                              ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Text('保存'),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                child: FTextFormField(
+                  label: Text('名称'),
+                  controller: _nameController,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return '名称不能为空';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                child: FTextFormField(
+                  label: Text('Key'),
+                  controller: _uniqueKeyController,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Key不能为空';
+                    }
+                    if (_storageService.exists(value) &&
+                        value != _storage.uniqueKey) {
+                      return 'Key已存在';
+                    }
+                    return null;
+                  },
                 ),
               ),
               ..._fieldConfigs.map((field) {
                 return _buildFieldWidget(field);
               }),
+              if (widget.storageType == StorageType.local) ...[
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: 6,
+                    bottom: 6,
+                    left: 12,
+                    right: 12,
+                  ),
+                  child: FButton(
+                    onPress: () async {
+                      final path = await FilePicker.platform.getDirectoryPath();
+                      if (path != null) {
+                        setState(() {
+                          _formData.controllers['url']!.text = path;
+                        });
+                      }
+                    },
+                    child: Text('选择文件夹'),
+                  ),
+                ),
+              ],
               if (widget.storageType == StorageType.jellyfin ||
                   widget.storageType == StorageType.emby) ...[
                 Padding(
@@ -775,48 +758,6 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                     ),
                   ),
               ],
-              const SizedBox(height: 12),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: FButton(
-                        style: context.theme.buttonStyles.secondary.call,
-                        onPress: () => Navigator.of(context).pop(),
-                        child: const Text('取消'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: FButton(
-                        onPress:
-                            _isLoading
-                                ? null
-                                : () async {
-                                  final result = await _saveStorage(context);
-                                  if (context.mounted) {
-                                    if (result) {
-                                      Navigator.of(context).pop(result);
-                                    }
-                                  }
-                                },
-                        child:
-                            _isLoading
-                                ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                : const Text('保存'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
