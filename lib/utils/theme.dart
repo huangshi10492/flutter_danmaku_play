@@ -1,87 +1,72 @@
-import 'package:fldanplay/theme/text_field_style.dart';
+import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
+
+FTextFieldStyle textFieldStyle(FTextFieldStyle style, FColors colors) {
+  final disabledTextStyle = style.contentTextStyle.resolve({
+    WidgetState.disabled,
+  });
+  final anyTextStyle = style.contentTextStyle
+      .resolve({})
+      .copyWith(color: colors.foreground);
+  return style.copyWith(
+    contentTextStyle: FWidgetStateMap({
+      WidgetState.disabled: disabledTextStyle,
+      WidgetState.any: anyTextStyle,
+    }),
+  );
+}
 
 FThemeData getLightTheme(String theme) {
   switch (theme) {
     case 'blue':
       return FThemes.blue.light.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.blue.light.colors,
-          typography: FThemes.blue.light.typography,
-          style: FThemes.blue.light.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.blue.light.colors),
       );
     case 'zinc':
       return FThemes.zinc.light.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.zinc.light.colors,
-          typography: FThemes.zinc.light.typography,
-          style: FThemes.zinc.light.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.zinc.light.colors),
       );
     case 'slate':
       return FThemes.slate.light.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.slate.light.colors,
-          typography: FThemes.slate.light.typography,
-          style: FThemes.slate.light.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.slate.light.colors),
       );
     case 'red':
       return FThemes.red.light.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.red.light.colors,
-          typography: FThemes.red.light.typography,
-          style: FThemes.red.light.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.red.light.colors),
       );
     case 'rose':
       return FThemes.rose.light.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.rose.light.colors,
-          typography: FThemes.rose.light.typography,
-          style: FThemes.rose.light.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.rose.light.colors),
       );
     case 'orange':
       return FThemes.orange.light.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.orange.light.colors,
-          typography: FThemes.orange.light.typography,
-          style: FThemes.orange.light.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.orange.light.colors),
       );
     case 'green':
       return FThemes.green.light.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.green.light.colors,
-          typography: FThemes.green.light.typography,
-          style: FThemes.green.light.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.green.light.colors),
       );
     case 'yellow':
       return FThemes.yellow.light.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.yellow.light.colors,
-          typography: FThemes.yellow.light.typography,
-          style: FThemes.yellow.light.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.yellow.light.colors),
       );
     case 'violet':
       return FThemes.violet.light.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.violet.light.colors,
-          typography: FThemes.violet.light.typography,
-          style: FThemes.violet.light.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.violet.light.colors),
       );
     default:
       return FThemes.blue.light.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.blue.light.colors,
-          typography: FThemes.blue.light.typography,
-          style: FThemes.blue.light.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.blue.light.colors),
       );
   }
 }
@@ -90,83 +75,53 @@ FThemeData getDarkTheme(String theme) {
   switch (theme) {
     case 'blue':
       return FThemes.blue.dark.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.blue.dark.colors,
-          typography: FThemes.blue.dark.typography,
-          style: FThemes.blue.dark.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.blue.dark.colors),
       );
     case 'zinc':
       return FThemes.zinc.dark.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.zinc.dark.colors,
-          typography: FThemes.zinc.dark.typography,
-          style: FThemes.zinc.dark.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.zinc.dark.colors),
       );
     case 'slate':
       return FThemes.slate.dark.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.slate.dark.colors,
-          typography: FThemes.slate.dark.typography,
-          style: FThemes.slate.dark.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.slate.dark.colors),
       );
     case 'red':
       return FThemes.red.dark.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.red.dark.colors,
-          typography: FThemes.red.dark.typography,
-          style: FThemes.red.dark.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.red.dark.colors),
       );
     case 'rose':
       return FThemes.rose.dark.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.rose.dark.colors,
-          typography: FThemes.rose.dark.typography,
-          style: FThemes.rose.dark.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.rose.dark.colors),
       );
     case 'orange':
       return FThemes.orange.dark.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.orange.dark.colors,
-          typography: FThemes.orange.dark.typography,
-          style: FThemes.orange.dark.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.orange.dark.colors),
       );
     case 'green':
       return FThemes.green.dark.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.green.dark.colors,
-          typography: FThemes.green.dark.typography,
-          style: FThemes.green.dark.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.green.dark.colors),
       );
     case 'yellow':
       return FThemes.yellow.dark.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.yellow.dark.colors,
-          typography: FThemes.yellow.dark.typography,
-          style: FThemes.yellow.dark.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.yellow.dark.colors),
       );
     case 'violet':
       return FThemes.violet.dark.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.violet.dark.colors,
-          typography: FThemes.violet.dark.typography,
-          style: FThemes.violet.dark.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.violet.dark.colors),
       );
     default:
       return FThemes.blue.dark.copyWith(
-        textFieldStyle: textFieldStyle(
-          colors: FThemes.blue.dark.colors,
-          typography: FThemes.blue.dark.typography,
-          style: FThemes.blue.dark.style,
-        ),
+        textFieldStyle:
+            (style) => textFieldStyle(style, FThemes.blue.dark.colors),
       );
   }
 }
