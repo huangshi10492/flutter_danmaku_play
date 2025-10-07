@@ -1,5 +1,6 @@
 import 'package:fldanplay/service/configure.dart';
 import 'package:fldanplay/service/webdav_sync.dart';
+import 'package:fldanplay/utils/toast.dart';
 import 'package:fldanplay/widget/settings/settings_section.dart';
 import 'package:fldanplay/widget/settings/settings_tile.dart';
 import 'package:fldanplay/widget/sys_app_bar.dart';
@@ -62,18 +63,19 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
       final success = await syncService.testConnection();
 
       if (mounted) {
-        showFToast(
-          context: context,
-          alignment: FToastAlignment.topRight,
-          title: Text(success ? '连接测试成功' : '连接测试失败'),
+        showToast(
+          context,
+          level: success ? 1 : 3,
+          title: success ? '连接测试成功' : '连接测试失败',
         );
       }
     } catch (e) {
       if (mounted) {
-        showFToast(
-          context: context,
-          alignment: FToastAlignment.topRight,
-          title: Text('连接测试失败: $e'),
+        showToast(
+          context,
+          level: 3,
+          title: '连接测试失败',
+          description: e.toString(),
         );
       }
     }

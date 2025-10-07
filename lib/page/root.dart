@@ -1,4 +1,5 @@
 import 'package:fldanplay/model/video_info.dart';
+import 'package:fldanplay/utils/toast.dart';
 import 'package:fldanplay/widget/storage_sheet.dart';
 import 'package:fldanplay/router.dart';
 import 'package:fldanplay/service/storage.dart';
@@ -101,11 +102,11 @@ class RootPageState extends State<RootPage> {
       }
     } catch (e) {
       if (mounted) {
-        showFToast(
-          context: context,
-          alignment: FToastAlignment.topRight,
-          title: const Text('选择文件失败'),
-          description: Text('$e'),
+        showToast(
+          context,
+          level: 3,
+          title: '选择文件失败',
+          description: e.toString(),
         );
       }
     }
@@ -135,11 +136,7 @@ class RootPageState extends State<RootPage> {
                   }
                   // 格式校验
                   if (!url.startsWith('http')) {
-                    showFToast(
-                      context: context,
-                      alignment: FToastAlignment.topRight,
-                      title: const Text('请输入有效的网络视频URL'),
-                    );
+                    showToast(context, level: 2, title: '请输入有效的网络视频URL');
                     return;
                   }
                   final videoInfo = VideoInfo(
@@ -163,11 +160,11 @@ class RootPageState extends State<RootPage> {
       );
     } catch (e) {
       if (mounted) {
-        showFToast(
-          context: context,
-          alignment: FToastAlignment.topRight,
-          title: const Text('播放视频失败'),
-          description: Text('$e'),
+        showToast(
+          context,
+          level: 3,
+          title: '播放视频失败',
+          description: e.toString(),
         );
       }
     }

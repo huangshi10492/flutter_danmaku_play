@@ -6,6 +6,7 @@ import 'package:fldanplay/service/global.dart';
 import 'package:fldanplay/service/history.dart';
 import 'package:fldanplay/service/stream_media_explorer.dart';
 import 'package:fldanplay/utils/crypto_utils.dart';
+import 'package:fldanplay/utils/toast.dart';
 import 'package:fldanplay/widget/network_image.dart';
 import 'package:fldanplay/widget/rating_bar.dart';
 import 'package:fldanplay/widget/video_item.dart';
@@ -664,9 +665,11 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
           }
         } catch (e) {
           if (mounted) {
-            showFToast(
-              context: this.context,
-              title: Text('播放失败: ${e.toString()}'),
+            showToast(
+              this.context,
+              level: 3,
+              title: '播放失败',
+              description: e.toString(),
             );
           }
         }

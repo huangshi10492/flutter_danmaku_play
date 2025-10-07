@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fldanplay/service/configure.dart';
+import 'package:fldanplay/utils/toast.dart';
 import 'package:fldanplay/widget/settings/settings_section.dart';
 import 'package:fldanplay/widget/settings/settings_tile.dart';
 import 'package:fldanplay/widget/sys_app_bar.dart';
@@ -178,7 +179,7 @@ class _FontManagerPageState extends State<FontManagerPage> {
 
       // 显示成功提示
       if (currentContext.mounted) {
-        showFToast(context: currentContext, title: const Text('字体下载成功'));
+        showToast(currentContext, title: '字体下载成功');
       }
     } on DioException catch (e) {
       // 关闭进度弹窗
@@ -194,14 +195,19 @@ class _FontManagerPageState extends State<FontManagerPage> {
         }
         // 显示取消提示
         if (currentContext.mounted) {
-          showFToast(context: currentContext, title: const Text('下载已取消'));
+          showToast(currentContext, level: 1, title: '下载已取消');
         }
         return;
       }
 
       // 显示错误提示
       if (currentContext.mounted) {
-        showFToast(context: currentContext, title: Text('字体下载失败: $e'));
+        showToast(
+          currentContext,
+          level: 3,
+          title: '字体下载失败',
+          description: e.toString(),
+        );
       }
     } catch (e) {
       // 关闭进度弹窗
@@ -211,7 +217,12 @@ class _FontManagerPageState extends State<FontManagerPage> {
 
       // 显示错误提示
       if (currentContext.mounted) {
-        showFToast(context: currentContext, title: Text('字体下载失败: $e'));
+        showToast(
+          currentContext,
+          level: 3,
+          title: '字体下载失败',
+          description: e.toString(),
+        );
       }
     }
   }

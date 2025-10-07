@@ -3,6 +3,7 @@ import 'package:fldanplay/model/stream_media.dart';
 import 'package:fldanplay/service/stream_media_explorer.dart';
 import 'package:fldanplay/utils/theme.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:fldanplay/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:get_it/get_it.dart';
@@ -450,7 +451,7 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
           widget.storageType == StorageType.emby) {
         if (_selectedLibraryId == null) {
           if (context.mounted) {
-            showFToast(context: context, title: const Text('请选择媒体库'));
+            showToast(context, level: 2, title: '请选择媒体库');
           }
           return false;
         }
@@ -458,7 +459,7 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
       }
       await _storageService.update(_storage);
       if (context.mounted) {
-        showFToast(context: context, title: const Text('媒体库保存成功'));
+        showToast(context, title: '媒体库保存成功');
         for (final controller in _controllers.values) {
           controller.clear();
         }
@@ -466,7 +467,12 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
       return true;
     } catch (e) {
       if (context.mounted) {
-        showFToast(context: context, title: Text('媒体库保存失败: ${e.toString()}'));
+        showToast(
+          context,
+          level: 3,
+          title: '媒体库保存失败',
+          description: e.toString(),
+        );
       }
       return false;
     } finally {
@@ -529,7 +535,7 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
         password == null ||
         password.isEmpty) {
       if (mounted) {
-        showFToast(context: context, title: const Text('请填写完整的服务器地址、用户名和密码'));
+        showToast(context, level: 2, title: '请填写完整的服务器地址、用户名和密码');
       }
       return;
     }
@@ -569,12 +575,11 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
       });
 
       if (mounted) {
-        showFToast(context: context, title: const Text('登录成功！请选择媒体库'));
+        showToast(context, title: '登录成功！请选择媒体库');
       }
     } catch (e) {
       if (mounted) {
-        debugPrint('登录失败: ${e.toString()}');
-        showFToast(context: context, title: Text('登录失败'));
+        showToast(context, level: 3, title: '登录失败', description: e.toString());
       }
     } finally {
       if (mounted) {
