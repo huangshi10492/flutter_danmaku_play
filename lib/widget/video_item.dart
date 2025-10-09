@@ -225,6 +225,9 @@ class _VideoItemState extends State<VideoItem> {
                       value: progress,
                       style:
                           (style) => style.copyWith(
+                            motion:
+                                (motion) =>
+                                    motion.copyWith(duration: Duration.zero),
                             constraints: style.constraints.copyWith(
                               minHeight: 4,
                               maxHeight: 4,
