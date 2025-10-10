@@ -34,7 +34,7 @@ class _FontManagerPageState extends State<FontManagerPage> {
     {
       'name': 'NotoSansCJKsc-Regular(Mirror)',
       'url':
-          'https://fastly.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf',
+          'https://ghproxy.net/https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf',
       'fontName': 'NotoSansCJKsc-Regular',
     },
   ];
