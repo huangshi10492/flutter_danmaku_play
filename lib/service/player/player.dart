@@ -305,6 +305,10 @@ class VideoPlayerService {
   void seekRelative(Duration offset) {
     final currentPosition = position.value;
     final newPosition = currentPosition + offset;
+    if (newPosition < Duration.zero) {
+      seekTo(Duration.zero);
+      return;
+    }
     seekTo(newPosition);
   }
 
