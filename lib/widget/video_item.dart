@@ -21,6 +21,9 @@ class FileImageEx extends FileImage {
         other.scale == scale &&
         other.fileSize == fileSize;
   }
+
+  @override
+  int get hashCode => fileSize.hashCode;
 }
 
 class VideoItem extends StatefulWidget with FItemMixin {
@@ -47,11 +50,25 @@ class VideoItem extends StatefulWidget with FItemMixin {
 
 class _VideoItemState extends State<VideoItem> {
   late Future<Widget> _prefixFuture;
+  bool _hasDanmaku = false;
 
   @override
   void initState() {
     super.initState();
     _prefixFuture = _buildPrefix(widget.history);
+    init();
+  }
+
+  Future<void> init() async {
+    if (widget.history == null) return;
+    final directory = await getApplicationSupportDirectory();
+    final res = File(
+      '${directory.path}/danmaku/${widget.history!.uniqueKey}.json',
+    );
+    final hasDanmaku = await res.exists();
+    setState(() {
+      _hasDanmaku = hasDanmaku;
+    });
   }
 
   @override
@@ -237,7 +254,32 @@ class _VideoItemState extends State<VideoItem> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(style: subtitleStyle, lastWatchTime),
+                        Row(
+                          children: [
+                            if (_hasDanmaku)
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: context.theme.colors.primary,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 3,
+                                  vertical: 1,
+                                ),
+                                margin: EdgeInsets.only(top: 2, right: 2),
+                                child: Text(
+                                  '弹',
+                                  style: TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        context.theme.colors.primaryForeground,
+                                  ),
+                                ),
+                              ),
+                            Text(style: subtitleStyle, lastWatchTime),
+                          ],
+                        ),
                         Text(style: subtitleStyle, '$progressPercent%'),
                       ],
                     ),
