@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:fldanplay/model/history.dart';
 import 'package:fldanplay/model/video_info.dart';
 import 'package:fldanplay/service/configure.dart';
@@ -93,6 +94,8 @@ class VideoPlayerService {
 
   late final Player _player;
   late final VideoController controller;
+  late AudioSession _session;
+  bool _playInterrupted = false;
   final _subscriptions = <StreamSubscription>[];
   Duration duration = Duration();
   late DanmakuService danmakuService;
@@ -213,7 +216,8 @@ class VideoPlayerService {
       hwdec = await (_player.platform! as NativePlayer).getProperty(
         'hwdec-current',
       );
-      getChapter();
+      _getChapter();
+      await _initSession();
       play();
       playerState.value = PlayerState.playing;
       _log.info('initialize', '视频播放器初始化完成');
@@ -225,7 +229,7 @@ class VideoPlayerService {
     }
   }
 
-  void getChapter() {
+  void _getChapter() {
     final nativePlayer = (_player.platform as NativePlayer);
     final ctx = nativePlayer.ctx;
     final mpv = nativePlayer.mpv;
@@ -281,16 +285,54 @@ class VideoPlayerService {
     }
   }
 
+  Future<void> _initSession() async {
+    _session = await AudioSession.instance;
+    _session.configure(const AudioSessionConfiguration.music());
+    _session.interruptionEventStream.listen((event) {
+      final state = playerState.value;
+      if (event.begin) {
+        if (state != PlayerState.playing && state != PlayerState.paused) return;
+        switch (event.type) {
+          case AudioInterruptionType.duck:
+            break;
+          case AudioInterruptionType.pause:
+          case AudioInterruptionType.unknown:
+            pause();
+            _playInterrupted = true;
+            break;
+        }
+      } else {
+        switch (event.type) {
+          case AudioInterruptionType.duck:
+            break;
+          case AudioInterruptionType.pause:
+            if (_playInterrupted) play();
+            break;
+          case AudioInterruptionType.unknown:
+            break;
+        }
+        _playInterrupted = false;
+      }
+    });
+    _session.becomingNoisyEventStream.listen((_) {
+      if (playerState.value == PlayerState.playing) {
+        pause();
+      }
+    });
+  }
+
   /// 播放视频
   Future<void> play() async {
     _log.debug('play', '开始播放视频');
     await _player.play();
+    _session.setActive(true);
   }
 
   /// 暂停视频
   Future<void> pause() async {
     _log.debug('pause', '暂停视频');
     await _player.pause();
+    if (!_playInterrupted) _session.setActive(false);
   }
 
   /// 跳转到指定位置
