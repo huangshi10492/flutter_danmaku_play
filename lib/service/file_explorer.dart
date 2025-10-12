@@ -15,6 +15,8 @@ import '../model/storage.dart';
 import '../model/history.dart';
 
 abstract class FileExplorerProvider {
+  Future<void> init();
+  String getVideoUrl(String path);
   Future<List<FileItem>> listFiles(String path, String rootPath);
   Map<String, String> get headers;
   void dispose();
@@ -88,7 +90,7 @@ class FileExplorerService {
   }
 
   Future<VideoInfo> getVideoInfo(int index, String path) async {
-    final videoPath = '${_storage!.url}$path';
+    final videoPath = provider.value!.getVideoUrl(path);
     final headers = provider.value!.headers;
     return VideoInfo.fromFile(
       currentVideoPath: videoPath,
@@ -123,6 +125,7 @@ class WebDAVFileExplorerProvider implements FileExplorerProvider {
   WebdavClient? client;
   late final Map<String, String> _headers;
   final _logger = Logger('WebDAVFileExplorerProvider');
+  late final String url;
 
   @override
   Map<String, String> get headers => _headers;
@@ -146,7 +149,13 @@ class WebDAVFileExplorerProvider implements FileExplorerProvider {
         pwd: storage.password!,
       );
     }
+    url = storage.url;
     _logger.info('WebDAVFileExplorerProvider', '初始化WebDAV文件库提供者');
+  }
+
+  @override
+  String getVideoUrl(String path) {
+    return '$url$path';
   }
 
   @override
@@ -193,6 +202,9 @@ class WebDAVFileExplorerProvider implements FileExplorerProvider {
   }
 
   @override
+  Future<void> init() async {}
+
+  @override
   void dispose() {}
 }
 
@@ -204,6 +216,11 @@ class LocalFileExplorerProvider implements FileExplorerProvider {
   Map<String, String> get headers => {};
   LocalFileExplorerProvider(this.url) {
     Permission.videos.request();
+  }
+
+  @override
+  String getVideoUrl(String path) {
+    return '$url$path';
   }
 
   @override
@@ -253,6 +270,9 @@ class LocalFileExplorerProvider implements FileExplorerProvider {
       throw Exception('获取文件列表失败: ${e.toString()}');
     }
   }
+
+  @override
+  Future<void> init() async {}
 
   @override
   void dispose() {}

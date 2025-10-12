@@ -38,6 +38,7 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
   void dispose() {
     _scrollController.dispose();
     GetIt.I.get<GlobalService>().updateListener = null;
+    _fileExplorerService.provider.value?.dispose();
     super.dispose();
   }
 
@@ -69,6 +70,7 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
       default:
         return;
     }
+    await provider.init();
     _fileExplorerService.setProvider(provider, storage);
     setState(() {
       _storage = storage;
