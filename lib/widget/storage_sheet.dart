@@ -269,7 +269,7 @@ List<_FieldConfig> _getConfigs(StorageType type) {
       ];
     case StorageType.ftp:
       return [
-        _FieldConfig('url', 'FTP服务器', required: true, validator: validateUrl),
+        _FieldConfig('url', 'FTP服务器', required: true),
         _FieldConfig(
           'port',
           '端口',
@@ -288,7 +288,7 @@ List<_FieldConfig> _getConfigs(StorageType type) {
       ];
     case StorageType.smb:
       return [
-        _FieldConfig('url', 'SMB地址', required: true, validator: validateUrl),
+        _FieldConfig('url', 'SMB地址', required: true),
         _FieldConfig('account', '用户名', required: true),
         _FieldConfig('password', '密码', required: true, obscureText: true),
         _FieldConfig(
@@ -300,9 +300,7 @@ List<_FieldConfig> _getConfigs(StorageType type) {
         ),
       ];
     case StorageType.local:
-      return [
-        _FieldConfig('url', '本地路径', required: true, validator: validateUrl),
-      ];
+      return [_FieldConfig('url', '本地路径', required: true)];
     case StorageType.jellyfin:
       return [
         _FieldConfig(
@@ -411,6 +409,9 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
     }
     setState(() => _isLoading = true);
     try {
+      _storage.name = _nameController.text.trim();
+      _storage.uniqueKey = _uniqueKeyController.text.trim();
+      _storage.storageType = widget.storageType;
       _formData.saveToStorage(_storage, _fieldConfigs);
       if (widget.storageType == StorageType.jellyfin ||
           widget.storageType == StorageType.emby) {
