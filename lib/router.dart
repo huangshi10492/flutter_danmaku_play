@@ -3,6 +3,7 @@ import 'package:fldanplay/model/stream_media.dart';
 import 'package:fldanplay/model/video_info.dart';
 import 'package:fldanplay/page/file_explorer.dart';
 import 'package:fldanplay/page/history.dart';
+import 'package:fldanplay/page/offline_cache.dart';
 import 'package:fldanplay/page/player/player.dart';
 import 'package:fldanplay/page/root.dart';
 import 'package:fldanplay/page/settings/appearance_settings.dart';
@@ -26,6 +27,7 @@ const String fileExplorerPath = '/file-explorer';
 const String streamMediaExplorerPath = '/stream-media-explorer';
 const String streamMediaDetailPath = '/stream-media-detail';
 const String historyPath = '/history';
+const String offlineCachePath = '/offline-cache';
 const String videoPlayerPath = '/video-player';
 const String settingsPath = '/settings';
 
@@ -154,6 +156,14 @@ final router = GoRouter(
           (context, state) => SlideAndExitTransitionPage(
             key: state.pageKey,
             child: const HistoryPage(),
+          ),
+    ),
+    GoRoute(
+      path: offlineCachePath,
+      pageBuilder:
+          (context, state) => SlideAndExitTransitionPage(
+            key: state.pageKey,
+            child: const OfflineCachePage(),
           ),
     ),
     GoRoute(

@@ -198,6 +198,12 @@ class RootPageState extends State<RootPage> {
                   onPress: () => context.push(historyPath),
                 ),
                 FItem(
+                  prefix: const Icon(FIcons.download),
+                  title: const Text('离线缓存'),
+                  subtitle: Text('查看已缓存的视频'),
+                  onPress: () => context.push(offlineCachePath),
+                ),
+                FItem(
                   prefix: const Icon(FIcons.play),
                   title: const Text('选择视频播放'),
                   subtitle: Text('选择本地视频或网络视频'),

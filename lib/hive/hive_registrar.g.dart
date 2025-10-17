@@ -7,18 +7,24 @@ import 'package:fldanplay/hive/hive_adapters.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
+    registerAdapter(DownloadStatusAdapter());
     registerAdapter(HistoriesTypeAdapter());
     registerAdapter(HistoryAdapter());
+    registerAdapter(OfflineCacheAdapter());
     registerAdapter(StorageAdapter());
     registerAdapter(StorageTypeAdapter());
+    registerAdapter(VideoInfoAdapter());
   }
 }
 
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
+    registerAdapter(DownloadStatusAdapter());
     registerAdapter(HistoriesTypeAdapter());
     registerAdapter(HistoryAdapter());
+    registerAdapter(OfflineCacheAdapter());
     registerAdapter(StorageAdapter());
     registerAdapter(StorageTypeAdapter());
+    registerAdapter(VideoInfoAdapter());
   }
 }

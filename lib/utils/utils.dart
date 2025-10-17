@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:intl/intl.dart' as intl;
+
 class Utils {
   /// 判断是否为桌面设备
   static bool isDesktop() {
@@ -21,6 +23,11 @@ class Utils {
 
   static String formatTime(int position, int duration) {
     return '${formatDuration(Duration(milliseconds: position))}/${formatDuration(Duration(milliseconds: duration))}';
+  }
+
+  static String formatDateTime(int timestamp) {
+    final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    return intl.DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
   }
 
   // 格式化最后观看时间

@@ -4,6 +4,7 @@ import 'package:fldanplay/model/stream_media.dart';
 import 'package:fldanplay/router.dart';
 import 'package:fldanplay/service/global.dart';
 import 'package:fldanplay/service/history.dart';
+import 'package:fldanplay/service/offline_cache.dart';
 import 'package:fldanplay/service/stream_media_explorer.dart';
 import 'package:fldanplay/utils/crypto_utils.dart';
 import 'package:fldanplay/utils/toast.dart';
@@ -655,6 +656,14 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
       headers: _service.provider.headers,
       name: '${episode.indexNumber}. ${episode.name}',
       history: _historyService.getHistoryByPath(episode.id),
+      onOfflineDownload: () async {
+        _service.setVideoList(season);
+        final videoInfo = await _service.getVideoInfo(index);
+        GetIt.I.get<OfflineCacheService>().startDownload(videoInfo);
+        if (context.mounted) {
+          showToast(context, title: '${videoInfo.name}已加入离线缓存');
+        }
+      },
       onPress: () async {
         try {
           _service.setVideoList(season);

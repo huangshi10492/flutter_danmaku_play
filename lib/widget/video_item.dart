@@ -34,6 +34,7 @@ class VideoItem extends StatefulWidget with FItemMixin {
   final int refreshKey;
   final String? imageUrl;
   final Map<String, String>? headers;
+  final Function()? onOfflineDownload;
   const VideoItem({
     super.key,
     required this.history,
@@ -43,6 +44,7 @@ class VideoItem extends StatefulWidget with FItemMixin {
     required this.refreshKey,
     this.imageUrl,
     this.headers,
+    this.onOfflineDownload,
   });
   @override
   State<VideoItem> createState() => _VideoItemState();
@@ -192,105 +194,150 @@ class _VideoItemState extends State<VideoItem> {
     }
     final subtitleStyle = context.theme.itemStyle.contentStyle.subtitleTextStyle
         .resolve({});
-    return FItem(
-      prefix: SizedBox(
-        width: 95,
-        height: 65,
-        child: FutureBuilder(
-          future: _prefixFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
-            }
-            if (snapshot.hasData) {
-              return snapshot.data!;
-            }
-            return _buildEmtpyPrefix();
-          },
-        ),
-      ),
-      title: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 65),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            FTooltip(
-              tipBuilder:
-                  (context, controller) => Container(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width - 50,
-                    ),
-                    child: Text(widget.name),
-                  ),
-              child: Text(
-                widget.name,
-                style: context.theme.typography.base,
-                maxLines: 2,
+    return _PopoverMenu(
+      download: widget.onOfflineDownload ?? () {},
+      child:
+          (controller) => FItem(
+            prefix: SizedBox(
+              width: 95,
+              height: 65,
+              child: FutureBuilder(
+                future: _prefixFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  if (snapshot.hasData) {
+                    return snapshot.data!;
+                  }
+                  return _buildEmtpyPrefix();
+                },
               ),
             ),
-            widget.history != null
-                ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    widget.history!.subtitle == null
-                        ? const SizedBox()
-                        : Text(widget.history!.subtitle!, style: subtitleStyle),
-                    const SizedBox(height: 4),
-                    FDeterminateProgress(
-                      value: progress,
-                      style:
-                          (style) => style.copyWith(
-                            motion:
-                                (motion) =>
-                                    motion.copyWith(duration: Duration.zero),
-                            constraints: style.constraints.copyWith(
-                              minHeight: 4,
-                              maxHeight: 4,
-                            ),
+            title: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 65),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FTooltip(
+                    tipBuilder:
+                        (context, controller) => Container(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width - 50,
                           ),
+                          child: Text(widget.name),
+                        ),
+                    child: Text(
+                      widget.name,
+                      style: context.theme.typography.base,
+                      maxLines: 2,
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            if (_hasDanmaku)
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: context.theme.colors.primary,
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 3,
-                                  vertical: 1,
-                                ),
-                                margin: EdgeInsets.only(top: 2, right: 2),
-                                child: Text(
-                                  '弹',
-                                  style: TextStyle(
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        context.theme.colors.primaryForeground,
+                  ),
+                  widget.history != null
+                      ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          widget.history!.subtitle == null
+                              ? const SizedBox()
+                              : Text(
+                                widget.history!.subtitle!,
+                                style: subtitleStyle,
+                              ),
+                          const SizedBox(height: 4),
+                          FDeterminateProgress(
+                            value: progress,
+                            style:
+                                (style) => style.copyWith(
+                                  motion:
+                                      (motion) => motion.copyWith(
+                                        duration: Duration.zero,
+                                      ),
+                                  constraints: style.constraints.copyWith(
+                                    minHeight: 4,
+                                    maxHeight: 4,
                                   ),
                                 ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  if (_hasDanmaku)
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: context.theme.colors.primary,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 3,
+                                        vertical: 1,
+                                      ),
+                                      margin: EdgeInsets.only(top: 2, right: 2),
+                                      child: Text(
+                                        '弹',
+                                        style: TextStyle(
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              context
+                                                  .theme
+                                                  .colors
+                                                  .primaryForeground,
+                                        ),
+                                      ),
+                                    ),
+                                  Text(style: subtitleStyle, lastWatchTime),
+                                ],
                               ),
-                            Text(style: subtitleStyle, lastWatchTime),
-                          ],
-                        ),
-                        Text(style: subtitleStyle, '$progressPercent%'),
-                      ],
-                    ),
-                  ],
-                )
-                : Text(style: subtitleStyle, '未观看'),
+                              Text(style: subtitleStyle, '$progressPercent%'),
+                            ],
+                          ),
+                        ],
+                      )
+                      : Text(style: subtitleStyle, '未观看'),
+                ],
+              ),
+            ),
+            onPress: widget.onPress,
+            onLongPress: widget.onLongPress ?? controller.toggle,
+          ),
+    );
+  }
+}
+
+class _PopoverMenu extends StatefulWidget with FItemMixin {
+  final Function download;
+  final Widget Function(FPopoverController controller) child;
+  const _PopoverMenu({required this.download, required this.child});
+  @override
+  _PopoverMenuState createState() => _PopoverMenuState();
+}
+
+class _PopoverMenuState extends State<_PopoverMenu>
+    with TickerProviderStateMixin {
+  @override
+  Widget build(BuildContext context) {
+    final controller = FPopoverController(vsync: this);
+    return FPopoverMenu(
+      popoverController: controller,
+      menu: [
+        FItemGroup(
+          children: [
+            FItem(
+              prefix: const Icon(FIcons.download),
+              title: Text('离线保存'),
+              onPress: () {
+                controller.toggle();
+                widget.download();
+              },
+            ),
           ],
         ),
-      ),
-      onPress: widget.onPress,
-      onLongPress: widget.onLongPress,
+      ],
+      child: widget.child(controller),
     );
   }
 }

@@ -10,10 +10,11 @@ class StorageService {
   final _logger = Logger('StorageService');
 
   StorageService();
-  static Future<void> register() async {
+  static Future<StorageService> register() async {
     var service = StorageService();
     await service.init();
     GetIt.I.registerSingleton<StorageService>(service);
+    return service;
   }
 
   Future<void> init() async {

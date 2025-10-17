@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:fldanplay/model/file_item.dart';
 import 'package:fldanplay/model/video_info.dart';
 import 'package:fldanplay/service/history.dart';
@@ -19,6 +20,12 @@ abstract class FileExplorerProvider {
   String getVideoUrl(String path);
   Future<List<FileItem>> listFiles(String path, String rootPath);
   Map<String, String> get headers;
+  Future<bool> downloadVideo(
+    String path,
+    String localPath, {
+    void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
+  });
   void dispose();
 }
 
@@ -202,6 +209,39 @@ class WebDAVFileExplorerProvider implements FileExplorerProvider {
   }
 
   @override
+  Future<bool> downloadVideo(
+    String path,
+    String localPath, {
+    void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      if (client == null) {
+        throw Exception('WebDAV客户端未初始化');
+      }
+      final targetFile = File(localPath);
+      await targetFile.parent.create(recursive: true);
+      await client!.readFile(
+        path,
+        localPath,
+        onProgress: onProgress,
+        cancelToken: cancelToken,
+      );
+      _logger.info('downloadVideo', 'WebDAV下载完成: $path -> $localPath');
+      return true;
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel) {
+        return false;
+      }
+      _logger.error('downloadVideo', 'WebDAV下载失败: $e');
+      rethrow;
+    } catch (e) {
+      _logger.error('downloadVideo', 'WebDAV下载失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> init() async {}
 
   @override
@@ -268,6 +308,43 @@ class LocalFileExplorerProvider implements FileExplorerProvider {
     } catch (e) {
       _logger.error('listFiles', '获取文件列表失败', error: e);
       throw Exception('获取文件列表失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<bool> downloadVideo(
+    String path,
+    String localPath, {
+    void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      final sourceFile = File('$url$path');
+      final targetFile = File(localPath);
+      if (!await sourceFile.exists()) {
+        throw Exception('源文件不存在: $url$path');
+      }
+      final fileSize = await sourceFile.length();
+      await targetFile.parent.create(recursive: true);
+      final sourceStream = sourceFile.openRead();
+      final targetSink = targetFile.openWrite();
+      int received = 0;
+      await for (final chunk in sourceStream) {
+        if (cancelToken?.isCancelled == true) {
+          await targetSink.close();
+          await targetFile.delete();
+          throw Exception('下载已取消');
+        }
+        targetSink.add(chunk);
+        received += chunk.length;
+        onProgress?.call(received, fileSize);
+      }
+      await targetSink.close();
+      _logger.info('downloadVideo', '本地文件复制完成: $path -> $localPath');
+      return true;
+    } catch (e) {
+      _logger.error('downloadVideo', '本地文件复制失败: $e');
+      rethrow;
     }
   }
 

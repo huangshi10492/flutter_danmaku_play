@@ -17,6 +17,12 @@ abstract class StreamMediaExplorerProvider {
   Map<String, String> get headers;
   String getImageUrl(String itemId, {String tag = 'Primary'});
   Future<String> getStreamUrl(String itemId);
+  Future<bool> downloadVideo(
+    String itemId,
+    String localPath, {
+    void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
+  });
   void dispose();
 }
 
@@ -323,6 +329,35 @@ class JellyfinStreamMediaExplorerProvider
   }
 
   @override
+  Future<bool> downloadVideo(
+    String itemId,
+    String localPath, {
+    void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      final streamUrl = await getStreamUrl(itemId);
+      await dio.download(
+        streamUrl,
+        localPath,
+        onReceiveProgress: onProgress,
+        cancelToken: cancelToken,
+      );
+      _logger.info('downloadVideo', 'Jellyfin下载完成: $itemId -> $localPath');
+      return true;
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel) {
+        return false;
+      }
+      _logger.error('downloadVideo', 'Jellyfin下载失败: $e');
+      rethrow;
+    } catch (e) {
+      _logger.error('downloadVideo', 'Jellyfin下载失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
   void dispose() {}
 }
 
@@ -531,6 +566,36 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
     } catch (e) {
       _logger.error('getEpisodes', '获取集数信息失败', error: e);
       throw Exception('获取集数信息失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<bool> downloadVideo(
+    String itemId,
+    String localPath, {
+    int startFrom = 0,
+    void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      final streamUrl = await getStreamUrl(itemId);
+      await dio.download(
+        streamUrl,
+        localPath,
+        onReceiveProgress: onProgress,
+        cancelToken: cancelToken,
+      );
+      _logger.info('downloadVideo', 'Emby下载完成: $itemId -> $localPath');
+      return true;
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel) {
+        return false;
+      }
+      _logger.error('downloadVideo', 'Emby下载失败: $e');
+      rethrow;
+    } catch (e) {
+      _logger.error('downloadVideo', 'Emby下载失败: $e');
+      rethrow;
     }
   }
 

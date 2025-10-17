@@ -16,6 +16,7 @@ class VideoInfo {
   late String videoName;
   late String name;
   String? subtitle;
+  bool cached = false;
 
   VideoInfo.fromFile({
     required this.currentVideoPath,

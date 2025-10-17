@@ -171,8 +171,18 @@ class VideoPlayerService {
       await _setProperty();
       playerState.value = PlayerState.loading;
       errorMessage.value = null;
-      media = Media(videoInfo.currentVideoPath, httpHeaders: videoInfo.headers);
-      _log.info('initialize', '加载视频: ${videoInfo.currentVideoPath}');
+      if (videoInfo.cached) {
+        final cachePath =
+            '${(await getApplicationSupportDirectory()).path}/offline_cache';
+        media = Media('$cachePath/${videoInfo.uniqueKey}');
+        _log.info('initialize', '加载缓存视频: $cachePath/${videoInfo.uniqueKey}');
+      } else {
+        media = Media(
+          videoInfo.currentVideoPath,
+          httpHeaders: videoInfo.headers,
+        );
+        _log.info('initialize', '加载视频: ${videoInfo.currentVideoPath}');
+      }
       await _player.open(media!, play: false);
       duration = await _player.stream.duration.firstWhere(
         (d) => d != Duration.zero,

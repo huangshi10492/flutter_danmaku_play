@@ -225,3 +225,162 @@ class StorageTypeAdapter extends TypeAdapter<StorageType> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
+
+class OfflineCacheAdapter extends TypeAdapter<OfflineCache> {
+  @override
+  final typeId = 6;
+
+  @override
+  OfflineCache read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return OfflineCache(
+      uniqueKey: fields[0] as String,
+      videoInfo: fields[1] as VideoInfo,
+      content: fields[2] as String,
+      cacheTime: (fields[4] as num).toInt(),
+      fileSize: fields[3] == null ? 0 : (fields[3] as num).toInt(),
+      status:
+          fields[5] == null
+              ? DownloadStatus.downloading
+              : fields[5] as DownloadStatus,
+      downloadedBytes: fields[6] == null ? 0 : (fields[6] as num).toInt(),
+      totalBytes: fields[7] == null ? 0 : (fields[7] as num).toInt(),
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, OfflineCache obj) {
+    writer
+      ..writeByte(8)
+      ..writeByte(0)
+      ..write(obj.uniqueKey)
+      ..writeByte(1)
+      ..write(obj.videoInfo)
+      ..writeByte(2)
+      ..write(obj.content)
+      ..writeByte(3)
+      ..write(obj.fileSize)
+      ..writeByte(4)
+      ..write(obj.cacheTime)
+      ..writeByte(5)
+      ..write(obj.status)
+      ..writeByte(6)
+      ..write(obj.downloadedBytes)
+      ..writeByte(7)
+      ..write(obj.totalBytes);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is OfflineCacheAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class VideoInfoAdapter extends TypeAdapter<VideoInfo> {
+  @override
+  final typeId = 7;
+
+  @override
+  VideoInfo read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return VideoInfo(
+      currentVideoPath: fields[0] as String,
+      virtualVideoPath: fields[1] as String,
+      headers:
+          fields[2] == null
+              ? const {}
+              : (fields[2] as Map).cast<String, String>(),
+      historiesType: fields[3] as HistoriesType,
+      storageKey: fields[4] as String?,
+      videoName: fields[6] as String,
+      name: fields[7] as String,
+      subtitle: fields[8] as String?,
+    )..uniqueKey = fields[5] as String;
+  }
+
+  @override
+  void write(BinaryWriter writer, VideoInfo obj) {
+    writer
+      ..writeByte(9)
+      ..writeByte(0)
+      ..write(obj.currentVideoPath)
+      ..writeByte(1)
+      ..write(obj.virtualVideoPath)
+      ..writeByte(2)
+      ..write(obj.headers)
+      ..writeByte(3)
+      ..write(obj.historiesType)
+      ..writeByte(4)
+      ..write(obj.storageKey)
+      ..writeByte(5)
+      ..write(obj.uniqueKey)
+      ..writeByte(6)
+      ..write(obj.videoName)
+      ..writeByte(7)
+      ..write(obj.name)
+      ..writeByte(8)
+      ..write(obj.subtitle);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VideoInfoAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class DownloadStatusAdapter extends TypeAdapter<DownloadStatus> {
+  @override
+  final typeId = 8;
+
+  @override
+  DownloadStatus read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return DownloadStatus.finished;
+      case 1:
+        return DownloadStatus.downloading;
+      case 2:
+        return DownloadStatus.failed;
+      default:
+        return DownloadStatus.finished;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, DownloadStatus obj) {
+    switch (obj) {
+      case DownloadStatus.finished:
+        writer.writeByte(0);
+      case DownloadStatus.downloading:
+        writer.writeByte(1);
+      case DownloadStatus.failed:
+        writer.writeByte(2);
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DownloadStatusAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}

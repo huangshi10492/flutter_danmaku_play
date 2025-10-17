@@ -2,8 +2,10 @@ import 'package:fldanplay/model/file_item.dart';
 import 'package:fldanplay/model/storage.dart';
 import 'package:fldanplay/router.dart';
 import 'package:fldanplay/service/file_explorer.dart';
+import 'package:fldanplay/service/offline_cache.dart';
 import 'package:fldanplay/service/storage.dart';
 import 'package:fldanplay/service/global.dart';
+import 'package:fldanplay/utils/toast.dart';
 import 'package:fldanplay/widget/sys_app_bar.dart';
 import 'package:fldanplay/widget/video_item.dart';
 import 'package:flutter/material.dart';
@@ -83,6 +85,12 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
       final location = Uri(path: videoPlayerPath);
       context.push(location.toString(), extra: videoInfo);
     }
+  }
+
+  void _handleOfflineDownload(String path, int index) async {
+    final videoInfo = await _fileExplorerService.getVideoInfo(index, path);
+    GetIt.I.get<OfflineCacheService>().startDownload(videoInfo);
+    if (mounted) showToast(context, title: '${videoInfo.name}已加入离线缓存');
   }
 
   Future<void> _refresh() async {
@@ -265,6 +273,8 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
           refreshKey: refreshKey,
           history: file.history,
           name: file.name,
+          onOfflineDownload:
+              () => _handleOfflineDownload(file.path, file.videoIndex),
           onPress: () => _playVideo(file.path, file.videoIndex),
         ),
       );
