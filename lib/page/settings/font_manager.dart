@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:fldanplay/service/configure.dart';
 import 'package:fldanplay/utils/toast.dart';
+import 'package:fldanplay/widget/settings/settings_scaffold.dart';
 import 'package:fldanplay/widget/settings/settings_section.dart';
 import 'package:fldanplay/widget/settings/settings_tile.dart';
-import 'package:fldanplay/widget/sys_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:get_it/get_it.dart';
@@ -229,61 +229,54 @@ class _FontManagerPageState extends State<FontManagerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: SysAppBar(title: '字体管理'),
-      body: Padding(
-        padding: context.theme.scaffoldStyle.childPadding,
-        child: SingleChildScrollView(
-          child: SafeArea(
-            child: Watch((context) {
-              final currentFont = _configureService.subtitleFontName.value;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SettingsSection(
-                    title: '当前字体',
-                    children: [
-                      SettingsTile.simpleTile(
-                        title: '当前选择的字体',
-                        subtitle: currentFont.isEmpty ? '未选择字体' : currentFont,
-                      ),
-                      SettingsTile.simpleTile(
-                        title: '重置为系统默认字体',
-                        subtitle: '点击重置为系统默认字体',
-                        onPress: () {
-                          _configureService.subtitleFontName.value = '';
-                        },
-                      ),
-                    ],
+    return SettingsScaffold(
+      title: '字体管理',
+      child: Watch((context) {
+        final currentFont = _configureService.subtitleFontName.value;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SettingsSection(
+              title: '当前字体',
+              children: [
+                SettingsTile.simpleTile(
+                  title: '当前选择的字体',
+                  subtitle: currentFont.isEmpty ? '未选择字体' : currentFont,
+                ),
+                SettingsTile.simpleTile(
+                  title: '重置为系统默认字体',
+                  subtitle: '点击重置为系统默认字体',
+                  onPress: () {
+                    _configureService.subtitleFontName.value = '';
+                  },
+                ),
+              ],
+            ),
+            SettingsSection(
+              title: '字体预设',
+              children: [
+                ..._fontPresets.map(
+                  (font) => SettingsTile.simpleTile(
+                    title: font['name']!,
+                    subtitle: '点击下载并使用此字体',
+                    onPress: () => _downloadAndSelectFont(font),
                   ),
-                  SettingsSection(
-                    title: '字体预设',
-                    children: [
-                      ..._fontPresets.map(
-                        (font) => SettingsTile.simpleTile(
-                          title: font['name']!,
-                          subtitle: '点击下载并使用此字体',
-                          onPress: () => _downloadAndSelectFont(font),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SettingsSection(
-                    title: '本地字体',
-                    children: [
-                      SettingsTile.simpleTile(
-                        title: '选择本地字体文件',
-                        subtitle: '支持 TTF 和 OTF 格式',
-                        onPress: _selectLocalFont,
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            }),
-          ),
-        ),
-      ),
+                ),
+              ],
+            ),
+            SettingsSection(
+              title: '本地字体',
+              children: [
+                SettingsTile.simpleTile(
+                  title: '选择本地字体文件',
+                  subtitle: '支持 TTF 和 OTF 格式',
+                  onPress: _selectLocalFont,
+                ),
+              ],
+            ),
+          ],
+        );
+      }),
     );
   }
 }

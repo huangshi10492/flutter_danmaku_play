@@ -6,7 +6,7 @@ import 'package:fldanplay/page/history.dart';
 import 'package:fldanplay/page/offline_cache.dart';
 import 'package:fldanplay/page/player/player.dart';
 import 'package:fldanplay/page/root.dart';
-import 'package:fldanplay/page/settings/appearance_settings.dart';
+import 'package:fldanplay/page/settings/general_settings.dart';
 import 'package:fldanplay/page/settings/danmaku_settings.dart';
 import 'package:fldanplay/page/settings/log_page.dart';
 import 'package:fldanplay/page/settings/log_view.dart';
@@ -51,6 +51,14 @@ final router = GoRouter(
           ),
       routes: [
         GoRoute(
+          path: 'general',
+          pageBuilder:
+              (context, state) => SlideAndExitTransitionPage(
+                key: state.pageKey,
+                child: const GeneralSettingsPage(),
+              ),
+        ),
+        GoRoute(
           path: 'player',
           pageBuilder:
               (context, state) => SlideAndExitTransitionPage(
@@ -82,14 +90,6 @@ final router = GoRouter(
               (context, state) => SlideAndExitTransitionPage(
                 key: state.pageKey,
                 child: const FontManagerPage(),
-              ),
-        ),
-        GoRoute(
-          path: 'appearance',
-          pageBuilder:
-              (context, state) => SlideAndExitTransitionPage(
-                key: state.pageKey,
-                child: const AppearanceSettingsPage(),
               ),
         ),
         GoRoute(

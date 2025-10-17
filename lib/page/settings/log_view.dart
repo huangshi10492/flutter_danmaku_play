@@ -34,6 +34,7 @@ class LogViewPage extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: SafeArea(
+          minimum: const EdgeInsets.only(bottom: 8),
           child: Padding(
             padding: context.theme.scaffoldStyle.childPadding,
             child: SelectableText(file.readAsStringSync()),

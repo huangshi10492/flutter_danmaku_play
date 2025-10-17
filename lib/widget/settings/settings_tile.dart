@@ -165,7 +165,11 @@ class SettingsTile extends StatelessWidget with FTileMixin {
             Text(title, maxLines: 2),
             subtitle == null
                 ? SizedBox()
-                : Text(subtitle!, style: subtitleStyle),
+                : Text(
+                  subtitle!,
+                  style: subtitleStyle,
+                  overflow: TextOverflow.visible,
+                ),
           ],
         ),
       ),
@@ -194,7 +198,11 @@ class SettingsTile extends StatelessWidget with FTileMixin {
             Text(title),
             subtitle == null
                 ? SizedBox()
-                : Text(subtitle!, style: subtitleStyle),
+                : Text(
+                  subtitle!,
+                  style: subtitleStyle,
+                  overflow: TextOverflow.visible,
+                ),
           ],
         ),
       ),
@@ -239,7 +247,11 @@ class SettingsTile extends StatelessWidget with FTileMixin {
             ),
             subtitle == null || subtitle == ''
                 ? SizedBox()
-                : Text(subtitle!, style: subtitleStyle),
+                : Text(
+                  subtitle!,
+                  style: subtitleStyle,
+                  overflow: TextOverflow.visible,
+                ),
           ],
         ),
       ),
@@ -259,7 +271,10 @@ class SettingsTile extends StatelessWidget with FTileMixin {
           ).call,
       title: Text(title),
       initialValue: radioValue,
-      subtitle: subtitle == null ? null : Text(subtitle!),
+      subtitle:
+          subtitle == null
+              ? null
+              : Text(subtitle!, overflow: TextOverflow.visible),
       details: ConstrainedBox(
         constraints: BoxConstraints(minHeight: 40),
         child: Column(

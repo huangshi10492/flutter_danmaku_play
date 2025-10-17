@@ -13,20 +13,27 @@ class SettingsPage extends StatelessWidget {
       appBar: SysAppBar(title: '设置'),
       body: SingleChildScrollView(
         child: SafeArea(
+          minimum: const EdgeInsets.only(bottom: 8),
           child: FItemGroup(
             style: settingsItemGroupStyle,
             divider: FItemDivider.indented,
             children: [
               FItem(
+                prefix: const Icon(FIcons.settings, size: 24),
+                title: const Text('通用'),
+                subtitle: const Text('界面、播放缓存优先度'),
+                onPress: () => context.push('/settings/general'),
+              ),
+              FItem(
                 prefix: const Icon(FIcons.video, size: 24),
                 title: const Text('播放器'),
-                subtitle: const Text('设置播放器的相关参数'),
+                subtitle: const Text('播放速度、解码、字幕语言'),
                 onPress: () => context.push('/settings/player'),
               ),
               FItem(
                 prefix: const Icon(FIcons.captions, size: 24),
                 title: const Text('弹幕'),
-                subtitle: const Text('设置弹幕相关参数'),
+                subtitle: const Text('弹幕服务配置'),
                 onPress: () => context.push('/settings/danmaku'),
               ),
               FItem(
@@ -34,12 +41,6 @@ class SettingsPage extends StatelessWidget {
                 title: const Text('字体'),
                 subtitle: const Text('管理视频字幕字体'),
                 onPress: () => context.push('/settings/font'),
-              ),
-              FItem(
-                prefix: const Icon(FIcons.palette, size: 24),
-                title: const Text('界面'),
-                subtitle: const Text('设置应用主题'),
-                onPress: () => context.push('/settings/appearance'),
               ),
               FItem(
                 prefix: const Icon(FIcons.cloud, size: 24),
@@ -50,7 +51,7 @@ class SettingsPage extends StatelessWidget {
               FItem(
                 prefix: const Icon(FIcons.logs, size: 24),
                 title: const Text('日志'),
-                subtitle: const Text('设置日志级别和导出日志'),
+                subtitle: const Text('设置日志级别、导出日志'),
                 onPress: () => context.push('/settings/log'),
               ),
             ],

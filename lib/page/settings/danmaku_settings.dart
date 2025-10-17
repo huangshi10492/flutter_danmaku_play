@@ -1,7 +1,7 @@
 import 'package:fldanplay/service/configure.dart';
+import 'package:fldanplay/widget/settings/settings_scaffold.dart';
 import 'package:fldanplay/widget/settings/settings_section.dart';
 import 'package:fldanplay/widget/settings/settings_tile.dart';
-import 'package:fldanplay/widget/sys_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:get_it/get_it.dart';
@@ -47,59 +47,52 @@ class DanmakuSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final configure = GetIt.I<ConfigureService>();
-    return Scaffold(
-      appBar: SysAppBar(title: '弹幕设置'),
-      body: Padding(
-        padding: context.theme.scaffoldStyle.childPadding,
-        child: SingleChildScrollView(
-          child: SafeArea(
-            child: Watch((context) {
-              return Column(
-                children: [
-                  SettingsSection(
-                    title: '弹幕',
-                    children: [
-                      SettingsTile.switchTile(
-                        title: '默认启用弹幕',
-                        switchValue: configure.defaultDanmakuEnable.value,
-                        onBoolChange: (value) {
-                          configure.defaultDanmakuEnable.value = value;
-                        },
-                      ),
-                    ],
-                  ),
-                  SettingsSection(
-                    title: '弹幕服务',
-                    children: [
-                      SettingsTile.switchTile(
-                        title: '启用弹幕服务',
-                        switchValue: configure.danmakuServiceEnable.value,
-                        onBoolChange: (value) {
-                          configure.danmakuServiceEnable.value = value;
-                        },
-                      ),
-                      //地址
-                      SettingsTile.navigationTile(
+    return SettingsScaffold(
+      title: '弹幕设置',
+      child: Watch((context) {
+        return Column(
+          children: [
+            SettingsSection(
+              title: '弹幕',
+              children: [
+                SettingsTile.switchTile(
+                  title: '默认启用弹幕',
+                  switchValue: configure.defaultDanmakuEnable.value,
+                  onBoolChange: (value) {
+                    configure.defaultDanmakuEnable.value = value;
+                  },
+                ),
+              ],
+            ),
+            SettingsSection(
+              title: '弹幕服务',
+              children: [
+                SettingsTile.switchTile(
+                  title: '启用弹幕服务',
+                  switchValue: configure.danmakuServiceEnable.value,
+                  onBoolChange: (value) {
+                    configure.danmakuServiceEnable.value = value;
+                  },
+                ),
+                //地址
+                SettingsTile.navigationTile(
+                  title: '弹幕服务地址',
+                  subtitle: configure.danmakuServiceUrl.value,
+                  onPress:
+                      () => _showInputDialog(
+                        context: context,
                         title: '弹幕服务地址',
-                        subtitle: configure.danmakuServiceUrl.value,
-                        onPress:
-                            () => _showInputDialog(
-                              context: context,
-                              title: '弹幕服务地址',
-                              currentValue: configure.danmakuServiceUrl.value,
-                              onSave:
-                                  (value) =>
-                                      configure.danmakuServiceUrl.value = value,
-                            ),
+                        currentValue: configure.danmakuServiceUrl.value,
+                        onSave:
+                            (value) =>
+                                configure.danmakuServiceUrl.value = value,
                       ),
-                    ],
-                  ),
-                ],
-              );
-            }),
-          ),
-        ),
-      ),
+                ),
+              ],
+            ),
+          ],
+        );
+      }),
     );
   }
 }

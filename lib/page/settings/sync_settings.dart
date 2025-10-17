@@ -1,9 +1,9 @@
 import 'package:fldanplay/service/configure.dart';
 import 'package:fldanplay/service/webdav_sync.dart';
 import 'package:fldanplay/utils/toast.dart';
+import 'package:fldanplay/widget/settings/settings_scaffold.dart';
 import 'package:fldanplay/widget/settings/settings_section.dart';
 import 'package:fldanplay/widget/settings/settings_tile.dart';
-import 'package:fldanplay/widget/sys_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:get_it/get_it.dart';
@@ -86,108 +86,96 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
     final configure = GetIt.I<ConfigureService>();
     final sync = GetIt.I<WebDAVSyncService>();
 
-    return Scaffold(
-      appBar: SysAppBar(title: '同步设置'),
-      body: Padding(
-        padding: context.theme.scaffoldStyle.childPadding,
-        child: SingleChildScrollView(
-          child: SafeArea(
-            child: Column(
-              children: [
-                SettingsSection(
-                  children: [
-                    Watch((context) {
-                      return SettingsTile.switchTile(
-                        title: '启用 WebDAV 同步',
-                        switchValue: configure.syncEnable.value,
-                        onBoolChange: (value) {
-                          configure.syncEnable.value = value;
-                        },
-                      );
-                    }),
-                  ],
-                ),
-                SettingsSection(
-                  title: '服务器信息',
-                  children: [
-                    Watch((context) {
-                      return SettingsTile.simpleTile(
-                        title: 'Webdav地址',
-                        subtitle: configure.webDavURL.value,
-                        onPress: () {
-                          _showInputDialog(
-                            context: context,
-                            title: 'Webdav地址',
-                            currentValue: configure.webDavURL.value,
-                            onSave:
-                                (value) => configure.webDavURL.value = value,
-                          );
-                        },
-                      );
-                    }),
-                    Watch((context) {
-                      return SettingsTile.simpleTile(
-                        title: 'Webdav用户名',
-                        subtitle: configure.webDavUsername.value,
-                        onPress: () {
-                          _showInputDialog(
-                            context: context,
-                            title: 'Webdav用户名',
-                            currentValue: configure.webDavUsername.value,
-                            onSave:
-                                (value) =>
-                                    configure.webDavUsername.value = value,
-                          );
-                        },
-                      );
-                    }),
-                    Watch((context) {
-                      return SettingsTile.simpleTile(
-                        title: 'Webdav密码',
-                        onPress: () {
-                          _showInputDialog(
-                            context: context,
-                            title: 'Webdav密码',
-                            password: true,
-                            currentValue: configure.webDavPassword.value,
-                            onSave:
-                                (value) =>
-                                    configure.webDavPassword.value = value,
-                          );
-                        },
-                      );
-                    }),
-                  ],
-                ),
-                SettingsSection(
-                  title: '同步操作',
-                  children: [
-                    SettingsTile.navigationTile(
-                      title: '测试连接',
-                      subtitle: '测试WebDAV服务器连接',
-                      onPress: _testConnection,
-                    ),
-                    SettingsTile.navigationTile(
-                      title: '立即同步',
-                      subtitle: '同步播放历史记录',
-                      onPress: sync.syncHistories,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Watch((context) {
-                  return FAlert(
-                    title: Text(_getSyncStatusText(sync.syncStatus.value)),
-                    subtitle: Text(
-                      sync.syncMessage.value ?? '准备同步...',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  );
-                }),
-              ],
-            ),
+    return SettingsScaffold(
+      title: '同步设置',
+      child: Column(
+        children: [
+          SettingsSection(
+            children: [
+              Watch((context) {
+                return SettingsTile.switchTile(
+                  title: '启用 WebDAV 同步',
+                  switchValue: configure.syncEnable.value,
+                  onBoolChange: (value) {
+                    configure.syncEnable.value = value;
+                  },
+                );
+              }),
+            ],
           ),
-        ),
+          SettingsSection(
+            title: '服务器信息',
+            children: [
+              Watch((context) {
+                return SettingsTile.simpleTile(
+                  title: 'Webdav地址',
+                  subtitle: configure.webDavURL.value,
+                  onPress: () {
+                    _showInputDialog(
+                      context: context,
+                      title: 'Webdav地址',
+                      currentValue: configure.webDavURL.value,
+                      onSave: (value) => configure.webDavURL.value = value,
+                    );
+                  },
+                );
+              }),
+              Watch((context) {
+                return SettingsTile.simpleTile(
+                  title: 'Webdav用户名',
+                  subtitle: configure.webDavUsername.value,
+                  onPress: () {
+                    _showInputDialog(
+                      context: context,
+                      title: 'Webdav用户名',
+                      currentValue: configure.webDavUsername.value,
+                      onSave: (value) => configure.webDavUsername.value = value,
+                    );
+                  },
+                );
+              }),
+              Watch((context) {
+                return SettingsTile.simpleTile(
+                  title: 'Webdav密码',
+                  onPress: () {
+                    _showInputDialog(
+                      context: context,
+                      title: 'Webdav密码',
+                      password: true,
+                      currentValue: configure.webDavPassword.value,
+                      onSave: (value) => configure.webDavPassword.value = value,
+                    );
+                  },
+                );
+              }),
+            ],
+          ),
+          SettingsSection(
+            title: '同步操作',
+            children: [
+              SettingsTile.navigationTile(
+                title: '测试连接',
+                subtitle: '测试WebDAV服务器连接',
+                onPress: _testConnection,
+              ),
+              SettingsTile.navigationTile(
+                title: '立即同步',
+                subtitle: '同步播放历史记录',
+                onPress: sync.syncHistories,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Watch((context) {
+            return FAlert(
+              title: Text(_getSyncStatusText(sync.syncStatus.value)),
+              subtitle: Text(
+                sync.syncMessage.value ?? '准备同步...',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
