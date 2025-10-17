@@ -44,9 +44,11 @@ class ConfigureService {
   late final Signal<String> themeMode = Signal(
     _box.get('themeMode', defaultValue: '0'),
   );
-
   late final Signal<String> themeColor = Signal(
     _box.get('themeColor', defaultValue: 'blue'),
+  );
+  late final Signal<bool> offlineCacheFirst = Signal(
+    _box.get('offlineCacheEnable', defaultValue: true),
   );
   late final Signal<bool> syncEnable = Signal(
     _box.get('syncEnable', defaultValue: false),
@@ -63,8 +65,7 @@ class ConfigureService {
       defaultValue: 'https://danmaku.huangshi10492.top/huangshi10492',
     ),
   );
-
-  /// 日志级别配置 (0: DEBUG, 1: INFO, 2: WARNING, 3: ERROR)
+  // 日志级别配置 (0: DEBUG, 1: INFO, 2: WARNING, 3: ERROR)
   late final Signal<String> logLevel = Signal(
     _box.get('logLevel', defaultValue: '1'), // 默认为INFO级别
   );
@@ -77,12 +78,10 @@ class ConfigureService {
   late final Signal<String> webDavPassword = Signal(
     _box.get('webDavPassword', defaultValue: ''),
   );
-
   // 数据库文件最后更新时间
   late final Signal<int> lastSyncTime = Signal(
     _box.get('lastSyncTime', defaultValue: 0),
   );
-
   // 字幕字体名称
   late final Signal<String> subtitleFontName = Signal(
     _box.get('subtitleFontName', defaultValue: ''),
@@ -90,7 +89,6 @@ class ConfigureService {
 
   ConfigureService._(this._box);
 
-  /// 注册配置服务到依赖注入容器
   static Future<ConfigureService> register() async {
     Box box = await Hive.openBox('configure');
     var service = ConfigureService._(box);
@@ -135,6 +133,9 @@ class ConfigureService {
     });
     effect(() {
       _box.put('themeColor', themeColor.value);
+    });
+    effect(() {
+      _box.put('offlineCacheFirst', offlineCacheFirst.value);
     });
     effect(() {
       _box.put('syncEnable', syncEnable.value);

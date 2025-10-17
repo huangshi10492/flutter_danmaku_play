@@ -13,23 +13,21 @@ class GeneralSettingsPage extends StatelessWidget {
     final configure = GetIt.I<ConfigureService>();
     return SettingsScaffold(
       title: '通用设置',
-      child: Column(
-        children: [
-          SettingsSection(
-            title: '主题',
-            children: [
-              Watch((context) {
-                return SettingsTile.radioTile(
+      child: Watch((context) {
+        return Column(
+          children: [
+            SettingsSection(
+              title: '主题',
+              children: [
+                SettingsTile.radioTile(
                   title: '主题模式',
                   radioValue: configure.themeMode.value,
                   onRadioChange: (value) {
                     configure.themeMode.value = value;
                   },
                   radioOptions: {'跟随系统': '0', '浅色模式': '1', '深色模式': '2'},
-                );
-              }),
-              Watch((context) {
-                return SettingsTile.radioTile(
+                ),
+                SettingsTile.radioTile(
                   title: '主题颜色',
                   radioValue: configure.themeColor.value,
                   onRadioChange: (value) {
@@ -46,12 +44,25 @@ class GeneralSettingsPage extends StatelessWidget {
                     '黄色': 'yellow',
                     '紫色': 'violet',
                   },
-                );
-              }),
-            ],
-          ),
-        ],
-      ),
+                ),
+              ],
+            ),
+            SettingsSection(
+              title: '缓存',
+              children: [
+                SettingsTile.switchTile(
+                  title: '优先使用离线缓存',
+                  subtitle: '开启后，优先使用离线缓存播放视频',
+                  switchValue: configure.offlineCacheFirst.value,
+                  onBoolChange: (value) {
+                    configure.offlineCacheFirst.value = value;
+                  },
+                ),
+              ],
+            ),
+          ],
+        );
+      }),
     );
   }
 }

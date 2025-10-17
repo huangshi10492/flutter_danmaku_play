@@ -1,6 +1,7 @@
 import 'package:fldanplay/model/file_item.dart';
 import 'package:fldanplay/model/storage.dart';
 import 'package:fldanplay/router.dart';
+import 'package:fldanplay/service/configure.dart';
 import 'package:fldanplay/service/file_explorer.dart';
 import 'package:fldanplay/service/offline_cache.dart';
 import 'package:fldanplay/service/storage.dart';
@@ -26,6 +27,8 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
   Storage? _storage;
   final FileExplorerService _fileExplorerService =
       GetIt.I.get<FileExplorerService>();
+  final OfflineCacheService _offlineCacheService =
+      GetIt.I.get<OfflineCacheService>();
   final ScrollController _scrollController = ScrollController();
   final Map<String, int> _refreshMap = {};
 
@@ -81,6 +84,9 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
 
   void _playVideo(String path, int index) async {
     final videoInfo = await _fileExplorerService.getVideoInfo(index, path);
+    if (GetIt.I.get<ConfigureService>().offlineCacheFirst.value) {
+      videoInfo.cached = _offlineCacheService.isCached(videoInfo.uniqueKey);
+    }
     if (mounted) {
       final location = Uri(path: videoPlayerPath);
       context.push(location.toString(), extra: videoInfo);
@@ -89,7 +95,7 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
 
   void _handleOfflineDownload(String path, int index) async {
     final videoInfo = await _fileExplorerService.getVideoInfo(index, path);
-    GetIt.I.get<OfflineCacheService>().startDownload(videoInfo);
+    _offlineCacheService.startDownload(videoInfo);
     if (mounted) showToast(context, title: '${videoInfo.name}已加入离线缓存');
   }
 

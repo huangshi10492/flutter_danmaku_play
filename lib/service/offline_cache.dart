@@ -53,6 +53,11 @@ class OfflineCacheService {
     _logger.info('init', '离线缓存服务初始化完成');
   }
 
+  bool isCached(String uniqueKey) {
+    final cache = _cacheBox.get(uniqueKey);
+    return cache != null && cache.status == DownloadStatus.finished;
+  }
+
   Future<void> startDownload(VideoInfo videoInfo) async {
     final uniqueKey = videoInfo.uniqueKey;
     if (_cacheBox.containsKey(uniqueKey)) {

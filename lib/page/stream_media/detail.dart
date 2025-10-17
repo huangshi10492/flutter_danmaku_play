@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:fldanplay/model/stream_media.dart';
 import 'package:fldanplay/router.dart';
+import 'package:fldanplay/service/configure.dart';
 import 'package:fldanplay/service/global.dart';
 import 'package:fldanplay/service/history.dart';
 import 'package:fldanplay/service/offline_cache.dart';
@@ -28,7 +29,10 @@ class StreamMediaDetailPage extends StatefulWidget {
 
 class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
     with TickerProviderStateMixin {
-  late final StreamMediaExplorerService _service;
+  final StreamMediaExplorerService _service =
+      GetIt.I.get<StreamMediaExplorerService>();
+  final OfflineCacheService _offlineCacheService =
+      GetIt.I.get<OfflineCacheService>();
   final _historyService = GetIt.I.get<HistoryService>();
   late TabController _tabController;
   MediaDetail? _mediaDetail;
@@ -39,7 +43,6 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
   @override
   void initState() {
     super.initState();
-    _service = GetIt.I.get<StreamMediaExplorerService>();
     _tabController = TabController(length: 0, vsync: this);
     _loadMediaDetail();
     GetIt.I.get<GlobalService>().updateListener = refreshItem;
@@ -668,6 +671,11 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
         try {
           _service.setVideoList(season);
           final videoInfo = await _service.getVideoInfo(index);
+          if (GetIt.I.get<ConfigureService>().offlineCacheFirst.value) {
+            videoInfo.cached = _offlineCacheService.isCached(
+              videoInfo.uniqueKey,
+            );
+          }
           if (mounted) {
             final location = Uri(path: videoPlayerPath);
             this.context.push(location.toString(), extra: videoInfo);
