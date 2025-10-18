@@ -79,7 +79,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 style: FButtonStyle.destructive(),
                 onPress: () {
                   Navigator.pop(context);
-                  history.delete();
+                  _historyService.delete(history: history);
                 },
                 child: const Text('删除'),
               ),

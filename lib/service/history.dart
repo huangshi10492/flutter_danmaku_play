@@ -5,6 +5,7 @@ import 'package:fldanplay/utils/log.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:synchronized/synchronized.dart';
 import '../model/history.dart';
 import '../utils/crypto_utils.dart';
@@ -116,11 +117,31 @@ class HistoryService {
       final exist = remoteBox.containsKey(history.uniqueKey);
       if (!exist) {
         if (history.updateTime < lastSyncTime) {
-          history.delete();
+          await delete(history: history);
         }
       }
     }
     await remoteBox.close();
     _logger.info('merge', '合并历史记录完成');
+  }
+
+  Future<void> delete({String? uniqueKey, History? history}) async {
+    history ??= getHistory(uniqueKey!);
+    if (history != null) {
+      final documentsDir = await getApplicationSupportDirectory();
+      final screenshotFile = File(
+        '${documentsDir.path}/screenshots/${history.uniqueKey}',
+      );
+      if (await screenshotFile.exists()) {
+        await screenshotFile.delete();
+      }
+      final danmakuFile = File(
+        '${documentsDir.path}/danmaku/${history.uniqueKey}.json',
+      );
+      if (await danmakuFile.exists()) {
+        await danmakuFile.delete();
+      }
+      await history.delete();
+    }
   }
 }
