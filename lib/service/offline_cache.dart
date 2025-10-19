@@ -58,6 +58,10 @@ class OfflineCacheService {
     return cache != null && cache.status == DownloadStatus.finished;
   }
 
+  OfflineCache? getCache(String uniqueKey) {
+    return _cacheBox.get(uniqueKey);
+  }
+
   Future<void> startDownload(VideoInfo videoInfo) async {
     final uniqueKey = videoInfo.uniqueKey;
     if (_cacheBox.containsKey(uniqueKey)) {

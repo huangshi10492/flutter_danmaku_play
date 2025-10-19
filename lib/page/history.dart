@@ -1,8 +1,10 @@
 import 'package:fldanplay/model/stream_media.dart';
 import 'package:fldanplay/model/video_info.dart';
 import 'package:fldanplay/router.dart';
+import 'package:fldanplay/service/configure.dart';
 import 'package:fldanplay/service/file_explorer.dart';
 import 'package:fldanplay/service/history.dart';
+import 'package:fldanplay/service/offline_cache.dart';
 import 'package:fldanplay/service/storage.dart';
 import 'package:fldanplay/service/global.dart';
 import 'package:fldanplay/service/stream_media_explorer.dart';
@@ -132,6 +134,20 @@ class _HistoryPageState extends State<HistoryPage> {
         return;
       }
       late VideoInfo videoInfo;
+      if (GetIt.I.get<ConfigureService>().offlineCacheFirst.value) {
+        final cache = GetIt.I.get<OfflineCacheService>().getCache(
+          history.uniqueKey,
+        );
+        if (cache != null) {
+          videoInfo = cache.videoInfo;
+          videoInfo.cached = true;
+          if (mounted) {
+            final location = Uri(path: videoPlayerPath);
+            context.push(location.toString(), extra: videoInfo);
+          }
+          return;
+        }
+      }
       switch (history.type) {
         case HistoriesType.fileStorage:
           final storageKey = history.storageKey;
