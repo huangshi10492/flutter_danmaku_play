@@ -395,3 +395,17 @@ class DanmakuFile {
     return DanmakuFile.fromJson(jsonDecode(jsonString));
   }
 }
+
+class DanmakuMatchResult {
+  final int animeId;
+  final int episodeId;
+  final String animeTitle;
+  final String episodeTitle;
+
+  DanmakuMatchResult({
+    required this.animeId,
+    required this.episodeId,
+    required this.animeTitle,
+    required this.episodeTitle,
+  });
+}

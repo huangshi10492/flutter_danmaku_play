@@ -16,7 +16,7 @@ abstract class StreamMediaExplorerProvider {
   Future<MediaDetail> getMediaDetail(String itemId);
   Map<String, String> get headers;
   String getImageUrl(String itemId, {String tag = 'Primary'});
-  Future<String> getStreamUrl(String itemId);
+  String getStreamUrl(String itemId);
   Future<bool> downloadVideo(
     String itemId,
     String localPath, {
@@ -78,9 +78,9 @@ class StreamMediaExplorerService {
     episodeList = seasonInfo.episodes;
   }
 
-  Future<VideoInfo> getVideoInfo(int index) async {
+  VideoInfo getVideoInfo(int index) {
     final episode = episodeList[index];
-    final playbackUrl = await getPlaybackUrl(episode.id);
+    final playbackUrl = getPlaybackUrl(episode.id);
     return VideoInfo(
       currentVideoPath: playbackUrl,
       virtualVideoPath: episode.id,
@@ -95,8 +95,8 @@ class StreamMediaExplorerService {
     );
   }
 
-  Future<VideoInfo> getVideoInfoFromHistory(History history) async {
-    final playbackUrl = await getPlaybackUrl(history.url!);
+  VideoInfo getVideoInfoFromHistory(History history) {
+    final playbackUrl = getPlaybackUrl(history.url!);
     return VideoInfo(
       currentVideoPath: playbackUrl,
       virtualVideoPath: history.url!,
@@ -112,7 +112,7 @@ class StreamMediaExplorerService {
     return provider.getImageUrl(itemId, tag: tag);
   }
 
-  Future<String> getPlaybackUrl(String itemId) async {
+  String getPlaybackUrl(String itemId) {
     return provider.getStreamUrl(itemId);
   }
 
@@ -179,7 +179,7 @@ class JellyfinStreamMediaExplorerProvider
   }
 
   @override
-  Future<String> getStreamUrl(String itemId) async {
+  String getStreamUrl(String itemId) {
     return '$url/Videos/$itemId/stream?static=true';
   }
 
@@ -336,7 +336,7 @@ class JellyfinStreamMediaExplorerProvider
     CancelToken? cancelToken,
   }) async {
     try {
-      final streamUrl = await getStreamUrl(itemId);
+      final streamUrl = getStreamUrl(itemId);
       await dio.download(
         streamUrl,
         localPath,
@@ -418,7 +418,7 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
   }
 
   @override
-  Future<String> getStreamUrl(String itemId) async {
+  String getStreamUrl(String itemId) {
     return '$url/Videos/$itemId/stream?static=true&api_key=${userInfo.token}';
   }
 
@@ -578,7 +578,7 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
     CancelToken? cancelToken,
   }) async {
     try {
-      final streamUrl = await getStreamUrl(itemId);
+      final streamUrl = getStreamUrl(itemId);
       await dio.download(
         streamUrl,
         localPath,

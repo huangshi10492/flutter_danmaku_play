@@ -9,6 +9,7 @@ import 'package:fldanplay/service/offline_cache.dart';
 import 'package:fldanplay/service/stream_media_explorer.dart';
 import 'package:fldanplay/utils/crypto_utils.dart';
 import 'package:fldanplay/utils/toast.dart';
+import 'package:fldanplay/widget/danmaku_match_dialog.dart';
 import 'package:fldanplay/widget/network_image.dart';
 import 'package:fldanplay/widget/rating_bar.dart';
 import 'package:fldanplay/widget/video_item.dart';
@@ -659,18 +660,22 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
       headers: _service.provider.headers,
       name: '${episode.indexNumber}. ${episode.name}',
       history: _historyService.getHistoryByPath(episode.id),
-      onOfflineDownload: () async {
+      onOfflineDownload: () {
         _service.setVideoList(season);
-        final videoInfo = await _service.getVideoInfo(index);
+        final videoInfo = _service.getVideoInfo(index);
         GetIt.I.get<OfflineCacheService>().startDownload(videoInfo);
         if (context.mounted) {
           showToast(context, title: '${videoInfo.name}已加入离线缓存');
         }
       },
-      onPress: () async {
+      danmakuMatchDialog: DanmakuMatchDialog(
+        uniqueKey: uniqueKey,
+        fileName: '${episode.seriesName} ${episode.indexNumber}',
+      ),
+      onPress: () {
         try {
           _service.setVideoList(season);
-          final videoInfo = await _service.getVideoInfo(index);
+          final videoInfo = _service.getVideoInfo(index);
           if (GetIt.I.get<ConfigureService>().offlineCacheFirst.value) {
             videoInfo.cached = _offlineCacheService.isCached(
               videoInfo.uniqueKey,

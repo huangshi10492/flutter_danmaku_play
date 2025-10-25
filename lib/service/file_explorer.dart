@@ -96,7 +96,7 @@ class FileExplorerService {
     return getVideoInfo(list[index].videoIndex, list[index].path);
   }
 
-  Future<VideoInfo> getVideoInfo(int index, String path) async {
+  VideoInfo getVideoInfo(int index, String path) {
     final videoPath = provider.value!.getVideoUrl(path);
     final headers = provider.value!.headers;
     return VideoInfo.fromFile(

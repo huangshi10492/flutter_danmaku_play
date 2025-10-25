@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fldanplay/utils/utils.dart';
+import 'package:fldanplay/widget/danmaku_match_dialog.dart';
 import 'package:fldanplay/widget/network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
@@ -35,6 +36,7 @@ class VideoItem extends StatefulWidget with FItemMixin {
   final String? imageUrl;
   final Map<String, String>? headers;
   final Function()? onOfflineDownload;
+  final DanmakuMatchDialog? danmakuMatchDialog;
   const VideoItem({
     super.key,
     required this.history,
@@ -45,6 +47,7 @@ class VideoItem extends StatefulWidget with FItemMixin {
     this.imageUrl,
     this.headers,
     this.onOfflineDownload,
+    this.danmakuMatchDialog,
   });
   @override
   State<VideoItem> createState() => _VideoItemState();
@@ -104,6 +107,25 @@ class _VideoItemState extends State<VideoItem> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildDanmakuIcon() {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.theme.colors.primary,
+        borderRadius: BorderRadius.circular(2),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+      margin: EdgeInsets.only(top: 2, right: 2),
+      child: Text(
+        '弹',
+        style: TextStyle(
+          fontSize: 8,
+          fontWeight: FontWeight.bold,
+          color: context.theme.colors.primaryForeground,
+        ),
+      ),
     );
   }
 
@@ -196,6 +218,15 @@ class _VideoItemState extends State<VideoItem> {
         .resolve({});
     return _PopoverMenu(
       download: widget.onOfflineDownload ?? () {},
+      matchDanmaku: () {
+        if (widget.danmakuMatchDialog == null) return;
+        showFDialog(
+          context: context,
+          builder:
+              (context, style, animation) =>
+                  FDialog(actions: [], body: widget.danmakuMatchDialog!),
+        );
+      },
       child:
           (controller) => FItem(
             prefix: SizedBox(
@@ -265,30 +296,7 @@ class _VideoItemState extends State<VideoItem> {
                             children: [
                               Row(
                                 children: [
-                                  if (_hasDanmaku)
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: context.theme.colors.primary,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 3,
-                                        vertical: 1,
-                                      ),
-                                      margin: EdgeInsets.only(top: 2, right: 2),
-                                      child: Text(
-                                        '弹',
-                                        style: TextStyle(
-                                          fontSize: 8,
-                                          fontWeight: FontWeight.bold,
-                                          color:
-                                              context
-                                                  .theme
-                                                  .colors
-                                                  .primaryForeground,
-                                        ),
-                                      ),
-                                    ),
+                                  if (_hasDanmaku) _buildDanmakuIcon(),
                                   Text(style: subtitleStyle, lastWatchTime),
                                 ],
                               ),
@@ -310,8 +318,13 @@ class _VideoItemState extends State<VideoItem> {
 
 class _PopoverMenu extends StatefulWidget with FItemMixin {
   final Function download;
+  final Function matchDanmaku;
   final Widget Function(FPopoverController controller) child;
-  const _PopoverMenu({required this.download, required this.child});
+  const _PopoverMenu({
+    required this.download,
+    required this.matchDanmaku,
+    required this.child,
+  });
   @override
   _PopoverMenuState createState() => _PopoverMenuState();
 }
@@ -332,6 +345,14 @@ class _PopoverMenuState extends State<_PopoverMenu>
               onPress: () {
                 controller.toggle();
                 widget.download();
+              },
+            ),
+            FItem(
+              prefix: const Icon(FIcons.captions),
+              title: Text('获取并保存弹幕'),
+              onPress: () {
+                controller.toggle();
+                widget.matchDanmaku();
               },
             ),
           ],

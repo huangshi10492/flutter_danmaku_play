@@ -7,6 +7,7 @@ import 'package:fldanplay/service/offline_cache.dart';
 import 'package:fldanplay/service/storage.dart';
 import 'package:fldanplay/service/global.dart';
 import 'package:fldanplay/utils/toast.dart';
+import 'package:fldanplay/widget/danmaku_match_dialog.dart';
 import 'package:fldanplay/widget/sys_app_bar.dart';
 import 'package:fldanplay/widget/video_item.dart';
 import 'package:flutter/material.dart';
@@ -82,8 +83,8 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
     });
   }
 
-  void _playVideo(String path, int index) async {
-    final videoInfo = await _fileExplorerService.getVideoInfo(index, path);
+  void _playVideo(String path, int index) {
+    final videoInfo = _fileExplorerService.getVideoInfo(index, path);
     if (GetIt.I.get<ConfigureService>().offlineCacheFirst.value) {
       videoInfo.cached = _offlineCacheService.isCached(videoInfo.uniqueKey);
     }
@@ -93,8 +94,8 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
     }
   }
 
-  void _handleOfflineDownload(String path, int index) async {
-    final videoInfo = await _fileExplorerService.getVideoInfo(index, path);
+  void _handleOfflineDownload(String path, int index) {
+    final videoInfo = _fileExplorerService.getVideoInfo(index, path);
     _offlineCacheService.startDownload(videoInfo);
     if (mounted) showToast(context, title: '${videoInfo.name}已加入离线缓存');
   }
@@ -162,7 +163,7 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
                           var currentPath = '';
                           for (var i = 0; i < parts.length; i++) {
                             final part = parts[i];
-                            currentPath += '/$part';
+                            currentPath += '$part/';
                             final targetPath = currentPath;
                             final isLast = i == parts.length - 1;
                             children.add(
@@ -273,6 +274,7 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
         continue;
       }
       final refreshKey = _refreshMap[file.uniqueKey] ?? 0;
+      final videoInfo = _fileExplorerService.getVideoInfo(i, file.path);
       widgetList.add(
         VideoItem(
           key: ValueKey(file.uniqueKey),
@@ -281,6 +283,10 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
           name: file.name,
           onOfflineDownload:
               () => _handleOfflineDownload(file.path, file.videoIndex),
+          danmakuMatchDialog: DanmakuMatchDialog(
+            uniqueKey: videoInfo.uniqueKey,
+            fileName: videoInfo.videoName,
+          ),
           onPress: () => _playVideo(file.path, file.videoIndex),
         ),
       );

@@ -207,7 +207,7 @@ class _HistoryPageState extends State<HistoryPage> {
               _error.value = '不支持的媒体库类型';
               return;
           }
-          videoInfo = await _streamMediaExplorerService.getVideoInfoFromHistory(
+          videoInfo = _streamMediaExplorerService.getVideoInfoFromHistory(
             history,
           );
           break;

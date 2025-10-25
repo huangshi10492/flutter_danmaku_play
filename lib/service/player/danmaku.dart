@@ -244,19 +244,19 @@ class DanmakuService {
         final exist = await _getCachedDanmakus(videoInfo.uniqueKey);
         if (exist) return;
       }
-      var success = false;
+      DanmakuMatchResult? result;
       if (searchMode) {
-        success = await danmakuGetter.getBySearch(
+        result = await danmakuGetter.getBySearch(
           videoInfo.uniqueKey,
           videoInfo.videoName,
         );
       }
-      if (!success) {
-        success = await danmakuGetter.match(
+      if (result == null) {
+        result = await danmakuGetter.match(
           videoInfo.uniqueKey,
           videoInfo.videoName,
         );
-        if (!success) {
+        if (result == null) {
           globalService.showNotification('未找到弹幕');
           return;
         }
@@ -350,25 +350,30 @@ class DanmakuGetter {
   );
   final _log = Logger('DanmakuGetter');
 
-  Future<bool> getBySearch(String uniqueKey, String name) async {
+  Future<DanmakuMatchResult?> getBySearch(String uniqueKey, String name) async {
     int animesId = 0;
     int episodesId = 0;
     try {
       final animes = await danmakuApiUtils.searchEpisodes(name);
-      if (animes.isEmpty) return false;
+      if (animes.isEmpty) return null;
       final episodes = animes.first.episodes;
-      if (episodes.isEmpty) return false;
+      if (episodes.isEmpty) return null;
       animesId = episodes.first.animeId;
       episodesId = episodes.first.episodeId;
       await save(uniqueKey, episodesId, animesId);
-      return true;
+      return DanmakuMatchResult(
+        animeId: animesId,
+        episodeId: episodesId,
+        animeTitle: animes.first.animeTitle,
+        episodeTitle: episodes.first.episodeTitle,
+      );
     } catch (e, t) {
       _log.error('getBySearch', '搜索番剧失败', error: e, stackTrace: t);
-      return false;
+      return null;
     }
   }
 
-  Future<bool> match(
+  Future<DanmakuMatchResult?> match(
     String uniqueKey,
     String fileName, {
     String? fileHash,
@@ -378,12 +383,17 @@ class DanmakuGetter {
         fileName: fileName,
         fileHash: fileHash,
       );
-      if (episodes.isEmpty) return false;
+      if (episodes.isEmpty) return null;
       await save(uniqueKey, episodes.first.episodeId, episodes.first.animeId);
-      return true;
+      return DanmakuMatchResult(
+        animeId: episodes.first.animeId,
+        episodeId: episodes.first.episodeId,
+        animeTitle: episodes.first.animeTitle,
+        episodeTitle: episodes.first.episodeTitle,
+      );
     } catch (e, t) {
       _log.error('match', '匹配视频失败', error: e, stackTrace: t);
-      return false;
+      return null;
     }
   }
 
