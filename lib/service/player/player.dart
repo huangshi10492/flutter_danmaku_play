@@ -492,7 +492,6 @@ class VideoPlayerService {
   Future<void> dispose() async {
     pause();
     try {
-      danmakuService.dispose();
       await updatePlaybackHistory();
       if (_globalService.updateListener != null) {
         _globalService.updateListener!(_history.uniqueKey);

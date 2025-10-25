@@ -203,6 +203,7 @@ class RightDrawerContent extends StatelessWidget {
         Navigator.pop(context); // 关闭 sheet
         _globalService.showNotification('正在加载指定弹幕...');
         playerService.danmakuService.selectEpisodeAndLoadDanmaku(
+          videoInfo.uniqueKey,
           animeId,
           episodeId,
         );

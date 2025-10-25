@@ -23,6 +23,7 @@ class DanmakuService {
   ConfigureService configureService = GetIt.I.get<ConfigureService>();
   GlobalService globalService = GetIt.I.get<GlobalService>();
   late DanmakuApiUtils danmakuApiUtils;
+  final DanmakuGetter danmakuGetter = DanmakuGetter();
 
   final _log = Logger('DanmakuService');
   Map<int, List<Danmaku>> _bili = {};
@@ -35,9 +36,12 @@ class DanmakuService {
   int episodeId = 0;
   int animeId = 0;
   int lastTime = 0;
+  String cacheDir = "";
   late bool danmakuServiceEnable = configureService.danmakuServiceEnable.value;
 
   Future<void> init() async {
+    final documentsDir = await getApplicationSupportDirectory();
+    cacheDir = Directory('${documentsDir.path}/danmaku').path;
     danmakuApiUtils = DanmakuApiUtils(configureService.danmakuServiceUrl.value);
     danmakuEnabled.value = configureService.defaultDanmakuEnable.value;
     final sittings = configureService.getDanmakuSettings();
@@ -55,7 +59,7 @@ class DanmakuService {
     }
   }
 
-  void clear() {
+  void _clear() {
     controller.clear();
     _bili = {};
     _gamer = {};
@@ -183,6 +187,7 @@ class DanmakuService {
   }
 
   void _danmaku2Map(List<Danmaku> danmakus) {
+    _clear();
     var bili = 0;
     var gamer = 0;
     var dandan = 0;
@@ -229,94 +234,170 @@ class DanmakuService {
   }
 
   /// 加载弹幕
-  Future<void> loadDanmaku({bool force = false}) async {
+  Future<void> loadDanmaku({
+    bool searchMode = false,
+    bool force = false,
+  }) async {
     if (!danmakuServiceEnable) return;
     try {
       if (!force) {
-        final cachedDanmakus = await _getCachedDanmakus(videoInfo.uniqueKey);
-        if (cachedDanmakus.isNotEmpty) {
-          // 按时间排序弹幕
-          clear();
-          _danmaku2Map(cachedDanmakus);
-          globalService.showNotification('从缓存加载弹幕: ${cachedDanmakus.length}条');
+        final exist = await _getCachedDanmakus(videoInfo.uniqueKey);
+        if (exist) return;
+      }
+      var success = false;
+      if (searchMode) {
+        success = await danmakuGetter.getBySearch(
+          videoInfo.uniqueKey,
+          videoInfo.videoName,
+        );
+      }
+      if (!success) {
+        success = await danmakuGetter.match(
+          videoInfo.uniqueKey,
+          videoInfo.videoName,
+        );
+        if (!success) {
+          globalService.showNotification('未找到弹幕');
           return;
         }
       }
-      var animesId = 0;
-      var episodesId = 0;
-      // 先使用名称 集数进行搜索
-      final animes = await searchEpisodes(videoInfo.videoName);
-      if (animes.isNotEmpty) {
-        animesId = animes.first.animeId;
-        final episodes = animes.first.episodes;
-        if (episodes.isEmpty) return;
-        episodesId = episodes.first.episodeId;
-      } else {
-        // 匹配
-        final episodes = await matchVideo();
-        if (episodes == null) return;
-        animesId = episodes.animeId;
-        episodesId = episodes.episodeId;
-      }
-      if (animesId == 0 || episodesId == 0) return;
-      selectEpisodeAndLoadDanmaku(animesId, episodesId);
+      await _getCachedDanmakus(videoInfo.uniqueKey);
     } catch (e, t) {
       _log.error('loadDanmaku', '加载弹幕失败', error: e, stackTrace: t);
-      clear();
     }
   }
 
   /// 从缓存获取弹幕数据
-  Future<List<Danmaku>> _getCachedDanmakus(String uniqueKey) async {
+  Future<bool> _getCachedDanmakus(String uniqueKey) async {
     try {
-      final documentsDir = await getApplicationSupportDirectory();
-      final cacheDir = Directory('${documentsDir.path}/danmaku');
-      final danmakuFile = File('${cacheDir.path}/$uniqueKey.json');
-
-      if (!await danmakuFile.exists()) {
-        return [];
-      }
+      final danmakuFile = File('$cacheDir/$uniqueKey.json');
+      if (!await danmakuFile.exists()) return false;
       final jsonString = await danmakuFile.readAsString();
       final danmakuData = DanmakuFile.fromJsonString(jsonString);
-      // 检查过期时间
       final expireTime = danmakuData.expireTime.millisecondsSinceEpoch;
       final now = DateTime.now().millisecondsSinceEpoch;
-      if (now > expireTime) {
-        _log.info('_getCachedDanmakus', '弹幕缓存已过期');
-        try {
-          final comments = await danmakuApiUtils.getComments(
-            episodeId,
-            sc: configureService.autoLanguage.value,
-          );
-          final danmakus =
-              comments.map((comment) => comment.toDanmaku()).toList();
-          if (danmakus.isNotEmpty) {
-            await _saveDanmakus(uniqueKey, danmakus, episodeId, animeId);
-          }
-          _log.info('_getCachedDanmakus', '弹幕缓存已过期，已自动刷新: ${danmakus.length}条');
-          return danmakus;
-        } catch (e) {
-          _log.error('_getCachedDanmakus', '刷新弹幕失败', error: e);
-          rethrow;
-        }
-      }
       episodeId = danmakuData.episodeId;
       animeId = danmakuData.animeId;
-      return danmakuData.danmakus;
+      if (now > expireTime) {
+        _log.info('_getCachedDanmakus', '弹幕缓存已过期');
+        final result = await danmakuGetter.save(uniqueKey, episodeId, animeId);
+        if (result.isNotEmpty) {
+          _danmaku2Map(result);
+          globalService.showNotification('更新弹幕: ${result.length}条');
+          return true;
+        }
+      }
+      _danmaku2Map(danmakuData.danmakus);
+      globalService.showNotification('加载弹幕: ${danmakuData.danmakus.length}条');
+      return true;
     } catch (e) {
       _log.warn('_getCachedDanmakus', '读取缓存弹幕失败', error: e);
-      return [];
+      return false;
     }
   }
 
-  /// 保存弹幕数据
-  Future<void> _saveDanmakus(
+  /// 搜索番剧集数
+  Future<List<Anime>> searchEpisodes(String animeName) async {
+    return await danmakuApiUtils.searchEpisodes(animeName);
+  }
+
+  /// 选择episodeId并加载弹幕
+  Future<void> selectEpisodeAndLoadDanmaku(
     String uniqueKey,
-    List<Danmaku> danmakus,
+    int animeId,
+    int episodeId,
+  ) async {
+    try {
+      final danmakus = await danmakuGetter.save(uniqueKey, episodeId, animeId);
+      _danmaku2Map(danmakus);
+      _log.info('selectEpisodeAndLoadDanmaku', '搜索弹幕加载成功: ${danmakus.length}条');
+      globalService.showNotification('从API加载弹幕: ${danmakus.length}条');
+    } catch (e) {
+      _log.error('selectEpisodeAndLoadDanmaku', '手动选择弹幕加载失败', error: e);
+      rethrow;
+    }
+  }
+
+  Future<void> refreshDanmaku() async {
+    if (animeId == 0 || episodeId == 0) return;
+    try {
+      final danmakus = await danmakuGetter.save(
+        videoInfo.uniqueKey,
+        episodeId,
+        animeId,
+      );
+      _danmaku2Map(danmakus);
+      _log.info('refreshDanmaku', '刷新弹幕成功: ${danmakus.length}条');
+      globalService.showNotification('刷新弹幕: ${danmakus.length}条');
+    } catch (e) {
+      _log.error('refreshDanmaku', '刷新弹幕成功', error: e);
+      rethrow;
+    }
+  }
+
+  void updateDanmakuSettings(DanmakuSettings settings) {
+    danmakuSettings.value = settings;
+    configureService.setDanmakuSettings(settings);
+    controller.updateOption(settings.toDanmakuOption());
+    _log.debug('updateDanmakuSettings', '弹幕设置更新: $settings');
+  }
+}
+
+class DanmakuGetter {
+  final configureService = GetIt.I.get<ConfigureService>();
+  late final DanmakuApiUtils danmakuApiUtils = DanmakuApiUtils(
+    configureService.danmakuServiceUrl.value,
+  );
+  final _log = Logger('DanmakuGetter');
+
+  Future<bool> getBySearch(String uniqueKey, String name) async {
+    int animesId = 0;
+    int episodesId = 0;
+    try {
+      final animes = await danmakuApiUtils.searchEpisodes(name);
+      if (animes.isEmpty) return false;
+      final episodes = animes.first.episodes;
+      if (episodes.isEmpty) return false;
+      animesId = episodes.first.animeId;
+      episodesId = episodes.first.episodeId;
+      await save(uniqueKey, episodesId, animesId);
+      return true;
+    } catch (e, t) {
+      _log.error('getBySearch', '搜索番剧失败', error: e, stackTrace: t);
+      return false;
+    }
+  }
+
+  Future<bool> match(
+    String uniqueKey,
+    String fileName, {
+    String? fileHash,
+  }) async {
+    try {
+      final episodes = await danmakuApiUtils.matchVideo(
+        fileName: fileName,
+        fileHash: fileHash,
+      );
+      if (episodes.isEmpty) return false;
+      await save(uniqueKey, episodes.first.episodeId, episodes.first.animeId);
+      return true;
+    } catch (e, t) {
+      _log.error('match', '匹配视频失败', error: e, stackTrace: t);
+      return false;
+    }
+  }
+
+  Future<List<Danmaku>> save(
+    String uniqueKey,
     int episodeId,
     int animeId,
   ) async {
     try {
+      final comments = await danmakuApiUtils.getComments(
+        episodeId,
+        sc: configureService.autoLanguage.value,
+      );
+      final danmakus = comments.map((comment) => comment.toDanmaku()).toList();
       final documentsDir = await getApplicationSupportDirectory();
       final cacheDir = Directory('${documentsDir.path}/danmaku');
       if (!await cacheDir.exists()) {
@@ -336,92 +417,11 @@ class DanmakuService {
         animeId: animeId,
       );
       await cacheFile.writeAsString(cacheData.toJsonString());
-      _log.info(
-        '_saveDanmakuCache',
-        '弹幕缓存保存成功: ${cacheFile.path}, 弹幕数量: ${danmakus.length}',
-      );
-    } catch (e) {
-      _log.warn('_saveDanmakuCache', '保存弹幕缓存失败', error: e);
+      _log.info('save', '弹幕缓存保存成功， 弹幕数量: ${danmakus.length}');
+      return danmakus;
+    } catch (e, t) {
+      _log.warn('_save', '保存弹幕缓存失败', error: e, stackTrace: t);
+      return [];
     }
-  }
-
-  /// 匹配视频
-  Future<Episode?> matchVideo() async {
-    try {
-      final episodes = await danmakuApiUtils.matchVideo(
-        fileName: videoInfo.videoName,
-      );
-      if (episodes.isEmpty) return null;
-      return episodes.first;
-    } catch (e) {
-      _log.error('matchVideo', '匹配视频失败', error: e);
-      rethrow;
-    }
-  }
-
-  /// 搜索番剧集数
-  Future<List<Anime>> searchEpisodes(String animeName) async {
-    try {
-      return await danmakuApiUtils.searchEpisodes(animeName);
-    } catch (e) {
-      _log.error('searchEpisodes', '搜索番剧失败', error: e);
-      rethrow;
-    }
-  }
-
-  /// 选择episodeId并加载弹幕
-  Future<void> selectEpisodeAndLoadDanmaku(int animeId, int episodeId) async {
-    try {
-      final comments = await danmakuApiUtils.getComments(
-        episodeId,
-        sc: configureService.autoLanguage.value,
-      );
-      final danmakus = comments.map((comment) => comment.toDanmaku()).toList();
-      if (danmakus.isNotEmpty) {
-        await _saveDanmakus(videoInfo.uniqueKey, danmakus, episodeId, animeId);
-      }
-      this.animeId = animeId;
-      this.episodeId = episodeId;
-      clear();
-      _danmaku2Map(danmakus);
-      _log.info('selectEpisodeAndLoadDanmaku', '搜索弹幕加载成功: ${danmakus.length}条');
-      globalService.showNotification('从API加载弹幕: ${danmakus.length}条');
-    } catch (e) {
-      _log.error('selectEpisodeAndLoadDanmaku', '手动选择弹幕加载失败', error: e);
-      rethrow;
-    }
-  }
-
-  Future<void> refreshDanmaku() async {
-    if (animeId == 0 || episodeId == 0) return;
-    try {
-      final comments = await danmakuApiUtils.getComments(
-        episodeId,
-        sc: configureService.autoLanguage.value,
-      );
-      final danmakus = comments.map((comment) => comment.toDanmaku()).toList();
-      if (danmakus.isNotEmpty) {
-        await _saveDanmakus(videoInfo.uniqueKey, danmakus, episodeId, animeId);
-      }
-      clear();
-      _danmaku2Map(danmakus);
-      _log.info('refreshDanmaku', '刷新弹幕成功: ${danmakus.length}条');
-      globalService.showNotification('从API加载弹幕: ${danmakus.length}条');
-    } catch (e) {
-      _log.error('refreshDanmaku', '刷新弹幕成功', error: e);
-      rethrow;
-    }
-  }
-
-  /// 更新弹幕设置
-  void updateDanmakuSettings(DanmakuSettings settings) {
-    danmakuSettings.value = settings;
-    configureService.setDanmakuSettings(settings);
-    controller.updateOption(settings.toDanmakuOption());
-    _log.debug('updateDanmakuSettings', '弹幕设置已更新: $settings');
-  }
-
-  void dispose() {
-    danmakuSettings.dispose();
   }
 }

@@ -36,49 +36,20 @@ class DanmakuApiUtils {
   /// 文件识别 - 根据文件信息匹配节目
   Future<List<Episode>> matchVideo({
     required String fileName,
-    String fileHash = '',
-    bool hash = false,
+    String? fileHash,
   }) async {
     const path = '/api/v2/match';
     try {
       final response = await _dio.post(
         path,
-        data:
-            hash
-                ? {
-                  'fileHash': fileHash,
-                  'fileName': fileName,
-                  'matchModel': 'hashAndFileName',
-                }
-                : {'fileName': fileName, 'matchModel': 'fileNameOnly'},
+        data: {
+          'fileHash': fileHash,
+          'fileName': fileName,
+          'matchModel': fileHash != null ? 'hashAndFileName' : 'fileNameOnly',
+        },
       );
       final matches = response.data['matches'] as List;
       return matches.map((match) => Episode.fromJson(match)).toList();
-    } on DioException catch (e) {
-      throw Exception('网络请求失败: ${e.message}');
-    }
-  }
-
-  /// 搜索节目
-  Future<List<Episode>> searchAnime(String keyword) async {
-    const path = '/api/v2/search/episodes';
-    try {
-      final response = await _dio.get(
-        path,
-        queryParameters: {'anime': keyword},
-      );
-      final animes = response.data['animes'] as List;
-      final episodes = <Episode>[];
-      for (final anime in animes) {
-        final episodeList = anime['episodes'] as List;
-        episodes.addAll(
-          episodeList.map(
-            (ep) =>
-                Episode.fromJson({...ep, 'animeTitle': anime['animeTitle']}),
-          ),
-        );
-      }
-      return episodes;
     } on DioException catch (e) {
       throw Exception('网络请求失败: ${e.message}');
     }
@@ -104,17 +75,13 @@ class DanmakuApiUtils {
   /// 获取弹幕
   Future<List<DanmakuComment>> getComments(
     int episodeId, {
-    bool withRelated = true,
     int sc = 1, // 中文简繁转换。0-不转换，1-转换为简体，2-转换为繁体。
   }) async {
     final path = '/api/v2/comment/$episodeId';
     try {
       final response = await _dio.get(
         path,
-        queryParameters: {
-          if (withRelated) 'withRelated': 'true',
-          'chConvert': sc,
-        },
+        queryParameters: {'withRelated': 'true', 'chConvert': sc},
       );
       final comments = response.data['comments'] as List;
       return comments
