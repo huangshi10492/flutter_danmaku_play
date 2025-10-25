@@ -311,6 +311,7 @@ class _VideoItemState extends State<VideoItem> {
             ),
             onPress: widget.onPress,
             onLongPress: widget.onLongPress ?? controller.toggle,
+            onSecondaryPress: widget.onLongPress ?? controller.toggle,
           ),
     );
   }

@@ -254,9 +254,8 @@ class RootPageState extends State<RootPage> {
                                 break;
                             }
                           },
-                          onLongPress: () async {
-                            controller.toggle();
-                          },
+                          onLongPress: () => controller.toggle(),
+                          onSecondaryPress: () => controller.toggle(),
                         ),
                   ),
                 ),
