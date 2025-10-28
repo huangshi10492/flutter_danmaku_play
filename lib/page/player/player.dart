@@ -113,7 +113,9 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
               }
               // 左方向键被按下
               if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                _playerService.value.seekRelative(const Duration(seconds: -10));
+                _playerService.value.seekRelative(
+                  Duration(seconds: -_configureService.backwardSeconds.value),
+                );
               }
               // 上方向键被按下
               if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
@@ -149,7 +151,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                   _playerService.value.doubleSpeed(false);
                 } else {
                   _playerService.value.seekRelative(
-                    const Duration(seconds: 10),
+                    Duration(seconds: _configureService.forwardSeconds.value),
                   );
                 }
               }
@@ -510,10 +512,15 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            label: Text('快进85秒'),
+                            label: Text(
+                              '快进${_configureService.seekOPSeconds.value}秒',
+                            ),
                             onPressed: () {
                               _playerService.value.seekRelative(
-                                const Duration(seconds: 85),
+                                Duration(
+                                  seconds:
+                                      _configureService.seekOPSeconds.value,
+                                ),
                               );
                             },
                           )

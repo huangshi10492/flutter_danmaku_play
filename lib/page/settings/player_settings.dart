@@ -27,32 +27,57 @@ class PlayerSettingsPage extends StatelessWidget {
                   silderValue: configure.defaultPlaySpeed.value,
                   silderMin: 0.25,
                   silderMax: 4,
+                  silderDivisions: 15,
                   onSilderChange: (value) {
                     configure.defaultPlaySpeed.value = value;
                   },
                   details:
                       '${configure.defaultPlaySpeed.value.toStringAsFixed(2)}x',
-                  silderDivisions: 15,
                 ),
                 SettingsTile.sliderTile(
                   title: '长按加速播放速度',
                   silderValue: configure.doublePlaySpeed.value,
                   silderMin: 1,
                   silderMax: 8,
+                  silderDivisions: 28,
                   onSilderChange: (value) {
                     configure.doublePlaySpeed.value = value;
                   },
                   details:
                       '${configure.doublePlaySpeed.value.toStringAsFixed(2)}x',
-                  silderDivisions: 28,
                 ),
-                SettingsTile.switchTile(
-                  title: '优先使用AudioTrack输出音频',
-                  subtitle: '关闭则优先使用OpenSL ES输出音频',
-                  switchValue: configure.audioTrack.value,
-                  onBoolChange: (value) {
-                    configure.audioTrack.value = value;
+                SettingsTile.sliderTile(
+                  title: '快进秒数(方向键右)',
+                  silderValue: configure.forwardSeconds.value.toDouble(),
+                  silderMin: 1,
+                  silderMax: 30,
+                  silderDivisions: 29,
+                  onSilderChange: (value) {
+                    configure.forwardSeconds.value = value.round();
                   },
+                  details: '${configure.forwardSeconds.value}秒',
+                ),
+                SettingsTile.sliderTile(
+                  title: '后退秒数(方向键左)',
+                  silderValue: configure.backwardSeconds.value.toDouble(),
+                  silderMin: 1,
+                  silderMax: 30,
+                  silderDivisions: 29,
+                  onSilderChange: (value) {
+                    configure.backwardSeconds.value = value.round();
+                  },
+                  details: '${configure.backwardSeconds.value}秒',
+                ),
+                SettingsTile.sliderTile(
+                  title: '快进按钮秒数(可跳过OP/ED)',
+                  silderValue: configure.seekOPSeconds.value.toDouble(),
+                  silderMin: 30,
+                  silderMax: 120,
+                  silderDivisions: 90,
+                  onSilderChange: (value) {
+                    configure.seekOPSeconds.value = value.round();
+                  },
+                  details: '${configure.seekOPSeconds.value}秒',
                 ),
               ],
             ),
@@ -72,6 +97,19 @@ class PlayerSettingsPage extends StatelessWidget {
                   switchValue: configure.autoAudioLanguage.value,
                   onBoolChange: (value) {
                     configure.autoAudioLanguage.value = value;
+                  },
+                ),
+              ],
+            ),
+            SettingsSection(
+              title: '音频',
+              children: [
+                SettingsTile.switchTile(
+                  title: '优先使用AudioTrack输出音频',
+                  subtitle: '关闭则优先使用OpenSL ES输出音频',
+                  switchValue: configure.audioTrack.value,
+                  onBoolChange: (value) {
+                    configure.audioTrack.value = value;
                   },
                 ),
               ],

@@ -15,6 +15,15 @@ class ConfigureService {
   late final Signal<double> doublePlaySpeed = Signal(
     _box.get('doublePlaySpeed', defaultValue: 2.0),
   );
+  late final Signal<int> forwardSeconds = Signal(
+    _box.get('forwardSeconds', defaultValue: 10),
+  );
+  late final Signal<int> backwardSeconds = Signal(
+    _box.get('backwardSeconds', defaultValue: 10),
+  );
+  late final Signal<int> seekOPSeconds = Signal(
+    _box.get('seekOPSeconds', defaultValue: 85),
+  );
   // 自动为字幕和弹幕选择语言（0: 关闭，1: 中文简体，2: 中文繁体）
   late final Signal<int> autoLanguage = Signal(
     _box.get('autoLanguage', defaultValue: 1),
@@ -103,6 +112,15 @@ class ConfigureService {
     });
     effect(() {
       _box.put('doublePlaySpeed', doublePlaySpeed.value);
+    });
+    effect(() {
+      _box.put('forwardSeconds', forwardSeconds.value);
+    });
+    effect(() {
+      _box.put('backwardSeconds', backwardSeconds.value);
+    });
+    effect(() {
+      _box.put('seekOPSeconds', seekOPSeconds.value);
     });
     effect(() {
       _box.put('autoLanguage', autoLanguage.value);
