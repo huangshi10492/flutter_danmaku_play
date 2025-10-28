@@ -61,8 +61,8 @@ class PlayerUIState {
   }
 
   /// 开始手势操作
-  void startGesture({Duration? initialPosition}) {
-    // 记录初始值
+  Future<void> startGesture({Duration? initialPosition}) async {
+    await FlutterVolumeController.updateShowSystemUI(false);
     initialVolumeOnPan = currentVolume.value;
     initialBrightnessOnPan = currentBrightness.value;
     initialPositionOnPan = initialPosition;
@@ -70,12 +70,12 @@ class PlayerUIState {
   }
 
   /// 结束手势操作
-  void endGesture() {
+  Future<void> endGesture() async {
     hideAllIndicators();
     initialVolumeOnPan = null;
     initialBrightnessOnPan = null;
     initialPositionOnPan = null;
-    FlutterVolumeController.updateShowSystemUI(true);
+    await FlutterVolumeController.updateShowSystemUI(true);
   }
 
   /// 开始长按（倍速）
@@ -205,13 +205,7 @@ class BrightnessVolumeService {
   static Future<void> setVolume(double volume) async {
     volume = volume.clamp(0.0, 1.0);
     currentVolume = volume;
-
-    try {
-      await FlutterVolumeController.updateShowSystemUI(false);
-      await FlutterVolumeController.setVolume(volume);
-    } catch (e) {
-      _log.error('setVolume', '设置音量失败', error: e);
-    }
+    await FlutterVolumeController.setVolume(volume);
   }
 
   static void dispose() {
