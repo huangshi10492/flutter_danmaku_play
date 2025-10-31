@@ -286,6 +286,7 @@ class _HistoryPageState extends State<HistoryPage> {
               return VideoItem(
                 key: ValueKey(history.uniqueKey),
                 history: history,
+                uniqueKey: history.uniqueKey,
                 refreshKey: refreshKey,
                 name: history.name,
                 onPress: () => _playVideo(history),

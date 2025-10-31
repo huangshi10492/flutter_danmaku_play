@@ -29,6 +29,7 @@ class FileImageEx extends FileImage {
 
 class VideoItem extends StatefulWidget with FItemMixin {
   final History? history;
+  final String uniqueKey;
   final String name;
   final void Function() onPress;
   final void Function()? onLongPress;
@@ -40,6 +41,7 @@ class VideoItem extends StatefulWidget with FItemMixin {
   const VideoItem({
     super.key,
     required this.history,
+    required this.uniqueKey,
     required this.name,
     required this.onPress,
     this.onLongPress,
@@ -65,11 +67,8 @@ class _VideoItemState extends State<VideoItem> {
   }
 
   Future<void> init() async {
-    if (widget.history == null) return;
     final directory = await getApplicationSupportDirectory();
-    final res = File(
-      '${directory.path}/danmaku/${widget.history!.uniqueKey}.json',
-    );
+    final res = File('${directory.path}/danmaku/${widget.uniqueKey}.json');
     final hasDanmaku = await res.exists();
     setState(() {
       _hasDanmaku = hasDanmaku;
@@ -218,14 +217,15 @@ class _VideoItemState extends State<VideoItem> {
         .resolve({});
     return _PopoverMenu(
       download: widget.onOfflineDownload ?? () {},
-      matchDanmaku: () {
+      matchDanmaku: () async {
         if (widget.danmakuMatchDialog == null) return;
-        showFDialog(
+        await showFDialog(
           context: context,
           builder:
               (context, style, animation) =>
                   FDialog(actions: [], body: widget.danmakuMatchDialog!),
         );
+        init();
       },
       child:
           (controller) => FItem(
@@ -305,7 +305,12 @@ class _VideoItemState extends State<VideoItem> {
                           ),
                         ],
                       )
-                      : Text(style: subtitleStyle, '未观看'),
+                      : Row(
+                        children: [
+                          if (_hasDanmaku) _buildDanmakuIcon(),
+                          Text(style: subtitleStyle, '未观看'),
+                        ],
+                      ),
                 ],
               ),
             ),

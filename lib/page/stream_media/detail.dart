@@ -655,11 +655,12 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
     final refreshKey = _refreshMap[uniqueKey]!;
     return VideoItem(
       key: ValueKey(uniqueKey),
+      history: _historyService.getHistoryByPath(episode.id),
+      uniqueKey: uniqueKey,
       refreshKey: refreshKey,
       imageUrl: _service.provider.getImageUrl(episode.id),
       headers: _service.provider.headers,
       name: '${episode.indexNumber}. ${episode.name}',
-      history: _historyService.getHistoryByPath(episode.id),
       onOfflineDownload: () {
         _service.setVideoList(season);
         final videoInfo = _service.getVideoInfo(index);

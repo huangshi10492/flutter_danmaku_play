@@ -280,6 +280,7 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
           key: ValueKey(file.uniqueKey),
           refreshKey: refreshKey,
           history: file.history,
+          uniqueKey: file.uniqueKey!,
           name: file.name,
           onOfflineDownload:
               () => _handleOfflineDownload(file.path, file.videoIndex),
