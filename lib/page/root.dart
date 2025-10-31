@@ -1,4 +1,5 @@
 import 'package:fldanplay/model/video_info.dart';
+import 'package:fldanplay/utils/icon.dart';
 import 'package:fldanplay/utils/toast.dart';
 import 'package:fldanplay/widget/storage_sheet.dart';
 import 'package:fldanplay/router.dart';
@@ -80,6 +81,23 @@ class RootPageState extends State<RootPage> {
         );
       },
     );
+  }
+
+  Widget _buildPrefix(StorageType type) {
+    switch (type) {
+      case StorageType.webdav:
+        return const Icon(FIcons.server);
+      case StorageType.ftp:
+        return const Icon(MyIcon.ftp);
+      case StorageType.smb:
+        return const Icon(MyIcon.smb);
+      case StorageType.local:
+        return const Icon(FIcons.folder);
+      case StorageType.jellyfin:
+        return const Icon(MyIcon.jellyfin);
+      case StorageType.emby:
+        return const Icon(MyIcon.emby);
+    }
   }
 
   Future<void> _playLocalVideo() async {
@@ -233,7 +251,7 @@ class RootPageState extends State<RootPage> {
                     delete: () => _showDeleteDialog(storage),
                     child:
                         (controller) => FItem(
-                          prefix: const Icon(FIcons.folder),
+                          prefix: _buildPrefix(storage.storageType),
                           title: Text(storage.name),
                           subtitle: Text(storage.url),
                           onPress: () {

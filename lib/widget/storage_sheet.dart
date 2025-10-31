@@ -1,6 +1,7 @@
 import 'package:fldanplay/model/storage.dart';
 import 'package:fldanplay/model/stream_media.dart';
 import 'package:fldanplay/service/stream_media_explorer.dart';
+import 'package:fldanplay/utils/icon.dart';
 import 'package:fldanplay/utils/theme.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fldanplay/utils/toast.dart';
@@ -72,32 +73,32 @@ class SelectStorageTypeSheet extends StatelessWidget {
               children: [
                 FItem(
                   title: const Text('WebDAV'),
-                  prefix: const Icon(FIcons.hardDrive),
+                  prefix: const Icon(FIcons.server),
                   onPress: () => select(context, StorageType.webdav),
                 ),
                 // FItem(
                 //   title: const Text('FTP'),
-                //   prefix: const Icon(FIcons.serverCog),
+                //   prefix: const Icon(MyIcon.ftp),
                 //   onPress: () => select(context, StorageType.ftp),
                 // ),
                 // FItem(
                 //   title: const Text('SMB'),
-                //   prefix: const Icon(FIcons.server),
+                //   prefix: const Icon(MyIcon.smb),
                 //   onPress: () => select(context, StorageType.smb),
                 // ),
                 FItem(
-                  title: const Text('本地'),
-                  prefix: const Icon(FIcons.smartphone),
+                  title: const Text('本地文件夹'),
+                  prefix: const Icon(FIcons.folder),
                   onPress: () => select(context, StorageType.local),
                 ),
                 FItem(
                   title: const Text('Jellyfin'),
-                  prefix: const Icon(FIcons.tv),
+                  prefix: const Icon(MyIcon.jellyfin),
                   onPress: () => select(context, StorageType.jellyfin),
                 ),
                 FItem(
                   title: const Text('Emby'),
-                  prefix: const Icon(FIcons.tv),
+                  prefix: const Icon(MyIcon.emby),
                   onPress: () => select(context, StorageType.emby),
                 ),
               ],
@@ -366,7 +367,7 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
       case StorageType.smb:
         return 'SMB媒体库';
       case StorageType.local:
-        return '本地媒体库';
+        return '本地文件夹媒体库';
       case StorageType.jellyfin:
         return 'Jellyfin媒体库';
       case StorageType.emby:

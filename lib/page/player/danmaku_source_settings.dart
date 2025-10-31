@@ -1,5 +1,6 @@
 import 'package:fldanplay/service/player/danmaku.dart';
 import 'package:fldanplay/service/global.dart';
+import 'package:fldanplay/utils/icon.dart';
 import 'package:fldanplay/widget/icon_switch.dart';
 import 'package:fldanplay/widget/settings/settings_section.dart';
 import 'package:fldanplay/widget/settings/settings_tile.dart';
@@ -49,8 +50,8 @@ class DanmakuSourceSettings extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: Icons.warning_amber,
-                  title: 'BiliBili',
+                  icon: MyIcon.bilibili,
+                  title: '哔哩哔哩',
                   subtitle: '(${ratio['BiliBili']!})',
                 ),
                 IconSwitch(
@@ -60,8 +61,8 @@ class DanmakuSourceSettings extends StatelessWidget {
                       settings.copyWith(gamerSource: !settings.gamerSource),
                     );
                   },
-                  icon: Icons.warning_amber,
-                  title: 'Gamer',
+                  icon: MyIcon.bahamut,
+                  title: '巴哈姆特',
                   subtitle: '(${ratio['Gamer']!})',
                 ),
                 IconSwitch(
@@ -71,8 +72,8 @@ class DanmakuSourceSettings extends StatelessWidget {
                       settings.copyWith(dandanSource: !settings.dandanSource),
                     );
                   },
-                  icon: Icons.warning_amber,
-                  title: 'DanDan',
+                  icon: MyIcon.dandanplay,
+                  title: '弹弹play',
                   subtitle: '(${ratio['DanDanPlay']!})',
                 ),
 
@@ -83,7 +84,7 @@ class DanmakuSourceSettings extends StatelessWidget {
                       settings.copyWith(otherSource: !settings.otherSource),
                     );
                   },
-                  icon: Icons.warning_amber,
+                  icon: FIcons.ellipsis,
                   title: '其他',
                   subtitle: '(${ratio['Other']!})',
                 ),
