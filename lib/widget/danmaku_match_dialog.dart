@@ -255,13 +255,17 @@ class _DanmakuMatchDialogState extends State<DanmakuMatchDialog> {
                   episode.episodeId,
                   anime.animeId,
                 );
-                if (result.isNotEmpty && context.mounted) {
-                  showToast(context, title: '弹幕保存成功');
-                  Navigator.pop(context, result);
+                if (mounted) {
+                  if (result.isNotEmpty) {
+                    showToast(this.context, title: '弹幕保存成功');
+                    Navigator.pop(this.context, result);
+                  } else {
+                    showToast(this.context, title: '弹幕保存失败');
+                    setState(() {
+                      _state = _DanmakuSearchState.search;
+                    });
+                  }
                 }
-                setState(() {
-                  _state = _DanmakuSearchState.search;
-                });
               },
             );
           },
