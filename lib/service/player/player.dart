@@ -198,7 +198,9 @@ class VideoPlayerService {
         subtitle: videoInfo.subtitle,
       );
       danmakuService.history = _history;
-      danmakuService.init();
+      danmakuService.init(
+        searchMode: videoInfo.historiesType == HistoriesType.streamMediaStorage,
+      );
       await _restoreProgress();
       await _loadTracks();
       _timerGroup.forEach((_, value) => value.init());

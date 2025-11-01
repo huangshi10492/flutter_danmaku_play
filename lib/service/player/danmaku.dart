@@ -39,7 +39,7 @@ class DanmakuService {
   String cacheDir = "";
   late bool danmakuServiceEnable = configureService.danmakuServiceEnable.value;
 
-  Future<void> init() async {
+  Future<void> init({bool searchMode = false}) async {
     final documentsDir = await getApplicationSupportDirectory();
     cacheDir = Directory('${documentsDir.path}/danmaku').path;
     danmakuApiUtils = DanmakuApiUtils(configureService.danmakuServiceUrl.value);
@@ -48,7 +48,7 @@ class DanmakuService {
     danmakuSettings.value = sittings;
     controller.updateOption(sittings.toDanmakuOption());
     globalService.videoName = videoInfo.videoName;
-    loadDanmaku();
+    loadDanmaku(searchMode: searchMode);
   }
 
   void syncWithVideo(bool isPlaying) {
