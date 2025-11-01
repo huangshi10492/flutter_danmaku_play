@@ -25,7 +25,7 @@ class _DanmakuMatchDialogState extends State<DanmakuMatchDialog> {
   _DanmakuSearchState _state = _DanmakuSearchState.matching;
   String _message = '';
   String? _errorMessage;
-  List<Anime> _animes = [];
+  List<Anime>? _animes;
 
   @override
   void initState() {
@@ -68,6 +68,7 @@ class _DanmakuMatchDialogState extends State<DanmakuMatchDialog> {
     }
     setState(() {
       _state = _DanmakuSearchState.searching;
+      _animes = null;
       _errorMessage = null;
     });
     try {
@@ -213,7 +214,18 @@ class _DanmakuMatchDialogState extends State<DanmakuMatchDialog> {
         ),
       ];
     }
-    return _animes.map((anime) {
+    if (_animes == null) return [];
+    if (_animes!.isEmpty) {
+      return [
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text('无结果', textAlign: TextAlign.center),
+          ),
+        ),
+      ];
+    }
+    return _animes!.map((anime) {
       return FAccordionItem(
         title: Text(anime.animeTitle, textAlign: TextAlign.start),
         child: ListView.builder(

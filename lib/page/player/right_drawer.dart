@@ -73,6 +73,8 @@ class RightDrawerContent extends StatelessWidget {
       case RightDrawerType.danmakuSourceSettings:
         return DanmakuSourceSettings(
           danmakuService: playerService.danmakuService,
+          playerService: playerService,
+          onDrawerChanged: onDrawerChanged,
         );
       case RightDrawerType.episode:
         return _buildEpisodePanel(context);
@@ -135,37 +137,14 @@ class RightDrawerContent extends StatelessWidget {
             children: [
               if (configure.danmakuServiceEnable.value) ...[
                 FItem(
-                  prefix: const Icon(Icons.search, size: 20),
-                  title: Text('搜索弹幕', style: context.theme.typography.base),
-                  onPress: () => onDrawerChanged(RightDrawerType.danmakuSearch),
-                ),
-                FItem(
-                  prefix: const Icon(Icons.refresh, size: 20),
-                  title: Text('重新匹配弹幕', style: context.theme.typography.base),
-                  onPress: () {
-                    Navigator.pop(context);
-                    _globalService.showNotification('正在匹配弹幕...');
-                    playerService.danmakuService.loadDanmaku(force: true);
-                  },
-                ),
-                FItem(
-                  prefix: const Icon(Icons.refresh, size: 20),
-                  title: Text('重新加载弹幕', style: context.theme.typography.base),
-                  onPress: () {
-                    Navigator.pop(context);
-                    _globalService.showNotification('正在加载弹幕...');
-                    playerService.danmakuService.refreshDanmaku();
-                  },
-                ),
-                FItem(
-                  prefix: const Icon(Icons.settings, size: 20),
-                  title: Text('弹幕设置', style: context.theme.typography.base),
+                  prefix: const Icon(FIcons.palette, size: 20),
+                  title: Text('弹幕外观', style: context.theme.typography.base),
                   onPress:
                       () => onDrawerChanged(RightDrawerType.danmakuSettings),
                 ),
                 FItem(
-                  prefix: const Icon(Icons.settings, size: 20),
-                  title: Text('弹幕源设置', style: context.theme.typography.base),
+                  prefix: const Icon(FIcons.chartNoAxesGantt, size: 20),
+                  title: Text('弹幕源', style: context.theme.typography.base),
                   onPress:
                       () => onDrawerChanged(
                         RightDrawerType.danmakuSourceSettings,

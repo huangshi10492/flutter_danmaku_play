@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
-/// 弹幕设置面板
 class DanmakuSettingsPanel extends StatelessWidget {
   final DanmakuService danmakuService;
 
@@ -103,6 +102,7 @@ class DanmakuSettingsPanel extends StatelessWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 8),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
               child: Text(

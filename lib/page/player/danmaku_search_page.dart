@@ -24,7 +24,7 @@ class _DanmakuSearchPageState extends State<DanmakuSearchPage> {
   final _globalService = GetIt.I.get<GlobalService>();
   bool _isLoading = false;
   String? _errorMessage;
-  List<Anime> _animes = [];
+  List<Anime>? _animes;
 
   @override
   void initState() {
@@ -46,6 +46,7 @@ class _DanmakuSearchPageState extends State<DanmakuSearchPage> {
 
     setState(() {
       _isLoading = true;
+      _animes = null;
       _errorMessage = null;
     });
 
@@ -127,8 +128,18 @@ class _DanmakuSearchPageState extends State<DanmakuSearchPage> {
         ),
       ];
     }
-
-    return _animes.map((anime) {
+    if (_animes == null) return [];
+    if (_animes!.isEmpty) {
+      return [
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text('无结果', textAlign: TextAlign.center),
+          ),
+        ),
+      ];
+    }
+    return _animes!.map((anime) {
       return FAccordionItem(
         title: Text(anime.animeTitle),
         // 添加分割线

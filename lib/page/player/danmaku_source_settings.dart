@@ -1,5 +1,7 @@
+import 'package:fldanplay/page/player/right_drawer.dart';
 import 'package:fldanplay/service/player/danmaku.dart';
 import 'package:fldanplay/service/global.dart';
+import 'package:fldanplay/service/player/player.dart';
 import 'package:fldanplay/utils/icon.dart';
 import 'package:fldanplay/widget/icon_switch.dart';
 import 'package:fldanplay/widget/settings/settings_section.dart';
@@ -12,8 +14,15 @@ import 'package:signals_flutter/signals_flutter.dart';
 /// 弹幕设置面板
 class DanmakuSourceSettings extends StatelessWidget {
   final DanmakuService danmakuService;
+  final VideoPlayerService playerService;
+  final void Function(RightDrawerType newType) onDrawerChanged;
 
-  const DanmakuSourceSettings({super.key, required this.danmakuService});
+  const DanmakuSourceSettings({
+    super.key,
+    required this.danmakuService,
+    required this.playerService,
+    required this.onDrawerChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +34,39 @@ class DanmakuSourceSettings extends StatelessWidget {
         return ListView(
           padding: EdgeInsets.all(4),
           children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              child: Text(
+                '弹幕操作',
+                style: TextStyle(color: context.theme.colors.mutedForeground),
+              ),
+            ),
+            FButton(
+              style: FButtonStyle.secondary(),
+              onPress: () => onDrawerChanged(RightDrawerType.danmakuSearch),
+              child: const Text('手动搜索获取/更换弹幕'),
+            ),
+            const SizedBox(height: 8),
+            FButton(
+              style: FButtonStyle.secondary(),
+              onPress: () {
+                Navigator.pop(context);
+                globalService.showNotification('正在匹配弹幕...');
+                playerService.danmakuService.loadDanmaku(force: true);
+              },
+              child: const Text('重新匹配'),
+            ),
+            const SizedBox(height: 8),
+            FButton(
+              style: FButtonStyle.secondary(),
+              onPress: () {
+                Navigator.pop(context);
+                globalService.showNotification('正在加载弹幕...');
+                playerService.danmakuService.refreshDanmaku();
+              },
+              child: const Text('重新加载'),
+            ),
+            const SizedBox(height: 8),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
               child: Text(
@@ -94,7 +136,7 @@ class DanmakuSourceSettings extends StatelessWidget {
               title: '延迟设置',
               children: [
                 SettingsTile.sliderTile(
-                  title: 'BiliBili',
+                  title: '哔哩哔哩',
                   onSilderChange: (value) {
                     danmakuService.updateDanmakuSettings(
                       settings.copyWith(bilibiliDelay: value.round()),
@@ -110,7 +152,7 @@ class DanmakuSourceSettings extends StatelessWidget {
                   silderMax: 20,
                 ),
                 SettingsTile.sliderTile(
-                  title: 'Gamer',
+                  title: '巴哈姆特',
                   onSilderChange: (value) {
                     danmakuService.updateDanmakuSettings(
                       settings.copyWith(gamerDelay: value.round()),
@@ -126,7 +168,7 @@ class DanmakuSourceSettings extends StatelessWidget {
                   silderMax: 20,
                 ),
                 SettingsTile.sliderTile(
-                  title: 'DanDan',
+                  title: '弹弹play',
                   onSilderChange: (value) {
                     danmakuService.updateDanmakuSettings(
                       settings.copyWith(dandanDelay: value.round()),
