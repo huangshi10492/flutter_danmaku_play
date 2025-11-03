@@ -676,6 +676,8 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                 ),
                 child: FTextFormField(
                   label: Text('Key'),
+                  readOnly: _storage.uniqueKey.isNotEmpty,
+                  hint: '用于标识，不可重复，只允许字母和数字',
                   controller: _uniqueKeyController,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -684,6 +686,9 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                     if (_storageService.exists(value) &&
                         value != _storage.uniqueKey) {
                       return 'Key已存在';
+                    }
+                    if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value)) {
+                      return 'Key只允许字母和数字';
                     }
                     return null;
                   },
