@@ -132,7 +132,7 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
                       sortOrder = !sortOrder;
                     });
                   },
-                  icon: Icons.arrow_upward,
+                  icon: FIcons.arrowDownAZ,
                   title: '升序',
                 ),
               ),
@@ -147,7 +147,7 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
                       sortOrder = !sortOrder;
                     });
                   },
-                  icon: Icons.arrow_downward,
+                  icon: FIcons.arrowDownZA,
                   title: '降序',
                 ),
               ),

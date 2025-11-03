@@ -18,7 +18,7 @@ import '../model/history.dart';
 abstract class FileExplorerProvider {
   Future<void> init();
   String getVideoUrl(String path);
-  Future<List<FileItem>> listFiles(String path, String rootPath);
+  Future<List<FileItem>> listFiles(String path, String rootPath, Filter filter);
   Map<String, String> get headers;
   Future<bool> downloadVideo(
     String path,
@@ -29,6 +29,19 @@ abstract class FileExplorerProvider {
   void dispose();
 }
 
+class Filter {
+  String searchTerm = '';
+  // 0: 全部，1: 文件夹，2: 视频
+  int displayMode = 0;
+  // true: 升序，false: 降序
+  bool sortOrder = true;
+  Filter();
+
+  bool isFiltered() {
+    return searchTerm.isNotEmpty || sortOrder != true;
+  }
+}
+
 class FileExplorerService {
   final Signal<FileExplorerProvider?> provider = signal(null);
   final path = signal('/');
@@ -36,20 +49,25 @@ class FileExplorerService {
   final listLength = signal(0);
   Storage? _storage;
   final _logger = Logger('FileExplorerService');
+  final Signal<Filter> filter = signal(Filter());
 
   late final FutureSignal<List<FileItem>> files = futureSignal(() async {
     try {
       if (provider.value == null || _storage == null) {
         return [];
       }
-      final list = await provider.value!.listFiles(path.value, _storage!.key);
+      final list = await provider.value!.listFiles(
+        path.value,
+        _storage!.key,
+        filter.value,
+      );
       listLength.value = list.length;
       return list;
     } catch (e) {
       error.value = e.toString();
       return [];
     }
-  }, dependencies: [path, provider]);
+  }, dependencies: [path, provider, filter]);
 
   static void register() {
     final service = FileExplorerService();
@@ -67,20 +85,29 @@ class FileExplorerService {
   }
 
   void next(String name) {
-    path.value = '${path.value}$name/';
+    batch(() {
+      path.value = '${path.value}$name/';
+      filter.value = Filter();
+    });
   }
 
   bool back() {
     if (path.value == '/') {
       return false;
     }
-    path.value =
-        '${path.value.split('/').sublist(0, path.value.split('/').length - 2).join('/')}/';
+    batch(() {
+      path.value =
+          '${path.value.split('/').sublist(0, path.value.split('/').length - 2).join('/')}/';
+      filter.value = Filter();
+    });
     return true;
   }
 
   void cd(String newPath) {
-    path.value = newPath;
+    batch(() {
+      path.value = newPath;
+      filter.value = Filter();
+    });
   }
 
   Future<void> refresh() async {
@@ -166,7 +193,11 @@ class WebDAVFileExplorerProvider implements FileExplorerProvider {
   }
 
   @override
-  Future<List<FileItem>> listFiles(String path, String rootPath) async {
+  Future<List<FileItem>> listFiles(
+    String path,
+    String rootPath,
+    Filter filter,
+  ) async {
     try {
       if (client == null) {
         return [];
@@ -174,16 +205,22 @@ class WebDAVFileExplorerProvider implements FileExplorerProvider {
       List<FileItem> list = [];
       var fileList = await client!.readDir(path);
       for (var file in fileList) {
+        if (filter.searchTerm.isNotEmpty &&
+            !file.name.contains(filter.searchTerm)) {
+          continue;
+        }
         final filePath = '$path${file.name}';
         if (FileItem.getFileType(file.name) != FileType.video && !file.isDir) {
           continue;
         }
         if (file.isDir) {
+          if (filter.displayMode == 2) continue;
           list.add(
             FileItem(name: file.name, path: filePath, type: FileType.folder),
           );
           continue;
         }
+        if (filter.displayMode == 1) continue;
         var uniqueKey = CryptoUtils.generateVideoUniqueKey(
           '$rootPath$filePath',
         );
@@ -200,6 +237,9 @@ class WebDAVFileExplorerProvider implements FileExplorerProvider {
         );
       }
       list.sort(_compare);
+      if (!filter.sortOrder) {
+        list = list.reversed.toList();
+      }
       list = setVideoIndex(list);
       return list;
     } catch (e) {
@@ -264,7 +304,11 @@ class LocalFileExplorerProvider implements FileExplorerProvider {
   }
 
   @override
-  Future<List<FileItem>> listFiles(String path, String rootPath) async {
+  Future<List<FileItem>> listFiles(
+    String path,
+    String rootPath,
+    Filter filter,
+  ) async {
     try {
       final historyService = GetIt.I.get<HistoryService>();
       if (path.isEmpty) {
@@ -273,7 +317,12 @@ class LocalFileExplorerProvider implements FileExplorerProvider {
       var list = <FileItem>[];
       final fileList = Directory('$url$path').list();
       await for (var file in fileList) {
+        if (filter.searchTerm.isNotEmpty &&
+            !file.path.contains(filter.searchTerm)) {
+          continue;
+        }
         if (file is! File) {
+          if (filter.displayMode == 2) continue;
           list.add(
             FileItem(
               name: file.path.split('/').last,
@@ -283,6 +332,7 @@ class LocalFileExplorerProvider implements FileExplorerProvider {
           );
           continue;
         }
+        if (filter.displayMode == 1) continue;
         final filePath = '$path${file.path.split('/').last}';
         if (FileItem.getFileType(file.path) != FileType.video) {
           continue;
@@ -303,6 +353,9 @@ class LocalFileExplorerProvider implements FileExplorerProvider {
         );
       }
       list.sort(_compare);
+      if (!filter.sortOrder) {
+        list = list.reversed.toList();
+      }
       list = setVideoIndex(list);
       return list;
     } catch (e) {
