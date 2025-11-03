@@ -10,6 +10,7 @@ import 'package:fldanplay/service/file_explorer.dart';
 import 'package:fldanplay/service/global.dart';
 import 'package:fldanplay/service/player/player.dart';
 import 'package:fldanplay/service/stream_media_explorer.dart';
+import 'package:fldanplay/utils/icon.dart';
 import 'package:fldanplay/utils/utils.dart';
 import 'package:fldanplay/widget/settings/settings_section.dart';
 import 'package:fldanplay/widget/settings/settings_tile.dart';
@@ -143,7 +144,7 @@ class RightDrawerContent extends StatelessWidget {
                       () => onDrawerChanged(RightDrawerType.danmakuSettings),
                 ),
                 FItem(
-                  prefix: const Icon(FIcons.chartNoAxesGantt, size: 20),
+                  prefix: const Icon(MyIcon.danmakuSettings, size: 20),
                   title: Text('弹幕源', style: context.theme.typography.base),
                   onPress:
                       () => onDrawerChanged(
@@ -157,12 +158,12 @@ class RightDrawerContent extends StatelessWidget {
                 onPress: () => onDrawerChanged(RightDrawerType.audioTrack),
               ),
               FItem(
-                prefix: const Icon(Icons.subtitles_outlined, size: 20),
+                prefix: const Icon(FIcons.captions, size: 20),
                 title: Text('字幕选择', style: context.theme.typography.base),
                 onPress: () => onDrawerChanged(RightDrawerType.subtitleTrack),
               ),
               FItem(
-                prefix: const Icon(Icons.info_outlined, size: 20),
+                prefix: const Icon(FIcons.info, size: 20),
                 title: Text('播放信息', style: context.theme.typography.base),
                 onPress: () => onDrawerChanged(RightDrawerType.metadata),
               ),

@@ -11,6 +11,7 @@ import 'package:fldanplay/service/global.dart';
 import 'package:fldanplay/service/player/player.dart';
 import 'package:fldanplay/service/player/ui_state.dart';
 import 'package:fldanplay/service/stream_media_explorer.dart';
+import 'package:fldanplay/utils/icon.dart';
 import 'package:fldanplay/utils/utils.dart';
 import 'package:fldanplay/widget/sys_app_bar.dart';
 import 'package:flutter/material.dart';
@@ -395,7 +396,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                           _playerService.value.danmakuService.controller
                               .clear();
                         },
-                        icon: Icon(FIcons.captions, size: 24),
+                        icon: Icon(MyIcon.danmaku, size: 24),
                       )
                       : IconButton(
                         onPressed: () {
@@ -405,7 +406,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                               .danmakuEnabled
                               .value = true;
                         },
-                        icon: Icon(FIcons.captionsOff, size: 24),
+                        icon: Icon(MyIcon.danmakuOff, size: 24),
                       );
                 }),
                 IconButton(
