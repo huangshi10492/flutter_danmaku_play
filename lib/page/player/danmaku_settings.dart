@@ -94,9 +94,10 @@ class DanmakuSettingsPanel extends StatelessWidget {
                       settings.copyWith(danmakuArea: value),
                     );
                   },
-                  details: '${(settings.danmakuArea * 100).round()}%',
+                  details:
+                      '${(settings.danmakuArea * 100).toStringAsFixed(1)}%',
                   silderValue: settings.danmakuArea,
-                  silderDivisions: 4,
+                  silderDivisions: 8,
                   silderMin: 0,
                   silderMax: 1,
                 ),
