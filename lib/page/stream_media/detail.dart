@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:fldanplay/model/stream_media.dart';
+import 'package:fldanplay/page/stream_media/info_card.dart';
 import 'package:fldanplay/router.dart';
 import 'package:fldanplay/service/configure.dart';
 import 'package:fldanplay/service/global.dart';
@@ -11,14 +12,11 @@ import 'package:fldanplay/utils/crypto_utils.dart';
 import 'package:fldanplay/utils/toast.dart';
 import 'package:fldanplay/widget/danmaku_match_dialog.dart';
 import 'package:fldanplay/widget/network_image.dart';
-import 'package:fldanplay/widget/rating_bar.dart';
 import 'package:fldanplay/widget/video_item.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:skeletonizer/skeletonizer.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class StreamMediaDetailPage extends StatefulWidget {
   final MediaItem mediaItem;
@@ -35,6 +33,7 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
   final OfflineCacheService _offlineCacheService =
       GetIt.I.get<OfflineCacheService>();
   final _historyService = GetIt.I.get<HistoryService>();
+
   late TabController _tabController;
   MediaDetail? _mediaDetail;
   bool _isLoading = true;
@@ -56,7 +55,6 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
     super.dispose();
   }
 
-  // 触发单个项刷新的方法
   void refreshItem(String uniqueKey) {
     setState(() {
       _refreshMap[uniqueKey] = (_refreshMap[uniqueKey] ?? 0) + 1;
@@ -75,8 +73,6 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
       setState(() {
         _mediaDetail = detail;
         _isLoading = false;
-
-        // 重新创建TabController
         _tabController.dispose();
         _tabController = TabController(
           length: detail.seasons.length,
@@ -91,149 +87,89 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
     }
   }
 
-  Widget _buildEmtpyPrefix() {
-    return LayoutBuilder(
-      builder: (context, boxConstraints) {
-        final double maxWidth = boxConstraints.maxWidth;
-        final double maxHeight = boxConstraints.maxHeight;
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
-            color: const Color.fromARGB(255, 25, 25, 25),
-          ),
-          width: maxWidth,
-          height: maxHeight,
-          child: Center(
-            child: const Icon(
-              Icons.folder_outlined,
-              size: 70,
-              color: Colors.grey,
-            ),
-          ),
-        );
-      },
-    );
+  void _onPlayEpisode(SeasonInfo season, int index) {
+    try {
+      _service.setVideoList(season);
+      final videoInfo = _service.getVideoInfo(index);
+      if (GetIt.I.get<ConfigureService>().offlineCacheFirst.value) {
+        videoInfo.cached = _offlineCacheService.isCached(videoInfo.uniqueKey);
+      }
+      if (mounted) {
+        final location = Uri(path: videoPlayerPath);
+        context.push(location.toString(), extra: videoInfo);
+      }
+    } catch (e) {
+      if (mounted) {
+        showToast(context, level: 3, title: '播放失败', description: e.toString());
+      }
+    }
+  }
+
+  void _onDownloadEpisode(SeasonInfo season, int index) {
+    _service.setVideoList(season);
+    final videoInfo = _service.getVideoInfo(index);
+    _offlineCacheService.startDownload(videoInfo);
+    if (context.mounted) {
+      showToast(context, title: '${videoInfo.name}已加入离线缓存');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isLandscape = constraints.maxWidth > constraints.maxHeight;
-          return isLandscape ? _buildLandscapeLayout() : _buildPortraitLayout();
-        },
-      ),
-    );
-  }
-
-  Widget _buildPortraitLayout() {
-    return NestedScrollView(
-      headerSliverBuilder: (context, innerBoxIsScrolled) {
-        return [
-          SliverOverlapAbsorber(
-            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-            sliver: SliverAppBar.medium(
-              title: Text(widget.mediaItem.name),
-              scrolledUnderElevation: 0,
-              stretch: true,
-              centerTitle: false,
-              expandedHeight: 300 + kTextTabBarHeight + kToolbarHeight,
-              toolbarHeight: kToolbarHeight,
-              collapsedHeight:
-                  kTextTabBarHeight +
-                  kToolbarHeight +
-                  MediaQuery.paddingOf(context).top,
-              forceElevated: innerBoxIsScrolled,
-              flexibleSpace: FlexibleSpaceBar(
-                collapseMode: CollapseMode.pin,
-                background: Stack(
-                  children: [
-                    SizedBox(
-                      height: 300 + kTextTabBarHeight + kToolbarHeight,
-                      child: _buildbackground(false),
-                    ),
-                    SafeArea(
-                      bottom: false,
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(16, kToolbarHeight, 16, 0),
-                        child: _buildMediaInfoWithLoading(),
-                      ),
-                    ),
-                  ],
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverOverlapAbsorber(
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              sliver: SliverAppBar.medium(
+                title: Text(
+                  widget.mediaItem.name,
+                  style: context.theme.typography.lg.copyWith(height: 1.2),
                 ),
-              ),
-
-              bottom: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                dividerHeight: 0,
-                tabs:
-                    _mediaDetail == null
-                        ? []
-                        : _mediaDetail!.seasons
-                            .map((season) => Tab(text: season.name))
-                            .toList(),
-              ),
-            ),
-          ),
-        ];
-      },
-      body: _buildPortraitTabContent(),
-    );
-  }
-
-  Widget _buildLandscapeLayout() {
-    return Row(
-      children: [
-        Stack(
-          children: [
-            SizedBox(width: 380, child: _buildbackground(true)),
-            SafeArea(
-              child: SizedBox(
-                width: 400,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(8),
-                      child: IconButton(
-                        icon: const Icon(FIcons.arrowLeft, size: 24),
-                        onPressed: () => context.pop(),
+                scrolledUnderElevation: 0,
+                stretch: true,
+                centerTitle: false,
+                expandedHeight: 300 + kTextTabBarHeight + kToolbarHeight,
+                toolbarHeight: kToolbarHeight,
+                collapsedHeight:
+                    kTextTabBarHeight +
+                    kToolbarHeight +
+                    MediaQuery.paddingOf(context).top,
+                forceElevated: innerBoxIsScrolled,
+                flexibleSpace: FlexibleSpaceBar(
+                  collapseMode: CollapseMode.pin,
+                  background: Stack(
+                    children: [
+                      Positioned.fill(
+                        bottom: kTextTabBarHeight,
+                        child: _buildbackground(false),
                       ),
-                    ),
-                    Expanded(
-                      child: SingleChildScrollView(
+                      SafeArea(
+                        bottom: false,
                         child: Padding(
-                          padding: EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            bottom: 16,
+                          padding: const EdgeInsets.fromLTRB(
+                            16,
+                            kToolbarHeight,
+                            16,
+                            kTextTabBarHeight,
                           ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildMediaInfoWithLoading(isLandscape: true),
-                              const SizedBox(height: 16),
-                              _buildDetail(),
-                            ],
+                          child: StreamMediaInfoCard(
+                            title: widget.mediaItem.name,
+                            mediaId: widget.mediaItem.id,
+                            imageUrl: _service.provider.getImageUrl(
+                              widget.mediaItem.id,
+                            ),
+                            headers: _service.provider.headers,
+                            isLoading: _isLoading,
+                            mediaDetail: _mediaDetail,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ),
-          ],
-        ),
-        Expanded(
-          child: SafeArea(
-            child: Column(
-              children: [
-                TabBar(
+                bottom: TabBar(
                   controller: _tabController,
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
@@ -245,20 +181,19 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                               .map((season) => Tab(text: season.name))
                               .toList(),
                 ),
-                Expanded(child: _buildLandscapeTabContent()),
-              ],
+              ),
             ),
-          ),
-        ),
-      ],
+          ];
+        },
+        body: SafeArea(child: _buildBody()),
+      ),
     );
   }
 
-  Widget _buildPortraitTabContent() {
+  Widget _buildBody() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-
     if (_error != null) {
       return Center(
         child: Column(
@@ -274,11 +209,9 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
         ),
       );
     }
-
     if (_mediaDetail == null || _mediaDetail!.seasons.isEmpty) {
       return const Center(child: Text('暂无季度信息'));
     }
-
     return TabBarView(
       controller: _tabController,
       children:
@@ -298,18 +231,10 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                         context,
                       ),
                     ),
-                    SliverLayoutBuilder(
-                      builder: (context, constraints) {
-                        return SliverList.builder(
-                          itemCount: season.episodes.length,
-                          itemBuilder: (context, index) {
-                            return _buildSeasonViewBuilder(
-                              context,
-                              index,
-                              season,
-                            );
-                          },
-                        );
+                    SliverList.builder(
+                      itemCount: season.episodes.length,
+                      itemBuilder: (context, index) {
+                        return _buildSeasonViewBuilder(context, index, season);
                       },
                     ),
                   ],
@@ -320,215 +245,13 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
     );
   }
 
-  Widget _buildLandscapeTabContent() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('加载失败: $_error'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadMediaDetail,
-              child: const Text('重试'),
-            ),
-          ],
-        ),
-      );
-    }
-    if (_mediaDetail == null || _mediaDetail!.seasons.isEmpty) {
-      return const Center(child: Text('暂无季度信息'));
-    }
-
-    return TabBarView(
-      controller: _tabController,
-      children:
-          _mediaDetail!.seasons.map((season) {
-            if (season.episodes.isEmpty) {
-              return const Center(child: Text('暂无集数'));
-            }
-            return ListView.builder(
-              itemCount: season.episodes.length,
-              itemBuilder: (context, index) {
-                return _buildSeasonViewBuilder(context, index, season);
-              },
-            );
-          }).toList(),
-    );
-  }
-
-  Widget _buildMediaInfoWithLoading({bool isLandscape = false}) {
-    final provider = _service.provider;
-    return SizedBox(
-      height: 300,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.mediaItem.name,
-            style: context.theme.typography.xl.copyWith(height: 1.4),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AspectRatio(
-                  aspectRatio: 0.7,
-                  child: LayoutBuilder(
-                    builder: (context, boxConstraints) {
-                      final double maxWidth = boxConstraints.maxWidth;
-                      final double maxHeight = boxConstraints.maxHeight;
-                      return Hero(
-                        transitionOnUserGestures: true,
-                        tag: widget.mediaItem.id,
-                        child: NetworkImageWidget(
-                          url: provider.getImageUrl(widget.mediaItem.id),
-                          headers: provider.headers,
-                          maxWidth: maxWidth,
-                          maxHeight: maxHeight,
-                          large: true,
-                          errorWidget: _buildEmtpyPrefix(),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Skeletonizer(
-                    enabled: _isLoading,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () {
-                        if (isLandscape) {
-                          return;
-                        }
-                        showModalBottomSheet(
-                          isScrollControlled: true,
-                          useSafeArea: true,
-                          showDragHandle: true,
-                          context: context,
-                          builder: (context) {
-                            return DraggableScrollableSheet(
-                              expand: false,
-                              initialChildSize: 0.6,
-                              minChildSize: 0.4,
-                              builder: (context, scrollController) {
-                                return SingleChildScrollView(
-                                  controller: scrollController,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: context.theme.colors.background,
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(8),
-                                        topRight: Radius.circular(8),
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 16,
-                                        right: 16,
-                                        bottom: 16,
-                                      ),
-                                      child: _buildDetail(),
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('年份:'),
-                            Text(
-                              (_mediaDetail == null ||
-                                      _mediaDetail!.productionYear == null)
-                                  ? '未知'
-                                  : _mediaDetail!.productionYear.toString(),
-                              style: TextStyle(
-                                fontSize: 24,
-                                height: 1.5,
-                                fontWeight: FontWeight.bold,
-                                color: context.theme.colors.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text('评分:'),
-                            const SizedBox(height: 6),
-                            (_mediaDetail == null || _mediaDetail!.rating == 0)
-                                ? Text(
-                                  '暂无评分',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    height: 1.2,
-                                    fontWeight: FontWeight.bold,
-                                    color: context.theme.colors.primary,
-                                  ),
-                                )
-                                : RatingBar(
-                                  rating: _mediaDetail?.rating ?? 0.0,
-                                ),
-                            if (_mediaDetail != null &&
-                                _mediaDetail!.rating != 0)
-                              Text(
-                                _mediaDetail!.rating.toStringAsFixed(1),
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  height: 1.4,
-                                  fontWeight: FontWeight.bold,
-                                  color: context.theme.colors.primary,
-                                ),
-                              ),
-                            const SizedBox(height: 12),
-                            if (_mediaDetail != null &&
-                                _mediaDetail!.genres.isNotEmpty)
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('分类:'),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    _mediaDetail!.genres.join(' / '),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      height: 1.25,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildbackground(bool isLandscape) {
-    if (_mediaDetail == null) {
+    if (_mediaDetail == null || _isLoading) {
       return Container();
     }
     return IgnorePointer(
       child: Opacity(
-        opacity: 0.3,
+        opacity: 0.4,
         child: LayoutBuilder(
           builder: (context, boxConstraints) {
             return ImageFiltered(
@@ -545,7 +268,7 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                             ? Alignment.centerRight
                             : Alignment.bottomCenter,
                     colors: [Colors.white, Colors.transparent],
-                    stops: [0.8, 1],
+                    stops: [0.7, 1],
                   ).createShader(bounds);
                 },
                 child: NetworkImageWidget(
@@ -559,88 +282,6 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildDetail() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('简介', style: context.theme.typography.xl),
-        const SizedBox(height: 4),
-
-        Text(
-          _mediaDetail?.overview == null
-              ? '暂无简介'
-              : (_mediaDetail?.overview
-                      ?.replaceAll('<br>', ' ')
-                      .replaceAll('<br/>', ' ')
-                      .replaceAll('<br />', ' ')) ??
-                  '',
-          style: context.theme.typography.base,
-        ),
-        const SizedBox(height: 16),
-        Text('标签', style: context.theme.typography.xl),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children:
-              _mediaDetail?.tags.map((tag) {
-                return Padding(
-                  padding: const EdgeInsets.all(2),
-                  child: FFocusedOutline(
-                    focused: true,
-                    style:
-                        (style) => style.copyWith(
-                          color: context.theme.colors.mutedForeground,
-                        ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Text(tag),
-                    ),
-                  ),
-                );
-              }).toList() ??
-              [],
-        ),
-        const SizedBox(height: 16),
-        Text('外部链接', style: context.theme.typography.xl),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children:
-              _mediaDetail?.externalUrls.map((url) {
-                return InkWell(
-                  onTap: () {
-                    launchUrl(Uri.parse(url.url));
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: FFocusedOutline(
-                      focused: true,
-                      style:
-                          (style) => style.copyWith(
-                            color: context.theme.colors.mutedForeground,
-                          ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        child: Text(
-                          url.name,
-                          style: context.theme.typography.base,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList() ??
-              [],
-        ),
-      ],
     );
   }
 
@@ -661,42 +302,12 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
       imageUrl: _service.provider.getImageUrl(episode.id),
       headers: _service.provider.headers,
       name: '${episode.indexNumber}. ${episode.name}',
-      onOfflineDownload: () {
-        _service.setVideoList(season);
-        final videoInfo = _service.getVideoInfo(index);
-        GetIt.I.get<OfflineCacheService>().startDownload(videoInfo);
-        if (context.mounted) {
-          showToast(context, title: '${videoInfo.name}已加入离线缓存');
-        }
-      },
+      onOfflineDownload: () => _onDownloadEpisode(season, index),
       danmakuMatchDialog: DanmakuMatchDialog(
         uniqueKey: uniqueKey,
         fileName: '${episode.seriesName} ${episode.indexNumber}',
       ),
-      onPress: () {
-        try {
-          _service.setVideoList(season);
-          final videoInfo = _service.getVideoInfo(index);
-          if (GetIt.I.get<ConfigureService>().offlineCacheFirst.value) {
-            videoInfo.cached = _offlineCacheService.isCached(
-              videoInfo.uniqueKey,
-            );
-          }
-          if (mounted) {
-            final location = Uri(path: videoPlayerPath);
-            this.context.push(location.toString(), extra: videoInfo);
-          }
-        } catch (e) {
-          if (mounted) {
-            showToast(
-              this.context,
-              level: 3,
-              title: '播放失败',
-              description: e.toString(),
-            );
-          }
-        }
-      },
+      onPress: () => _onPlayEpisode(season, index),
     );
   }
 }

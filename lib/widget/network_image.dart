@@ -29,7 +29,6 @@ class NetworkImageWidget extends StatelessWidget {
         width: maxWidth,
         height: maxHeight,
         memCacheWidth: maxWidth.cacheSize(context),
-        memCacheHeight: maxHeight.cacheSize(context),
         errorWidget: (context, url, error) {
           if (errorWidget != null) {
             return errorWidget!;

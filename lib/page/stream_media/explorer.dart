@@ -175,85 +175,85 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
     }
     return Scaffold(
       appBar: SysAppBar(title: storage!.name),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: OrientationBuilder(
-          builder: (context, orientation) {
-            int crossCount = orientation != Orientation.portrait ? 6 : 3;
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                return NotificationListener<UserScrollNotification>(
-                  onNotification: (notification) {
-                    if (notification.direction == ScrollDirection.forward) {
-                      setState(() {
-                        isFABVisible = true;
-                      });
-                    }
-                    if (notification.direction == ScrollDirection.reverse) {
-                      setState(() {
-                        isFABVisible = false;
-                      });
-                    }
-                    return false;
-                  },
-                  child: Watch((context) {
-                    return streamMediaExplorerService.items.value.map(
-                      data: (items) {
-                        return CustomScrollView(
-                          slivers: [
-                            SliverGrid(
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                    // 行间距
-                                    mainAxisSpacing: 6,
-                                    // 列间距
-                                    crossAxisSpacing: 6,
-                                    // 最大列宽
-                                    crossAxisCount: crossCount,
-                                    mainAxisExtent:
-                                        constraints.maxWidth /
-                                            crossCount /
-                                            0.7 +
-                                        36,
-                                  ),
-                              delegate: SliverChildBuilderDelegate((
-                                BuildContext context,
-                                int index,
-                              ) {
-                                return _buildMediaCard(items[index]);
-                              }, childCount: items.length),
-                            ),
-                            if (items.length == 300)
-                              SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: Text(
-                                    '最多显示300个结果，更多结果请使用筛选',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
+      body: Watch((context) {
+        return streamMediaExplorerService.items.value.map(
+          data: (items) {
+            return SafeArea(
+              minimum: const EdgeInsets.symmetric(horizontal: 8),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final screenWidth = constraints.maxWidth;
+                  const itemSpacing = 8.0;
+                  final minItemWidth =
+                      100.0 + (screenWidth - 300).clamp(0, 500) * 0.15;
+                  final crossAxisCount = (screenWidth /
+                          (minItemWidth + itemSpacing))
+                      .floor()
+                      .clamp(2, 100);
+                  final itemWidth =
+                      (screenWidth - itemSpacing * (crossAxisCount + 1)) /
+                      crossAxisCount;
+                  final imageHeight = itemWidth / 0.7;
+                  final textHeight = 36;
+                  final totalHeight = imageHeight + textHeight + 4.0;
+                  return NotificationListener<UserScrollNotification>(
+                    onNotification: (notification) {
+                      if (notification.direction == ScrollDirection.forward) {
+                        setState(() {
+                          isFABVisible = true;
+                        });
+                      }
+                      if (notification.direction == ScrollDirection.reverse) {
+                        setState(() {
+                          isFABVisible = false;
+                        });
+                      }
+                      return false;
+                    },
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverGrid(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                crossAxisSpacing: itemSpacing,
+                                mainAxisSpacing: 4,
+                                childAspectRatio: itemWidth / totalHeight,
+                              ),
+                          delegate: SliverChildBuilderDelegate((
+                            BuildContext context,
+                            int index,
+                          ) {
+                            return _buildMediaCard(items[index]);
+                          }, childCount: items.length),
+                        ),
+                        if (items.length == 300)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text(
+                                '最多显示300个结果，更多结果请使用筛选',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
                                 ),
                               ),
-                          ],
-                        );
-                      },
-                      error:
-                          (error, stack) =>
-                              Center(child: Text('加载失败\n${error.toString()}')),
-                      loading:
-                          () =>
-                              const Center(child: CircularProgressIndicator()),
-                    );
-                  }),
-                );
-              },
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             );
           },
-        ),
-      ),
+          error:
+              (error, stack) =>
+                  Center(child: Text('加载失败\n${error.toString()}')),
+          loading: () => const Center(child: CircularProgressIndicator()),
+        );
+      }),
       floatingActionButton:
           isFABVisible
               ? Watch((context) {
