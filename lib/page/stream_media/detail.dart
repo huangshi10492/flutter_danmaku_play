@@ -185,7 +185,7 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
             ),
           ];
         },
-        body: SafeArea(child: _buildBody()),
+        body: SafeArea(top: false, child: _buildBody()),
       ),
     );
   }
