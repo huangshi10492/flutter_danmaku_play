@@ -31,8 +31,8 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          flutter-version-file: pubspec.yaml
+          flutter-version: "3.38.3"
+          cache: true
 
       - name: Download Android keystore
         id: android_keystore
