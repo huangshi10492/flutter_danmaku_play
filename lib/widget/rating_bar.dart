@@ -11,10 +11,9 @@ class RatingBar extends StatelessWidget {
     Widget item({required bool filled}) {
       return Icon(
         Icons.star,
-        color:
-            filled
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).disabledColor,
+        color: filled
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).disabledColor,
         size: 20,
       );
     }

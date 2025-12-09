@@ -242,10 +242,9 @@ class OfflineCacheAdapter extends TypeAdapter<OfflineCache> {
       content: fields[2] as String,
       cacheTime: (fields[4] as num).toInt(),
       fileSize: fields[3] == null ? 0 : (fields[3] as num).toInt(),
-      status:
-          fields[5] == null
-              ? DownloadStatus.downloading
-              : fields[5] as DownloadStatus,
+      status: fields[5] == null
+          ? DownloadStatus.downloading
+          : fields[5] as DownloadStatus,
       downloadedBytes: fields[6] == null ? 0 : (fields[6] as num).toInt(),
       totalBytes: fields[7] == null ? 0 : (fields[7] as num).toInt(),
     );
@@ -297,10 +296,9 @@ class VideoInfoAdapter extends TypeAdapter<VideoInfo> {
     return VideoInfo(
       currentVideoPath: fields[0] as String,
       virtualVideoPath: fields[1] as String,
-      headers:
-          fields[2] == null
-              ? const {}
-              : (fields[2] as Map).cast<String, String>(),
+      headers: fields[2] == null
+          ? const {}
+          : (fields[2] as Map).cast<String, String>(),
       historiesType: fields[3] as HistoriesType,
       storageKey: fields[4] as String?,
       videoName: fields[6] as String,

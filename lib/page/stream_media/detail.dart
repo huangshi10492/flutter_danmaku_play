@@ -28,10 +28,10 @@ class StreamMediaDetailPage extends StatefulWidget {
 
 class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
     with TickerProviderStateMixin {
-  final StreamMediaExplorerService _service =
-      GetIt.I.get<StreamMediaExplorerService>();
-  final OfflineCacheService _offlineCacheService =
-      GetIt.I.get<OfflineCacheService>();
+  final StreamMediaExplorerService _service = GetIt.I
+      .get<StreamMediaExplorerService>();
+  final OfflineCacheService _offlineCacheService = GetIt.I
+      .get<OfflineCacheService>();
   final _historyService = GetIt.I.get<HistoryService>();
 
   late TabController _tabController;
@@ -174,12 +174,11 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
                   dividerHeight: 0,
-                  tabs:
-                      _mediaDetail == null
-                          ? []
-                          : _mediaDetail!.seasons
-                              .map((season) => Tab(text: season.name))
-                              .toList(),
+                  tabs: _mediaDetail == null
+                      ? []
+                      : _mediaDetail!.seasons
+                            .map((season) => Tab(text: season.name))
+                            .toList(),
                 ),
               ),
             ),
@@ -214,34 +213,33 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
     }
     return TabBarView(
       controller: _tabController,
-      children:
-          _mediaDetail!.seasons.map((season) {
-            if (season.episodes.isEmpty) {
-              return const Center(child: Text('暂无集数'));
-            }
-            return Builder(
-              builder: (BuildContext context) {
-                return CustomScrollView(
-                  scrollBehavior: const ScrollBehavior().copyWith(
-                    scrollbars: false,
+      children: _mediaDetail!.seasons.map((season) {
+        if (season.episodes.isEmpty) {
+          return const Center(child: Text('暂无集数'));
+        }
+        return Builder(
+          builder: (BuildContext context) {
+            return CustomScrollView(
+              scrollBehavior: const ScrollBehavior().copyWith(
+                scrollbars: false,
+              ),
+              slivers: <Widget>[
+                SliverOverlapInjector(
+                  handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                    context,
                   ),
-                  slivers: <Widget>[
-                    SliverOverlapInjector(
-                      handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-                        context,
-                      ),
-                    ),
-                    SliverList.builder(
-                      itemCount: season.episodes.length,
-                      itemBuilder: (context, index) {
-                        return _buildSeasonViewBuilder(context, index, season);
-                      },
-                    ),
-                  ],
-                );
-              },
+                ),
+                SliverList.builder(
+                  itemCount: season.episodes.length,
+                  itemBuilder: (context, index) {
+                    return _buildSeasonViewBuilder(context, index, season);
+                  },
+                ),
+              ],
             );
-          }).toList(),
+          },
+        );
+      }).toList(),
     );
   }
 
@@ -259,14 +257,12 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
               child: ShaderMask(
                 shaderCallback: (Rect bounds) {
                   return LinearGradient(
-                    begin:
-                        isLandscape
-                            ? Alignment.centerLeft
-                            : Alignment.topCenter,
-                    end:
-                        isLandscape
-                            ? Alignment.centerRight
-                            : Alignment.bottomCenter,
+                    begin: isLandscape
+                        ? Alignment.centerLeft
+                        : Alignment.topCenter,
+                    end: isLandscape
+                        ? Alignment.centerRight
+                        : Alignment.bottomCenter,
                     colors: [Colors.white, Colors.transparent],
                     stops: [0.7, 1],
                   ).createShader(bounds);

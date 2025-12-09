@@ -24,16 +24,15 @@ class RadioSettingsSection extends StatelessWidget {
         style: context.theme.style,
       ),
       selectController: FSelectTileGroupController.radio(value),
-      children:
-          options.entries
-              .map(
-                (e) => FSelectTile(
-                  title: Text(e.key),
-                  subtitle: Text(e.value),
-                  value: e.key,
-                ),
-              )
-              .toList(),
+      children: options.entries
+          .map(
+            (e) => FSelectTile(
+              title: Text(e.key),
+              subtitle: Text(e.value),
+              value: e.key,
+            ),
+          )
+          .toList(),
       onChange: (value) => onChange(value.first),
     );
   }

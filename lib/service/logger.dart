@@ -57,11 +57,10 @@ class LoggerService {
       if (!await _logDirectory.exists()) return;
 
       final files = await _logDirectory.list().toList();
-      final logFiles =
-          files
-              .where((f) => f is File && f.path.endsWith('.log'))
-              .cast<File>()
-              .toList();
+      final logFiles = files
+          .where((f) => f is File && f.path.endsWith('.log'))
+          .cast<File>()
+          .toList();
 
       if (logFiles.length > maxFileCount) {
         // 按修改时间排序，删除最旧的文件

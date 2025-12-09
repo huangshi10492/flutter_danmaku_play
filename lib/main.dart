@@ -168,10 +168,9 @@ class _ApplicationState extends State<Application> with WidgetsBindingObserver {
       var fTheme = getLightTheme(themeColor);
       switch (themeMode) {
         case '0':
-          fTheme =
-              _isDark.value
-                  ? getDarkTheme(themeColor)
-                  : getLightTheme(themeColor);
+          fTheme = _isDark.value
+              ? getDarkTheme(themeColor)
+              : getLightTheme(themeColor);
           break;
         case '1':
           fTheme = getLightTheme(themeColor);
@@ -197,9 +196,10 @@ class _ApplicationState extends State<Application> with WidgetsBindingObserver {
         theme: getLightTheme(themeColor).toApproximateMaterialTheme(),
         darkTheme: getDarkTheme(themeColor).toApproximateMaterialTheme(),
         themeMode: materialThemeMode,
-        builder:
-            (context, child) =>
-                FTheme(data: fTheme, child: FToaster(child: child!)),
+        builder: (context, child) => FTheme(
+          data: fTheme,
+          child: FToaster(child: child!),
+        ),
         routerConfig: router,
       );
     });

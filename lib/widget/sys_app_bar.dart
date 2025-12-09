@@ -21,21 +21,20 @@ class SysAppBar extends StatelessWidget implements PreferredSizeWidget {
         style: context.theme.typography.xl2.copyWith(height: 1.2),
       ),
       actions: acs,
-      leading:
-          Navigator.canPop(context)
-              ? IconButton(
-                onPressed: () {
-                  Navigator.maybePop(context);
-                },
-                icon: Icon(FIcons.arrowLeft),
-              )
-              : null,
+      leading: Navigator.canPop(context)
+          ? IconButton(
+              onPressed: () {
+                Navigator.maybePop(context);
+              },
+              icon: Icon(FIcons.arrowLeft),
+            )
+          : null,
       systemOverlayStyle: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness:
             Theme.of(context).brightness == Brightness.light
-                ? Brightness.dark
-                : Brightness.light,
+            ? Brightness.dark
+            : Brightness.light,
         systemNavigationBarColor: Colors.transparent,
         systemNavigationBarDividerColor: Colors.transparent,
       ),

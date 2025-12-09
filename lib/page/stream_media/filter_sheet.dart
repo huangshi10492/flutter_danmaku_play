@@ -50,13 +50,12 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
   }
 
   void _applyFilter() {
-    Filter filter =
-        Filter()
-          ..searchTerm = searchController.text
-          ..years = yearsController.text
-          ..seriesStatus = status
-          ..sortBy = sortBy
-          ..sortOrder = sortOrder;
+    Filter filter = Filter()
+      ..searchTerm = searchController.text
+      ..years = yearsController.text
+      ..seriesStatus = status
+      ..sortBy = sortBy
+      ..sortOrder = sortOrder;
     widget.service.filter.value = filter;
     Navigator.pop(context);
   }
@@ -100,10 +99,9 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
           details: Text(
             statusOptions.entries.firstWhere((e) => e.value == status).key,
           ),
-          onChange:
-              (value) => setState(() {
-                status = value.first;
-              }),
+          onChange: (value) => setState(() {
+            status = value.first;
+          }),
         ),
         const SizedBox(height: 12),
         FSelectMenuTile.fromMap(
@@ -113,10 +111,9 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
           details: Text(
             sortOptions.entries.firstWhere((e) => e.value == sortBy).key,
           ),
-          onChange:
-              (value) => setState(() {
-                sortBy = value.first;
-              }),
+          onChange: (value) => setState(() {
+            sortBy = value.first;
+          }),
         ),
         const SizedBox(height: 12),
         Row(

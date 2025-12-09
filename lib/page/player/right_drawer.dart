@@ -140,16 +140,14 @@ class RightDrawerContent extends StatelessWidget {
                 FItem(
                   prefix: const Icon(FIcons.palette, size: 20),
                   title: Text('弹幕外观', style: context.theme.typography.base),
-                  onPress:
-                      () => onDrawerChanged(RightDrawerType.danmakuSettings),
+                  onPress: () =>
+                      onDrawerChanged(RightDrawerType.danmakuSettings),
                 ),
                 FItem(
                   prefix: const Icon(MyIcon.danmakuSettings, size: 20),
                   title: Text('弹幕源', style: context.theme.typography.base),
-                  onPress:
-                      () => onDrawerChanged(
-                        RightDrawerType.danmakuSourceSettings,
-                      ),
+                  onPress: () =>
+                      onDrawerChanged(RightDrawerType.danmakuSourceSettings),
                 ),
               ],
               FItem(
@@ -201,12 +199,11 @@ class RightDrawerContent extends StatelessWidget {
       widgetList.add(
         FItem(
           title: Text(file.name, maxLines: 2),
-          subtitle:
-              file.history != null
-                  ? Text(
-                    '观看进度: ${Utils.formatTime(file.history!.position, file.history!.duration)}',
-                  )
-                  : Text('未观看'),
+          subtitle: file.history != null
+              ? Text(
+                  '观看进度: ${Utils.formatTime(file.history!.position, file.history!.duration)}',
+                )
+              : Text('未观看'),
           onPress: () => {onEpisodeSelected(i), Navigator.pop(context)},
         ),
       );
@@ -216,25 +213,23 @@ class RightDrawerContent extends StatelessWidget {
 
   Widget _buildEpisodePanel(BuildContext context) {
     if (videoInfo.historiesType == HistoriesType.streamMediaStorage) {
-      final streamMediaExplorerService =
-          GetIt.I.get<StreamMediaExplorerService>();
+      final streamMediaExplorerService = GetIt.I
+          .get<StreamMediaExplorerService>();
       return Watch((context) {
         final episodeList = streamMediaExplorerService.episodeList;
         return FItemGroup(
-          children:
-              episodeList.asMap().entries.map<FItem>((e) {
-                return FItem(
-                  title: Text('${e.value.indexNumber}. ${e.value.name}'),
-                  onPress:
-                      () => {onEpisodeSelected(e.key), Navigator.pop(context)},
-                );
-              }).toList(),
+          children: episodeList.asMap().entries.map<FItem>((e) {
+            return FItem(
+              title: Text('${e.value.indexNumber}. ${e.value.name}'),
+              onPress: () => {onEpisodeSelected(e.key), Navigator.pop(context)},
+            );
+          }).toList(),
         );
       });
     }
     if (videoInfo.historiesType == HistoriesType.fileStorage) {
-      final FileExplorerService fileExplorerService =
-          GetIt.I.get<FileExplorerService>();
+      final FileExplorerService fileExplorerService = GetIt.I
+          .get<FileExplorerService>();
       return Watch(
         (context) => fileExplorerService.files.value.map(
           data: (files) {

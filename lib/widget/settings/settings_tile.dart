@@ -150,12 +150,11 @@ class SettingsTile extends StatelessWidget with FTileMixin {
     final subtitleStyle = context.theme.itemStyle.contentStyle.subtitleTextStyle
         .resolve({});
     return FTile(
-      style:
-          tileStyle(
-            colors: context.theme.colors,
-            typography: context.theme.typography,
-            style: context.theme.style,
-          ).call,
+      style: tileStyle(
+        colors: context.theme.colors,
+        typography: context.theme.typography,
+        style: context.theme.style,
+      ).call,
       title: ConstrainedBox(
         constraints: BoxConstraints(minHeight: 40),
         child: Column(
@@ -166,10 +165,10 @@ class SettingsTile extends StatelessWidget with FTileMixin {
             subtitle == null
                 ? SizedBox()
                 : Text(
-                  subtitle!,
-                  style: subtitleStyle,
-                  overflow: TextOverflow.visible,
-                ),
+                    subtitle!,
+                    style: subtitleStyle,
+                    overflow: TextOverflow.visible,
+                  ),
           ],
         ),
       ),
@@ -183,12 +182,11 @@ class SettingsTile extends StatelessWidget with FTileMixin {
     final subtitleStyle = context.theme.itemStyle.contentStyle.subtitleTextStyle
         .resolve({});
     return FTile(
-      style:
-          tileStyle(
-            colors: context.theme.colors,
-            typography: context.theme.typography,
-            style: context.theme.style,
-          ).call,
+      style: tileStyle(
+        colors: context.theme.colors,
+        typography: context.theme.typography,
+        style: context.theme.style,
+      ).call,
       title: ConstrainedBox(
         constraints: BoxConstraints(minHeight: 40),
         child: Column(
@@ -199,10 +197,10 @@ class SettingsTile extends StatelessWidget with FTileMixin {
             subtitle == null
                 ? SizedBox()
                 : Text(
-                  subtitle!,
-                  style: subtitleStyle,
-                  overflow: TextOverflow.visible,
-                ),
+                    subtitle!,
+                    style: subtitleStyle,
+                    overflow: TextOverflow.visible,
+                  ),
           ],
         ),
       ),
@@ -221,12 +219,11 @@ class SettingsTile extends StatelessWidget with FTileMixin {
     final subtitleStyle = context.theme.itemStyle.contentStyle.subtitleTextStyle
         .resolve({});
     return FTile(
-      style:
-          tileStyle(
-            colors: context.theme.colors,
-            typography: context.theme.typography,
-            style: context.theme.style,
-          ).call,
+      style: tileStyle(
+        colors: context.theme.colors,
+        typography: context.theme.typography,
+        style: context.theme.style,
+      ).call,
       title: ConstrainedBox(
         constraints: BoxConstraints(minHeight: 40),
         child: Column(
@@ -248,10 +245,10 @@ class SettingsTile extends StatelessWidget with FTileMixin {
             subtitle == null || subtitle == ''
                 ? SizedBox()
                 : Text(
-                  subtitle!,
-                  style: subtitleStyle,
-                  overflow: TextOverflow.visible,
-                ),
+                    subtitle!,
+                    style: subtitleStyle,
+                    overflow: TextOverflow.visible,
+                  ),
           ],
         ),
       ),
@@ -263,18 +260,16 @@ class SettingsTile extends StatelessWidget with FTileMixin {
   Widget _buildRadioTile(BuildContext context) {
     return FSelectMenuTile.fromMap(
       radioOptions!,
-      style:
-          selectMenuTileStyle(
-            colors: context.theme.colors,
-            typography: context.theme.typography,
-            style: context.theme.style,
-          ).call,
+      style: selectMenuTileStyle(
+        colors: context.theme.colors,
+        typography: context.theme.typography,
+        style: context.theme.style,
+      ).call,
       title: Text(title),
       initialValue: radioValue,
-      subtitle:
-          subtitle == null
-              ? null
-              : Text(subtitle!, overflow: TextOverflow.visible),
+      subtitle: subtitle == null
+          ? null
+          : Text(subtitle!, overflow: TextOverflow.visible),
       details: ConstrainedBox(
         constraints: BoxConstraints(minHeight: 40),
         child: Column(

@@ -36,87 +36,77 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: rootPath,
-      pageBuilder:
-          (context, state) => SlideAndExitTransitionPage(
-            key: state.pageKey,
-            child: const RootPage(),
-          ),
+      pageBuilder: (context, state) => SlideAndExitTransitionPage(
+        key: state.pageKey,
+        child: const RootPage(),
+      ),
     ),
     GoRoute(
       path: settingsPath,
-      pageBuilder:
-          (context, state) => SlideAndExitTransitionPage(
-            key: state.pageKey,
-            child: const SettingsPage(),
-          ),
+      pageBuilder: (context, state) => SlideAndExitTransitionPage(
+        key: state.pageKey,
+        child: const SettingsPage(),
+      ),
       routes: [
         GoRoute(
           path: 'general',
-          pageBuilder:
-              (context, state) => SlideAndExitTransitionPage(
-                key: state.pageKey,
-                child: const GeneralSettingsPage(),
-              ),
+          pageBuilder: (context, state) => SlideAndExitTransitionPage(
+            key: state.pageKey,
+            child: const GeneralSettingsPage(),
+          ),
         ),
         GoRoute(
           path: 'player',
-          pageBuilder:
-              (context, state) => SlideAndExitTransitionPage(
-                key: state.pageKey,
-                child: const PlayerSettingsPage(),
-              ),
+          pageBuilder: (context, state) => SlideAndExitTransitionPage(
+            key: state.pageKey,
+            child: const PlayerSettingsPage(),
+          ),
           routes: [
             GoRoute(
               path: 'hardware-decoder',
-              pageBuilder:
-                  (context, state) => SlideAndExitTransitionPage(
-                    key: state.pageKey,
-                    child: const HardwareDecoderPage(),
-                  ),
+              pageBuilder: (context, state) => SlideAndExitTransitionPage(
+                key: state.pageKey,
+                child: const HardwareDecoderPage(),
+              ),
             ),
           ],
         ),
         GoRoute(
           path: 'danmaku',
-          pageBuilder:
-              (context, state) => SlideAndExitTransitionPage(
-                key: state.pageKey,
-                child: const DanmakuSettingsPage(),
-              ),
+          pageBuilder: (context, state) => SlideAndExitTransitionPage(
+            key: state.pageKey,
+            child: const DanmakuSettingsPage(),
+          ),
         ),
         GoRoute(
           path: 'font',
-          pageBuilder:
-              (context, state) => SlideAndExitTransitionPage(
-                key: state.pageKey,
-                child: const FontManagerPage(),
-              ),
+          pageBuilder: (context, state) => SlideAndExitTransitionPage(
+            key: state.pageKey,
+            child: const FontManagerPage(),
+          ),
         ),
         GoRoute(
           path: 'webdav',
-          pageBuilder:
-              (context, state) => SlideAndExitTransitionPage(
-                key: state.pageKey,
-                child: const SyncSettingsPage(),
-              ),
+          pageBuilder: (context, state) => SlideAndExitTransitionPage(
+            key: state.pageKey,
+            child: const SyncSettingsPage(),
+          ),
         ),
         GoRoute(
           path: 'log',
-          pageBuilder:
-              (context, state) => SlideAndExitTransitionPage(
-                key: state.pageKey,
-                child: const LogPage(),
-              ),
+          pageBuilder: (context, state) => SlideAndExitTransitionPage(
+            key: state.pageKey,
+            child: const LogPage(),
+          ),
           routes: [
             GoRoute(
               path: 'view',
-              pageBuilder:
-                  (context, state) => SlideAndExitTransitionPage(
-                    key: state.pageKey,
-                    child: LogViewPage(
-                      fileName: state.uri.queryParameters['file'] ?? '',
-                    ),
-                  ),
+              pageBuilder: (context, state) => SlideAndExitTransitionPage(
+                key: state.pageKey,
+                child: LogViewPage(
+                  fileName: state.uri.queryParameters['file'] ?? '',
+                ),
+              ),
             ),
           ],
         ),
@@ -124,47 +114,42 @@ final router = GoRouter(
     ),
     GoRoute(
       path: fileExplorerPath,
-      pageBuilder:
-          (context, state) => SlideAndExitTransitionPage(
-            key: state.pageKey,
-            child: FileExplorerPage(
-              storageKey: state.uri.queryParameters['key'] ?? '',
-            ),
-          ),
+      pageBuilder: (context, state) => SlideAndExitTransitionPage(
+        key: state.pageKey,
+        child: FileExplorerPage(
+          storageKey: state.uri.queryParameters['key'] ?? '',
+        ),
+      ),
     ),
     GoRoute(
       path: streamMediaExplorerPath,
-      pageBuilder:
-          (context, state) => SlideAndExitTransitionPage(
-            key: state.pageKey,
-            child: StreamMediaExplorerPage(
-              storageKey: state.uri.queryParameters['key'] ?? '',
-            ),
-          ),
+      pageBuilder: (context, state) => SlideAndExitTransitionPage(
+        key: state.pageKey,
+        child: StreamMediaExplorerPage(
+          storageKey: state.uri.queryParameters['key'] ?? '',
+        ),
+      ),
     ),
     GoRoute(
       path: streamMediaDetailPath,
-      pageBuilder:
-          (context, state) => SlideAndExitTransitionPage(
-            key: state.pageKey,
-            child: StreamMediaDetailPage(mediaItem: state.extra as MediaItem),
-          ),
+      pageBuilder: (context, state) => SlideAndExitTransitionPage(
+        key: state.pageKey,
+        child: StreamMediaDetailPage(mediaItem: state.extra as MediaItem),
+      ),
     ),
     GoRoute(
       path: historyPath,
-      pageBuilder:
-          (context, state) => SlideAndExitTransitionPage(
-            key: state.pageKey,
-            child: const HistoryPage(),
-          ),
+      pageBuilder: (context, state) => SlideAndExitTransitionPage(
+        key: state.pageKey,
+        child: const HistoryPage(),
+      ),
     ),
     GoRoute(
       path: offlineCachePath,
-      pageBuilder:
-          (context, state) => SlideAndExitTransitionPage(
-            key: state.pageKey,
-            child: const OfflineCachePage(),
-          ),
+      pageBuilder: (context, state) => SlideAndExitTransitionPage(
+        key: state.pageKey,
+        child: const OfflineCachePage(),
+      ),
     ),
     GoRoute(
       path: videoPlayerPath,
@@ -196,26 +181,28 @@ class SlideAndExitTransitionPage extends CustomTransitionPage<void> {
          transitionDuration: const Duration(milliseconds: 400),
          reverseTransitionDuration: const Duration(milliseconds: 400),
          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-           final slideFromRight = Tween<Offset>(
-             begin: const Offset(1.0, 0.0),
-             end: Offset.zero,
-           ).animate(
-             CurvedAnimation(
-               parent: animation,
-               curve: Curves.easeOutCubic,
-               reverseCurve: Curves.easeInCubic,
-             ),
-           );
-           final slideToLeft = Tween<Offset>(
-             begin: Offset.zero,
-             end: const Offset(-0.5, 0.0),
-           ).animate(
-             CurvedAnimation(
-               parent: secondaryAnimation,
-               curve: Curves.easeOutCubic,
-               reverseCurve: Curves.easeInCubic,
-             ),
-           );
+           final slideFromRight =
+               Tween<Offset>(
+                 begin: const Offset(1.0, 0.0),
+                 end: Offset.zero,
+               ).animate(
+                 CurvedAnimation(
+                   parent: animation,
+                   curve: Curves.easeOutCubic,
+                   reverseCurve: Curves.easeInCubic,
+                 ),
+               );
+           final slideToLeft =
+               Tween<Offset>(
+                 begin: Offset.zero,
+                 end: const Offset(-0.5, 0.0),
+               ).animate(
+                 CurvedAnimation(
+                   parent: secondaryAnimation,
+                   curve: Curves.easeOutCubic,
+                   reverseCurve: Curves.easeInCubic,
+                 ),
+               );
            return SlideTransition(
              position: slideFromRight,
              child: SlideTransition(position: slideToLeft, child: child),

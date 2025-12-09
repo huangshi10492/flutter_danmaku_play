@@ -34,13 +34,12 @@ void showToast(
       style: context.theme.typography.base.copyWith(height: 1),
     ),
     description: description != null ? Text(description) : null,
-    suffixBuilder:
-        (context, entry) => IntrinsicHeight(
-          child: FButton.icon(
-            style: FButtonStyle.ghost(),
-            onPress: entry.dismiss,
-            child: const Icon(FIcons.x),
-          ),
-        ),
+    suffixBuilder: (context, entry) => IntrinsicHeight(
+      child: FButton.icon(
+        style: FButtonStyle.ghost(),
+        onPress: entry.dismiss,
+        child: const Icon(FIcons.x),
+      ),
+    ),
   );
 }

@@ -186,10 +186,10 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
                   const itemSpacing = 8.0;
                   final minItemWidth =
                       100.0 + (screenWidth - 300).clamp(0, 500) * 0.15;
-                  final crossAxisCount = (screenWidth /
-                          (minItemWidth + itemSpacing))
-                      .floor()
-                      .clamp(2, 100);
+                  final crossAxisCount =
+                      (screenWidth / (minItemWidth + itemSpacing))
+                          .floor()
+                          .clamp(2, 100);
                   final itemWidth =
                       (screenWidth - itemSpacing * (crossAxisCount + 1)) /
                       crossAxisCount;
@@ -248,28 +248,25 @@ class _StreamMediaExplorerPageState extends State<StreamMediaExplorerPage> {
               ),
             );
           },
-          error:
-              (error, stack) =>
-                  Center(child: Text('加载失败\n${error.toString()}')),
+          error: (error, stack) =>
+              Center(child: Text('加载失败\n${error.toString()}')),
           loading: () => const Center(child: CircularProgressIndicator()),
         );
       }),
-      floatingActionButton:
-          isFABVisible
-              ? Watch((context) {
-                bool isFiltered =
-                    streamMediaExplorerService.filter.value.isFiltered();
-                return FloatingActionButton(
-                  onPressed: () => _openConfigSheet(streamMediaExplorerService),
-                  shape: CircleBorder(),
-                  child:
-                      isFiltered
-                          ? const Icon(FIcons.listFilterPlus)
-                          : const Icon(FIcons.listFilter),
-                  // backgroundColor: ,
-                );
-              })
-              : null,
+      floatingActionButton: isFABVisible
+          ? Watch((context) {
+              bool isFiltered = streamMediaExplorerService.filter.value
+                  .isFiltered();
+              return FloatingActionButton(
+                onPressed: () => _openConfigSheet(streamMediaExplorerService),
+                shape: CircleBorder(),
+                child: isFiltered
+                    ? const Icon(FIcons.listFilterPlus)
+                    : const Icon(FIcons.listFilter),
+                // backgroundColor: ,
+              );
+            })
+          : null,
     );
   }
 }

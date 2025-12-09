@@ -39,26 +39,25 @@ class _OfflineCachePageState extends State<OfflineCachePage> {
   void _showDeleteConfirmDialog(OfflineCache cache) {
     showAdaptiveDialog(
       context: context,
-      builder:
-          (context) => FDialog(
-            direction: Axis.vertical,
-            title: const Text('删除缓存'),
-            body: Text('确定要删除 "${cache.videoInfo.name}" 的离线缓存吗？'),
-            actions: [
-              FButton(
-                onPress: () => Navigator.pop(context),
-                child: const Text('取消'),
-              ),
-              FButton(
-                style: FButtonStyle.destructive(),
-                onPress: () {
-                  Navigator.pop(context);
-                  _deleteCache(cache);
-                },
-                child: const Text('删除'),
-              ),
-            ],
+      builder: (context) => FDialog(
+        direction: Axis.vertical,
+        title: const Text('删除缓存'),
+        body: Text('确定要删除 "${cache.videoInfo.name}" 的离线缓存吗？'),
+        actions: [
+          FButton(
+            onPress: () => Navigator.pop(context),
+            child: const Text('取消'),
           ),
+          FButton(
+            style: FButtonStyle.destructive(),
+            onPress: () {
+              Navigator.pop(context);
+              _deleteCache(cache);
+            },
+            child: const Text('删除'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -149,8 +148,8 @@ class _OfflineCachePageState extends State<OfflineCachePage> {
                   children: [
                     if (cache.status == DownloadStatus.failed)
                       FButton.icon(
-                        onPress:
-                            () => _cacheService.resumeDownload(cache.uniqueKey),
+                        onPress: () =>
+                            _cacheService.resumeDownload(cache.uniqueKey),
                         style: FButtonStyle.ghost(),
                         child: const Icon(FIcons.rotateCw, size: 20),
                       ),
@@ -177,28 +176,24 @@ class _OfflineCachePageState extends State<OfflineCachePage> {
                     const SizedBox(height: 4),
                     cache.downloadedBytes == 0
                         ? FProgress(
-                          style:
-                              (style) => style.copyWith(
-                                constraints: style.constraints.copyWith(
-                                  minHeight: 6,
-                                  maxHeight: 6,
-                                ),
+                            style: (style) => style.copyWith(
+                              constraints: style.constraints.copyWith(
+                                minHeight: 6,
+                                maxHeight: 6,
                               ),
-                        )
+                            ),
+                          )
                         : FDeterminateProgress(
-                          style:
-                              (style) => style.copyWith(
-                                motion:
-                                    (motion) => motion.copyWith(
-                                      duration: Duration.zero,
-                                    ),
-                                constraints: style.constraints.copyWith(
-                                  minHeight: 6,
-                                  maxHeight: 6,
-                                ),
+                            style: (style) => style.copyWith(
+                              motion: (motion) =>
+                                  motion.copyWith(duration: Duration.zero),
+                              constraints: style.constraints.copyWith(
+                                minHeight: 6,
+                                maxHeight: 6,
                               ),
-                          value: cache.downloadedBytes / cache.totalBytes,
-                        ),
+                            ),
+                            value: cache.downloadedBytes / cache.totalBytes,
+                          ),
                   ],
                 ),
               );

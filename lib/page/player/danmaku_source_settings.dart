@@ -142,10 +142,9 @@ class DanmakuSourceSettings extends StatelessWidget {
                       settings.copyWith(bilibiliDelay: value.round()),
                     );
                   },
-                  details:
-                      settings.bilibiliDelay >= 0
-                          ? '提前${settings.bilibiliDelay}秒'
-                          : '延迟${settings.bilibiliDelay}秒',
+                  details: settings.bilibiliDelay >= 0
+                      ? '提前${settings.bilibiliDelay}秒'
+                      : '延迟${settings.bilibiliDelay}秒',
                   silderValue: settings.bilibiliDelay.toDouble(),
                   silderDivisions: 40,
                   silderMin: -20,
@@ -158,10 +157,9 @@ class DanmakuSourceSettings extends StatelessWidget {
                       settings.copyWith(gamerDelay: value.round()),
                     );
                   },
-                  details:
-                      settings.gamerDelay >= 0
-                          ? '提前${settings.gamerDelay}秒'
-                          : '延迟${settings.gamerDelay}秒',
+                  details: settings.gamerDelay >= 0
+                      ? '提前${settings.gamerDelay}秒'
+                      : '延迟${settings.gamerDelay}秒',
                   silderValue: settings.gamerDelay.toDouble(),
                   silderDivisions: 40,
                   silderMin: -20,
@@ -174,10 +172,9 @@ class DanmakuSourceSettings extends StatelessWidget {
                       settings.copyWith(dandanDelay: value.round()),
                     );
                   },
-                  details:
-                      settings.dandanDelay >= 0
-                          ? '提前${settings.dandanDelay}秒'
-                          : '延迟${settings.dandanDelay}秒',
+                  details: settings.dandanDelay >= 0
+                      ? '提前${settings.dandanDelay}秒'
+                      : '延迟${settings.dandanDelay}秒',
                   silderValue: settings.dandanDelay.toDouble(),
                   silderDivisions: 40,
                   silderMin: -20,
@@ -190,10 +187,9 @@ class DanmakuSourceSettings extends StatelessWidget {
                       settings.copyWith(otherDelay: value.round()),
                     );
                   },
-                  details:
-                      settings.otherDelay >= 0
-                          ? '提前${settings.otherDelay}秒'
-                          : '延迟${settings.otherDelay}秒',
+                  details: settings.otherDelay >= 0
+                      ? '提前${settings.otherDelay}秒'
+                      : '延迟${settings.otherDelay}秒',
                   silderValue: settings.otherDelay.toDouble(),
                   silderDivisions: 40,
                   silderMin: -20,

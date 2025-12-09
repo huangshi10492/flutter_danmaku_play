@@ -75,17 +75,14 @@ class _LogPageState extends State<LogPage> {
               );
               return SettingsSection(
                 title: '日志文件',
-                children:
-                    logFiles.map((file) {
-                      final fileName = file.uri.pathSegments.last;
-                      return SettingsTile.navigationTile(
-                        title: fileName,
-                        onPress:
-                            () => context.push(
-                              '/settings/log/view?file=${file.path}',
-                            ),
-                      );
-                    }).toList(),
+                children: logFiles.map((file) {
+                  final fileName = file.uri.pathSegments.last;
+                  return SettingsTile.navigationTile(
+                    title: fileName,
+                    onPress: () =>
+                        context.push('/settings/log/view?file=${file.path}'),
+                  );
+                }).toList(),
               );
             },
           ),

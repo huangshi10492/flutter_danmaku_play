@@ -159,35 +159,33 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             }
             return KeyEventResult.handled;
           },
-          child:
-              Utils.isDesktop()
-                  ? _buildPlayerWidget()
-                  : VideoPlayerGestureDetector(
-                    onLongPressStart: () {
-                      _uiState.startLongPress(
-                        _configureService.doublePlaySpeed.value,
-                      );
-                      HapticFeedback.vibrate();
-                      _playerService.value.doubleSpeed(true);
-                    },
-                    onLongPressEnd: () {
-                      _uiState.endLongPress();
-                      _playerService.value.doubleSpeed(false);
-                    },
-                    onPanStart: () {
-                      _uiState.startGesture(
-                        initialPosition: _playerService.value.position.value,
-                      );
-                    },
-                    onPanEnd: _uiState.endGesture,
-                    onVerticalDragLeft: _adjustBrightness,
-                    onVerticalDragRight: _adjustVolume,
-                    onHorizontalDrag:
-                        (offset) => _adjustProgress(offset, false),
-                    onHorizontalDragEnd:
-                        (offset) => _adjustProgress(offset, true),
-                    child: _buildPlayerWidget(),
-                  ),
+          child: Utils.isDesktop()
+              ? _buildPlayerWidget()
+              : VideoPlayerGestureDetector(
+                  onLongPressStart: () {
+                    _uiState.startLongPress(
+                      _configureService.doublePlaySpeed.value,
+                    );
+                    HapticFeedback.vibrate();
+                    _playerService.value.doubleSpeed(true);
+                  },
+                  onLongPressEnd: () {
+                    _uiState.endLongPress();
+                    _playerService.value.doubleSpeed(false);
+                  },
+                  onPanStart: () {
+                    _uiState.startGesture(
+                      initialPosition: _playerService.value.position.value,
+                    );
+                  },
+                  onPanEnd: _uiState.endGesture,
+                  onVerticalDragLeft: _adjustBrightness,
+                  onVerticalDragRight: _adjustVolume,
+                  onHorizontalDrag: (offset) => _adjustProgress(offset, false),
+                  onHorizontalDragEnd: (offset) =>
+                      _adjustProgress(offset, true),
+                  child: _buildPlayerWidget(),
+                ),
         ),
       ),
     );
@@ -210,10 +208,9 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             return _buildLoadingWidget();
           }
           return MouseRegion(
-            cursor:
-                (_uiState.showControls.value)
-                    ? SystemMouseCursors.basic
-                    : SystemMouseCursors.none,
+            cursor: (_uiState.showControls.value)
+                ? SystemMouseCursors.basic
+                : SystemMouseCursors.none,
             onHover: (PointerEvent pointerEvent) {
               if (Utils.isDesktop()) {
                 _uiState.showControlsTemporarily();
@@ -387,32 +384,34 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                       _playerService.value.danmakuService.danmakuEnabled.value;
                   return enabled
                       ? IconButton(
-                        onPressed: () {
-                          _playerService
-                              .value
-                              .danmakuService
-                              .danmakuEnabled
-                              .value = false;
-                          _playerService.value.danmakuService.controller
-                              .clear();
-                        },
-                        icon: Icon(MyIcon.danmaku, size: 24),
-                      )
+                          onPressed: () {
+                            _playerService
+                                    .value
+                                    .danmakuService
+                                    .danmakuEnabled
+                                    .value =
+                                false;
+                            _playerService.value.danmakuService.controller
+                                .clear();
+                          },
+                          icon: Icon(MyIcon.danmaku, size: 24),
+                        )
                       : IconButton(
-                        onPressed: () {
-                          _playerService
-                              .value
-                              .danmakuService
-                              .danmakuEnabled
-                              .value = true;
-                        },
-                        icon: Icon(MyIcon.danmakuOff, size: 24),
-                      );
+                          onPressed: () {
+                            _playerService
+                                    .value
+                                    .danmakuService
+                                    .danmakuEnabled
+                                    .value =
+                                true;
+                          },
+                          icon: Icon(MyIcon.danmakuOff, size: 24),
+                        );
                 }),
                 IconButton(
                   icon: const Icon(Icons.more_vert, size: 24),
-                  onPressed:
-                      () => _showRightDrawer(RightDrawerType.danmakuActions),
+                  onPressed: () =>
+                      _showRightDrawer(RightDrawerType.danmakuActions),
                 ),
               ],
             ),
@@ -477,11 +476,11 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                       final videoIndex = _videoInfo.value.videoIndex;
                       return videoIndex > 0
                           ? IconButton(
-                            icon: const Icon(Icons.skip_previous, size: 24),
-                            onPressed: () {
-                              _switchVideo(videoIndex - 1);
-                            },
-                          )
+                              icon: const Icon(Icons.skip_previous, size: 24),
+                              onPressed: () {
+                                _switchVideo(videoIndex - 1);
+                              },
+                            )
                           : Container();
                     }),
                     // 下一个视频
@@ -490,11 +489,11 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                       final videoIndex = _videoInfo.value.videoIndex;
                       return videoIndex < listLength - 1
                           ? IconButton(
-                            icon: const Icon(Icons.skip_next, size: 24),
-                            onPressed: () {
-                              _switchVideo(videoIndex + 1);
-                            },
-                          )
+                              icon: const Icon(Icons.skip_next, size: 24),
+                              onPressed: () {
+                                _switchVideo(videoIndex + 1);
+                              },
+                            )
                           : Container();
                     }),
                   ],
@@ -506,33 +505,33 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                       final chapters = _playerService.value.chapters.value;
                       return chapters.isEmpty
                           ? TextButton.icon(
-                            icon: const Icon(Icons.fast_forward, size: 24),
-                            style: TextButton.styleFrom(
-                              textStyle: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            label: Text(
-                              '快进${_configureService.seekOPSeconds.value}秒',
-                            ),
-                            onPressed: () {
-                              _playerService.value.seekRelative(
-                                Duration(
-                                  seconds:
-                                      _configureService.seekOPSeconds.value,
+                              icon: const Icon(Icons.fast_forward, size: 24),
+                              style: TextButton.styleFrom(
+                                textStyle: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                              );
-                            },
-                          )
+                              ),
+                              label: Text(
+                                '快进${_configureService.seekOPSeconds.value}秒',
+                              ),
+                              onPressed: () {
+                                _playerService.value.seekRelative(
+                                  Duration(
+                                    seconds:
+                                        _configureService.seekOPSeconds.value,
+                                  ),
+                                );
+                              },
+                            )
                           : _buildChapter(chapters);
                     }),
                     // 速度控制
                     Watch((context) {
                       final speed = _playerService.value.playbackSpeed.value;
                       return TextButton(
-                        onPressed:
-                            () => _showRightDrawer(RightDrawerType.speed),
+                        onPressed: () =>
+                            _showRightDrawer(RightDrawerType.speed),
                         style: TextButton.styleFrom(
                           textStyle: const TextStyle(
                             fontSize: 16,
@@ -547,10 +546,10 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                       final canSwitch = _videoInfo.value.canSwitch;
                       return canSwitch
                           ? IconButton(
-                            icon: const Icon(FIcons.listVideo, size: 24),
-                            onPressed:
-                                () => _showRightDrawer(RightDrawerType.episode),
-                          )
+                              icon: const Icon(FIcons.listVideo, size: 24),
+                              onPressed: () =>
+                                  _showRightDrawer(RightDrawerType.episode),
+                            )
                           : Container();
                     }),
                     if (Utils.isDesktop())
@@ -715,9 +714,8 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         width: 300,
         height: MediaQuery.of(context).size.height - 60,
         child: FToaster(
-          style:
-              (style) =>
-                  style.copyWith(expandBehavior: FToasterExpandBehavior.always),
+          style: (style) =>
+              style.copyWith(expandBehavior: FToasterExpandBehavior.always),
           child: Builder(
             builder: (context) {
               _globalService.notificationContext = context;
@@ -825,8 +823,8 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   }
 
   void _switchVideo(int index) async {
-    final streamMediaExplorerService =
-        GetIt.I.get<StreamMediaExplorerService>();
+    final streamMediaExplorerService = GetIt.I
+        .get<StreamMediaExplorerService>();
     final fileExplorerService = GetIt.I.get<FileExplorerService>();
     late VideoInfo newVideoInfo;
     if (_videoInfo.value.historiesType == HistoriesType.fileStorage) {

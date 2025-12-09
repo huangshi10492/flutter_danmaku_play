@@ -33,10 +33,9 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
           direction: Axis.horizontal,
           animation: animation,
           title: Text(title),
-          body:
-              password
-                  ? FTextField.password(controller: controller, label: null)
-                  : FTextField(controller: controller),
+          body: password
+              ? FTextField.password(controller: controller, label: null)
+              : FTextField(controller: controller),
           actions: [
             FButton(
               style: FButtonStyle.outline(),

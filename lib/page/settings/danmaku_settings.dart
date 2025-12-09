@@ -78,15 +78,13 @@ class DanmakuSettingsPage extends StatelessWidget {
                 SettingsTile.navigationTile(
                   title: '弹幕服务地址',
                   subtitle: configure.danmakuServiceUrl.value,
-                  onPress:
-                      () => _showInputDialog(
-                        context: context,
-                        title: '弹幕服务地址',
-                        currentValue: configure.danmakuServiceUrl.value,
-                        onSave:
-                            (value) =>
-                                configure.danmakuServiceUrl.value = value,
-                      ),
+                  onPress: () => _showInputDialog(
+                    context: context,
+                    title: '弹幕服务地址',
+                    currentValue: configure.danmakuServiceUrl.value,
+                    onSave: (value) =>
+                        configure.danmakuServiceUrl.value = value,
+                  ),
                 ),
               ],
             ),

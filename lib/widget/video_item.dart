@@ -203,13 +203,12 @@ class _VideoItemState extends State<VideoItem> {
     int progressPercent = 0;
     String lastWatchTime = '';
     if (widget.history != null) {
-      progress =
-          widget.history!.duration > 0
-              ? (widget.history!.position / widget.history!.duration).clamp(
-                0.0,
-                1.0,
-              )
-              : 0.0;
+      progress = widget.history!.duration > 0
+          ? (widget.history!.position / widget.history!.duration).clamp(
+              0.0,
+              1.0,
+            )
+          : 0.0;
       progressPercent = (progress * 100).round();
       lastWatchTime = Utils.formatLastWatchTime(widget.history!.updateTime);
     }
@@ -221,103 +220,97 @@ class _VideoItemState extends State<VideoItem> {
         if (widget.danmakuMatchDialog == null) return;
         await showFDialog(
           context: context,
-          builder:
-              (context, style, animation) =>
-                  FDialog(actions: [], body: widget.danmakuMatchDialog!),
+          builder: (context, style, animation) =>
+              FDialog(actions: [], body: widget.danmakuMatchDialog!),
         );
         init();
       },
-      child:
-          (controller) => FItem(
-            prefix: SizedBox(
-              width: 95,
-              height: 65,
-              child: FutureBuilder(
-                future: _prefixFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
-                  if (snapshot.hasData) {
-                    return snapshot.data!;
-                  }
-                  return _buildEmtpyPrefix();
-                },
-              ),
-            ),
-            title: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 65),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FTooltip(
-                    tipBuilder:
-                        (context, controller) => Container(
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width - 50,
-                          ),
-                          child: Text(widget.name),
-                        ),
-                    child: Text(
-                      widget.name,
-                      style: context.theme.typography.base,
-                      maxLines: 2,
-                    ),
+      child: (controller) => FItem(
+        prefix: SizedBox(
+          width: 95,
+          height: 65,
+          child: FutureBuilder(
+            future: _prefixFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              }
+              if (snapshot.hasData) {
+                return snapshot.data!;
+              }
+              return _buildEmtpyPrefix();
+            },
+          ),
+        ),
+        title: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 65),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FTooltip(
+                tipBuilder: (context, controller) => Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width - 50,
                   ),
-                  widget.history != null
-                      ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          widget.history!.subtitle == null
-                              ? const SizedBox()
-                              : Text(
+                  child: Text(widget.name),
+                ),
+                child: Text(
+                  widget.name,
+                  style: context.theme.typography.base,
+                  maxLines: 2,
+                ),
+              ),
+              widget.history != null
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        widget.history!.subtitle == null
+                            ? const SizedBox()
+                            : Text(
                                 widget.history!.subtitle!,
                                 style: subtitleStyle,
                               ),
-                          const SizedBox(height: 4),
-                          FDeterminateProgress(
-                            value: progress,
-                            style:
-                                (style) => style.copyWith(
-                                  motion:
-                                      (motion) => motion.copyWith(
-                                        duration: Duration.zero,
-                                      ),
-                                  constraints: style.constraints.copyWith(
-                                    minHeight: 4,
-                                    maxHeight: 4,
-                                  ),
-                                ),
+                        const SizedBox(height: 4),
+                        FDeterminateProgress(
+                          value: progress,
+                          style: (style) => style.copyWith(
+                            motion: (motion) =>
+                                motion.copyWith(duration: Duration.zero),
+                            constraints: style.constraints.copyWith(
+                              minHeight: 4,
+                              maxHeight: 4,
+                            ),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  if (_hasDanmaku) _buildDanmakuIcon(),
-                                  Text(style: subtitleStyle, lastWatchTime),
-                                ],
-                              ),
-                              Text(style: subtitleStyle, '$progressPercent%'),
-                            ],
-                          ),
-                        ],
-                      )
-                      : Row(
-                        children: [
-                          if (_hasDanmaku) _buildDanmakuIcon(),
-                          Text(style: subtitleStyle, '未观看'),
-                        ],
-                      ),
-                ],
-              ),
-            ),
-            onPress: widget.onPress,
-            onLongPress: widget.onLongPress ?? controller.toggle,
-            onSecondaryPress: widget.onLongPress ?? controller.toggle,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                if (_hasDanmaku) _buildDanmakuIcon(),
+                                Text(style: subtitleStyle, lastWatchTime),
+                              ],
+                            ),
+                            Text(style: subtitleStyle, '$progressPercent%'),
+                          ],
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        if (_hasDanmaku) _buildDanmakuIcon(),
+                        Text(style: subtitleStyle, '未观看'),
+                      ],
+                    ),
+            ],
           ),
+        ),
+        onPress: widget.onPress,
+        onLongPress: widget.onLongPress ?? controller.toggle,
+        onSecondaryPress: widget.onLongPress ?? controller.toggle,
+      ),
     );
   }
 }

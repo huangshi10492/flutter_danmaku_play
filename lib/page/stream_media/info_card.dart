@@ -160,14 +160,14 @@ class StreamMediaInfoCard extends StatelessWidget {
           const SizedBox(height: 6),
           (mediaDetail == null || mediaDetail!.rating == 0)
               ? Text(
-                '暂无评分',
-                style: TextStyle(
-                  fontSize: 20,
-                  height: 1.2,
-                  fontWeight: FontWeight.bold,
-                  color: context.theme.colors.primary,
-                ),
-              )
+                  '暂无评分',
+                  style: TextStyle(
+                    fontSize: 20,
+                    height: 1.2,
+                    fontWeight: FontWeight.bold,
+                    color: context.theme.colors.primary,
+                  ),
+                )
               : RatingBar(rating: mediaDetail?.rating ?? 0.0),
           if (mediaDetail != null && mediaDetail!.rating != 0)
             Text(
@@ -283,9 +283,9 @@ class StreamMediaInfoCard extends StatelessWidget {
           mediaDetail?.overview == null
               ? '暂无简介'
               : (mediaDetail?.overview
-                      ?.replaceAll(RegExp(r'<br\s*/?>'), ' ')
-                      .trim()) ??
-                  '',
+                        ?.replaceAll(RegExp(r'<br\s*/?>'), ' ')
+                        .trim()) ??
+                    '',
           style: context.theme.typography.base,
         ),
         const SizedBox(height: 16),
@@ -300,10 +300,9 @@ class StreamMediaInfoCard extends StatelessWidget {
                   padding: const EdgeInsets.all(2),
                   child: FFocusedOutline(
                     focused: true,
-                    style:
-                        (style) => style.copyWith(
-                          color: context.theme.colors.mutedForeground,
-                        ),
+                    style: (style) => style.copyWith(
+                      color: context.theme.colors.mutedForeground,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(4),
                       child: Text(tag, style: context.theme.typography.sm),
@@ -328,10 +327,9 @@ class StreamMediaInfoCard extends StatelessWidget {
                     padding: const EdgeInsets.all(4),
                     child: FFocusedOutline(
                       focused: true,
-                      style:
-                          (style) => style.copyWith(
-                            color: context.theme.colors.mutedForeground,
-                          ),
+                      style: (style) => style.copyWith(
+                        color: context.theme.colors.mutedForeground,
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,

@@ -186,18 +186,17 @@ class _DanmakuMatchDialogState extends State<DanmakuMatchDialog> {
         const SizedBox(width: 8),
         FButton.icon(
           onPress: _state == _DanmakuSearchState.searching ? () {} : _search,
-          child:
-              _state == _DanmakuSearchState.searching
-                  ? const SizedBox(
-                    width: 25,
-                    height: 25,
-                    child: FCircularProgress(),
-                  )
-                  : Icon(
-                    Icons.search,
-                    size: 25,
-                    color: context.theme.colors.primary,
-                  ),
+          child: _state == _DanmakuSearchState.searching
+              ? const SizedBox(
+                  width: 25,
+                  height: 25,
+                  child: FCircularProgress(),
+                )
+              : Icon(
+                  Icons.search,
+                  size: 25,
+                  color: context.theme.colors.primary,
+                ),
         ),
       ],
     );
@@ -239,20 +238,15 @@ class _DanmakuMatchDialogState extends State<DanmakuMatchDialog> {
             }
             final episode = anime.episodes[(index / 2).round()];
             return FItem(
-              style:
-                  (style) => style.copyWith(
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 2,
-                      horizontal: 0,
-                    ),
-                    contentStyle:
-                        (style) => style.copyWith(
-                          padding: EdgeInsetsDirectional.symmetric(
-                            vertical: 10,
-                            horizontal: 6,
-                          ),
-                        ),
+              style: (style) => style.copyWith(
+                margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 0),
+                contentStyle: (style) => style.copyWith(
+                  padding: EdgeInsetsDirectional.symmetric(
+                    vertical: 10,
+                    horizontal: 6,
                   ),
+                ),
+              ),
               title: Text(
                 episode.episodeTitle,
                 style: context.theme.typography.base,

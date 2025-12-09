@@ -21,8 +21,8 @@ class FontManagerPage extends StatefulWidget {
 }
 
 class _FontManagerPageState extends State<FontManagerPage> {
-  late final ConfigureService _configureService =
-      GetIt.I.get<ConfigureService>();
+  late final ConfigureService _configureService = GetIt.I
+      .get<ConfigureService>();
 
   final List<Map<String, String>> _fontPresets = [
     {

@@ -122,14 +122,12 @@ class VideoPlayerService {
     danmakuService = DanmakuService(videoInfo);
     _player = Player(
       configuration: PlayerConfiguration(
-        bufferSize:
-            _configureService.lowMemoryMode.value
-                ? 25 * 1024 * 1024
-                : 500 * 1024 * 1024,
-        logLevel:
-            _configureService.playerDebugMode.value
-                ? MPVLogLevel.debug
-                : MPVLogLevel.error,
+        bufferSize: _configureService.lowMemoryMode.value
+            ? 25 * 1024 * 1024
+            : 500 * 1024 * 1024,
+        logLevel: _configureService.playerDebugMode.value
+            ? MPVLogLevel.debug
+            : MPVLogLevel.error,
         libass: true,
       ),
     );
@@ -376,8 +374,9 @@ class VideoPlayerService {
   /// 长按加速播放
   Future<void> doubleSpeed(bool isDouble) async {
     final currentSpeed = playbackSpeed.value;
-    final newSpeed =
-        isDouble ? _configureService.doublePlaySpeed.value : currentSpeed;
+    final newSpeed = isDouble
+        ? _configureService.doublePlaySpeed.value
+        : currentSpeed;
     await _player.setRate(newSpeed);
     danmakuService.setSpeed(newSpeed);
   }
@@ -423,8 +422,9 @@ class VideoPlayerService {
       danmakuService.syncWithVideo(false);
     } else {
       _log.debug('_onBufferingStateChanged', '视频缓冲完成');
-      playerState.value =
-          _player.state.playing ? PlayerState.playing : PlayerState.paused;
+      playerState.value = _player.state.playing
+          ? PlayerState.playing
+          : PlayerState.paused;
       danmakuService.syncWithVideo(_player.state.playing);
     }
   }
@@ -599,10 +599,9 @@ class VideoPlayerService {
       subtitleTracks.value = tracks;
       _log.info('loadSubtitleTracks', '加载了 ${tracks.length} 个字幕轨道');
       if (_configureService.autoLanguage.value != 0) {
-        final lan =
-            _configureService.autoLanguage.value == 1
-                ? 'Simplified'
-                : 'Traditional';
+        final lan = _configureService.autoLanguage.value == 1
+            ? 'Simplified'
+            : 'Traditional';
         final chiTrack = tracks.indexWhere((t) => t.title.contains(lan));
         if (chiTrack != -1) {
           await setActiveSubtitleTrack(chiTrack);
@@ -660,7 +659,8 @@ class VideoPlayerService {
   Future<void> removeExternalSubtitle() async {
     await setActiveSubtitleTrack(-1);
     externalSubtitle.value = null;
-    subtitleTracks.value =
-        subtitleTracks.value.where((t) => t.index != -1).toList();
+    subtitleTracks.value = subtitleTracks.value
+        .where((t) => t.index != -1)
+        .toList();
   }
 }

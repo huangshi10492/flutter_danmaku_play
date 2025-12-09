@@ -84,35 +84,33 @@ class _TrackPageState extends State<TrackPage> {
       child: Column(
         children: [
           Watch((context) {
-            final tracks =
-                widget.isAudio
-                    ? widget.playerService.audioTracks.value
-                    : widget.playerService.subtitleTracks.value;
+            final tracks = widget.isAudio
+                ? widget.playerService.audioTracks.value
+                : widget.playerService.subtitleTracks.value;
             return FSelectTileGroup<int>(
               selectController: controller,
-              children:
-                  tracks.map((track) {
-                    final name = VideoPlayerUtils.trackNameTranslation(
-                      track.id,
-                      track.title,
-                      track.language,
-                    );
-                    return FSelectTile(title: Text(name), value: track.index);
-                  }).toList(),
+              children: tracks.map((track) {
+                final name = VideoPlayerUtils.trackNameTranslation(
+                  track.id,
+                  track.title,
+                  track.language,
+                );
+                return FSelectTile(title: Text(name), value: track.index);
+              }).toList(),
             );
           }),
           widget.isAudio
               ? const SizedBox()
               : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SizedBox(
-                  child: ElevatedButton.icon(
-                    onPressed: _pickExternalSubtitle,
-                    icon: const Icon(Icons.file_upload),
-                    label: const Text('导入外部字幕'),
+                  padding: const EdgeInsets.all(16.0),
+                  child: SizedBox(
+                    child: ElevatedButton.icon(
+                      onPressed: _pickExternalSubtitle,
+                      icon: const Icon(Icons.file_upload),
+                      label: const Text('导入外部字幕'),
+                    ),
                   ),
                 ),
-              ),
         ],
       ),
     );

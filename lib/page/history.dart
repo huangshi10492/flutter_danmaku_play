@@ -67,52 +67,50 @@ class _HistoryPageState extends State<HistoryPage> {
   void _showDeleteConfirmDialog(History history) {
     showAdaptiveDialog(
       context: context,
-      builder:
-          (context) => FDialog(
-            direction: Axis.vertical,
-            title: const Text('删除历史记录'),
-            body: Text('确定要删除 "${_extractFileName(history.url)}" 的观看历史吗？'),
-            actions: [
-              FButton(
-                onPress: () => Navigator.pop(context),
-                child: const Text('取消'),
-              ),
-              FButton(
-                style: FButtonStyle.destructive(),
-                onPress: () {
-                  Navigator.pop(context);
-                  _historyService.delete(history: history);
-                },
-                child: const Text('删除'),
-              ),
-            ],
+      builder: (context) => FDialog(
+        direction: Axis.vertical,
+        title: const Text('删除历史记录'),
+        body: Text('确定要删除 "${_extractFileName(history.url)}" 的观看历史吗？'),
+        actions: [
+          FButton(
+            onPress: () => Navigator.pop(context),
+            child: const Text('取消'),
           ),
+          FButton(
+            style: FButtonStyle.destructive(),
+            onPress: () {
+              Navigator.pop(context);
+              _historyService.delete(history: history);
+            },
+            child: const Text('删除'),
+          ),
+        ],
+      ),
     );
   }
 
   void _showClearAllConfirmDialog() {
     showAdaptiveDialog(
       context: context,
-      builder:
-          (context) => FDialog(
-            direction: Axis.vertical,
-            title: const Text('清空所有历史记录'),
-            body: const Text('确定要清空所有观看历史吗？此操作不可撤销。'),
-            actions: [
-              FButton(
-                onPress: () => Navigator.pop(context),
-                child: const Text('取消'),
-              ),
-              FButton(
-                style: FButtonStyle.destructive(),
-                onPress: () {
-                  Navigator.pop(context);
-                  _clearAllHistories();
-                },
-                child: const Text('清空'),
-              ),
-            ],
+      builder: (context) => FDialog(
+        direction: Axis.vertical,
+        title: const Text('清空所有历史记录'),
+        body: const Text('确定要清空所有观看历史吗？此操作不可撤销。'),
+        actions: [
+          FButton(
+            onPress: () => Navigator.pop(context),
+            child: const Text('取消'),
           ),
+          FButton(
+            style: FButtonStyle.destructive(),
+            onPress: () {
+              Navigator.pop(context);
+              _clearAllHistories();
+            },
+            child: const Text('清空'),
+          ),
+        ],
+      ),
     );
   }
 

@@ -28,10 +28,10 @@ class FileExplorerPage extends StatefulWidget {
 
 class _FileExplorerPageState extends State<FileExplorerPage> {
   Storage? _storage;
-  final FileExplorerService _fileExplorerService =
-      GetIt.I.get<FileExplorerService>();
-  final OfflineCacheService _offlineCacheService =
-      GetIt.I.get<OfflineCacheService>();
+  final FileExplorerService _fileExplorerService = GetIt.I
+      .get<FileExplorerService>();
+  final OfflineCacheService _offlineCacheService = GetIt.I
+      .get<OfflineCacheService>();
   final ScrollController _scrollController = ScrollController();
   final Map<String, int> _refreshMap = {};
   bool isFABVisible = true;
@@ -121,44 +121,41 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
       },
       child: Scaffold(
         appBar: SysAppBar(title: _storage?.name ?? ''),
-        body:
-            _storage == null
-                ? const Center(child: CircularProgressIndicator())
-                : NotificationListener<UserScrollNotification>(
-                  onNotification: (notification) {
-                    if (notification.direction == ScrollDirection.forward) {
-                      setState(() {
-                        isFABVisible = true;
-                      });
-                    }
-                    if (notification.direction == ScrollDirection.reverse) {
-                      setState(() {
-                        isFABVisible = false;
-                      });
-                    }
-                    return false;
-                  },
-                  child: RefreshIndicator(
-                    onRefresh: _refresh,
-                    child: _buildBody(),
-                  ),
+        body: _storage == null
+            ? const Center(child: CircularProgressIndicator())
+            : NotificationListener<UserScrollNotification>(
+                onNotification: (notification) {
+                  if (notification.direction == ScrollDirection.forward) {
+                    setState(() {
+                      isFABVisible = true;
+                    });
+                  }
+                  if (notification.direction == ScrollDirection.reverse) {
+                    setState(() {
+                      isFABVisible = false;
+                    });
+                  }
+                  return false;
+                },
+                child: RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: _buildBody(),
                 ),
-        floatingActionButton:
-            isFABVisible
-                ? Watch((context) {
-                  bool isFiltered =
-                      _fileExplorerService.filter.value.isFiltered();
-                  return FloatingActionButton(
-                    onPressed: () => _openConfigSheet(),
-                    shape: CircleBorder(),
-                    child:
-                        isFiltered
-                            ? const Icon(FIcons.listFilterPlus)
-                            : const Icon(FIcons.listFilter),
-                    // backgroundColor: ,
-                  );
-                })
-                : null,
+              ),
+        floatingActionButton: isFABVisible
+            ? Watch((context) {
+                bool isFiltered = _fileExplorerService.filter.value
+                    .isFiltered();
+                return FloatingActionButton(
+                  onPressed: () => _openConfigSheet(),
+                  shape: CircleBorder(),
+                  child: isFiltered
+                      ? const Icon(FIcons.listFilterPlus)
+                      : const Icon(FIcons.listFilter),
+                  // backgroundColor: ,
+                );
+              })
+            : null,
       ),
     );
   }
@@ -187,10 +184,9 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
                 child: Text(
                   '根目录',
                   style: TextStyle(
-                    color:
-                        parts.isEmpty
-                            ? context.theme.colors.primary
-                            : context.theme.colors.foreground,
+                    color: parts.isEmpty
+                        ? context.theme.colors.primary
+                        : context.theme.colors.foreground,
                   ),
                 ),
               ),
@@ -203,15 +199,15 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
               final isLast = i == parts.length - 1;
               children.add(
                 FBreadcrumbItem(
-                  onPress:
-                      isLast ? null : () => _fileExplorerService.cd(targetPath),
+                  onPress: isLast
+                      ? null
+                      : () => _fileExplorerService.cd(targetPath),
                   child: Text(
                     part,
                     style: TextStyle(
-                      color:
-                          isLast
-                              ? context.theme.colors.primary
-                              : context.theme.colors.foreground,
+                      color: isLast
+                          ? context.theme.colors.primary
+                          : context.theme.colors.foreground,
                     ),
                   ),
                 ),
@@ -256,10 +252,9 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
                   ],
                 );
               },
-              error:
-                  (error, stack) => Center(
-                    child: Text('加载失败: ${_fileExplorerService.error.value}'),
-                  ),
+              error: (error, stack) => Center(
+                child: Text('加载失败: ${_fileExplorerService.error.value}'),
+              ),
               loading: () => const Center(child: CircularProgressIndicator()),
             ),
           ),
@@ -337,8 +332,8 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
           history: file.history,
           uniqueKey: file.uniqueKey!,
           name: file.name,
-          onOfflineDownload:
-              () => _handleOfflineDownload(file.path, file.videoIndex),
+          onOfflineDownload: () =>
+              _handleOfflineDownload(file.path, file.videoIndex),
           danmakuMatchDialog: DanmakuMatchDialog(
             uniqueKey: videoInfo.uniqueKey,
             fileName: videoInfo.videoName,
@@ -388,11 +383,10 @@ class _FileExplorerFilterSheetState extends State<FileExplorerFilterSheet> {
   }
 
   void _applyFilter() {
-    Filter filter =
-        Filter()
-          ..searchTerm = searchController.text
-          ..displayMode = displayMode
-          ..sortOrder = sortOrder;
+    Filter filter = Filter()
+      ..searchTerm = searchController.text
+      ..displayMode = displayMode
+      ..sortOrder = sortOrder;
     widget.service.filter.value = filter;
     Navigator.pop(context);
   }
@@ -432,10 +426,9 @@ class _FileExplorerFilterSheetState extends State<FileExplorerFilterSheet> {
                 .firstWhere((e) => e.value == displayMode)
                 .key,
           ),
-          onChange:
-              (value) => setState(() {
-                displayMode = value.first;
-              }),
+          onChange: (value) => setState(() {
+            displayMode = value.first;
+          }),
         ),
         const SizedBox(height: 12),
         Row(

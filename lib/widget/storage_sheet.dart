@@ -516,38 +516,37 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
         final controller = _formData.controllers[field.key]!;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child:
-              field.obscureText
-                  ? FTextFormField.password(
-                    label: Text(field.label),
-                    controller: controller,
-                    keyboardType: field.inputType,
-                    validator: (value) {
-                      if (field.required &&
-                          (value == null || value.trim().isEmpty)) {
-                        return '${field.label}不能为空';
-                      }
-                      if (field.validator != null) {
-                        return field.validator!(value!);
-                      }
-                      return null;
-                    },
-                  )
-                  : FTextFormField(
-                    label: Text(field.label),
-                    controller: controller,
-                    keyboardType: field.inputType,
-                    validator: (value) {
-                      if (field.required &&
-                          (value == null || value.trim().isEmpty)) {
-                        return '${field.label}不能为空';
-                      }
-                      if (field.validator != null) {
-                        return field.validator!(value!);
-                      }
-                      return null;
-                    },
-                  ),
+          child: field.obscureText
+              ? FTextFormField.password(
+                  label: Text(field.label),
+                  controller: controller,
+                  keyboardType: field.inputType,
+                  validator: (value) {
+                    if (field.required &&
+                        (value == null || value.trim().isEmpty)) {
+                      return '${field.label}不能为空';
+                    }
+                    if (field.validator != null) {
+                      return field.validator!(value!);
+                    }
+                    return null;
+                  },
+                )
+              : FTextFormField(
+                  label: Text(field.label),
+                  controller: controller,
+                  keyboardType: field.inputType,
+                  validator: (value) {
+                    if (field.required &&
+                        (value == null || value.trim().isEmpty)) {
+                      return '${field.label}不能为空';
+                    }
+                    if (field.validator != null) {
+                      return field.validator!(value!);
+                    }
+                    return null;
+                  },
+                ),
         );
       case _FieldType.toggle:
         return FItem(
@@ -628,27 +627,23 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                       ),
                     ),
                     FButton(
-                      onPress:
-                          _isLoading
-                              ? null
-                              : () async {
-                                final result = await _saveStorage(context);
-                                if (context.mounted) {
-                                  if (result) {
-                                    Navigator.of(context).pop(result);
-                                  }
+                      onPress: _isLoading
+                          ? null
+                          : () async {
+                              final result = await _saveStorage(context);
+                              if (context.mounted) {
+                                if (result) {
+                                  Navigator.of(context).pop(result);
                                 }
-                              },
-                      child:
-                          _isLoading
-                              ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : const Text('保存'),
+                              }
+                            },
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('保存'),
                     ),
                   ],
                 ),
@@ -726,10 +721,9 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                     vertical: 6,
                   ),
                   child: FButton(
-                    style:
-                        _isMediaServerLoggedIn
-                            ? FButtonStyle.secondary()
-                            : FButtonStyle.primary(),
+                    style: _isMediaServerLoggedIn
+                        ? FButtonStyle.secondary()
+                        : FButtonStyle.primary(),
                     onPress: _isLoading ? null : _loginToMediaServer,
                     child: Text(_isMediaServerLoggedIn ? '已登录' : '登录并获取媒体库'),
                   ),
@@ -751,10 +745,10 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                       details: Text(
                         _selectedLibraryId != null
                             ? _mediaServerLibraries
-                                .firstWhere(
-                                  (lib) => lib.id == _selectedLibraryId,
-                                )
-                                .name
+                                  .firstWhere(
+                                    (lib) => lib.id == _selectedLibraryId,
+                                  )
+                                  .name
                             : '请选择媒体库',
                       ),
                       onChange: (value) {

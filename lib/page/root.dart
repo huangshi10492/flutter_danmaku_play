@@ -28,26 +28,25 @@ class RootPageState extends State<RootPage> {
   void _showDeleteDialog(Storage storage) {
     showAdaptiveDialog(
       context: context,
-      builder:
-          (context) => FDialog(
-            direction: Axis.vertical,
-            title: const Text('删除媒体库'),
-            body: Text('确定要删除媒体库 "${storage.name}" 吗？'),
-            actions: [
-              FButton(
-                onPress: () => Navigator.pop(context),
-                child: const Text('取消'),
-              ),
-              FButton(
-                style: FButtonStyle.destructive(),
-                onPress: () {
-                  Navigator.pop(context);
-                  storage.delete();
-                },
-                child: const Text('删除'),
-              ),
-            ],
+      builder: (context) => FDialog(
+        direction: Axis.vertical,
+        title: const Text('删除媒体库'),
+        body: Text('确定要删除媒体库 "${storage.name}" 吗？'),
+        actions: [
+          FButton(
+            onPress: () => Navigator.pop(context),
+            child: const Text('取消'),
           ),
+          FButton(
+            style: FButtonStyle.destructive(),
+            onPress: () {
+              Navigator.pop(context);
+              storage.delete();
+            },
+            child: const Text('删除'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -249,32 +248,31 @@ class RootPageState extends State<RootPage> {
                       );
                     },
                     delete: () => _showDeleteDialog(storage),
-                    child:
-                        (controller) => FItem(
-                          prefix: _buildPrefix(storage.storageType),
-                          title: Text(storage.name),
-                          subtitle: Text(storage.url),
-                          onPress: () {
-                            switch (storage.storageType) {
-                              case StorageType.webdav:
-                              case StorageType.ftp:
-                              case StorageType.smb:
-                              case StorageType.local:
-                                context.push(
-                                  '$fileExplorerPath?key=${storage.key}',
-                                );
-                                break;
-                              case StorageType.jellyfin:
-                              case StorageType.emby:
-                                context.push(
-                                  '$streamMediaExplorerPath?key=${storage.key}',
-                                );
-                                break;
-                            }
-                          },
-                          onLongPress: () => controller.toggle(),
-                          onSecondaryPress: () => controller.toggle(),
-                        ),
+                    child: (controller) => FItem(
+                      prefix: _buildPrefix(storage.storageType),
+                      title: Text(storage.name),
+                      subtitle: Text(storage.url),
+                      onPress: () {
+                        switch (storage.storageType) {
+                          case StorageType.webdav:
+                          case StorageType.ftp:
+                          case StorageType.smb:
+                          case StorageType.local:
+                            context.push(
+                              '$fileExplorerPath?key=${storage.key}',
+                            );
+                            break;
+                          case StorageType.jellyfin:
+                          case StorageType.emby:
+                            context.push(
+                              '$streamMediaExplorerPath?key=${storage.key}',
+                            );
+                            break;
+                        }
+                      },
+                      onLongPress: () => controller.toggle(),
+                      onSecondaryPress: () => controller.toggle(),
+                    ),
                   ),
                 ),
               ],
@@ -283,13 +281,12 @@ class RootPageState extends State<RootPage> {
         );
       }),
       floatingActionButton: FloatingActionButton(
-        onPressed:
-            () => showModalBottomSheet(
-              context: context,
-              builder: (context) {
-                return SelectStorageTypeSheet();
-              },
-            ),
+        onPressed: () => showModalBottomSheet(
+          context: context,
+          builder: (context) {
+            return SelectStorageTypeSheet();
+          },
+        ),
         shape: CircleBorder(),
         child: const Icon(FIcons.plus),
       ),

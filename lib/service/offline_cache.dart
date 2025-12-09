@@ -45,8 +45,10 @@ class OfflineCacheService {
         cache.save();
       }
     }
-    final tempFiles =
-        await dir.list().where((e) => e.path.endsWith('.temp')).toList();
+    final tempFiles = await dir
+        .list()
+        .where((e) => e.path.endsWith('.temp'))
+        .toList();
     for (var file in tempFiles) {
       await file.delete();
     }

@@ -99,16 +99,15 @@ class Anime {
     return Anime(
       animeTitle: json['animeTitle'] as String,
       animeId: json['animeId'] as int,
-      episodes:
-          (json['episodes'] as List)
-              .map(
-                (e) => Episode.fromSearchJson(
-                  e as Map<String, dynamic>,
-                  json['animeTitle'] as String,
-                  json['animeId'] as int,
-                ),
-              )
-              .toList(),
+      episodes: (json['episodes'] as List)
+          .map(
+            (e) => Episode.fromSearchJson(
+              e as Map<String, dynamic>,
+              json['animeTitle'] as String,
+              json['animeId'] as int,
+            ),
+          )
+          .toList(),
     );
   }
 }
@@ -373,13 +372,12 @@ class DanmakuFile {
       uniqueKey: json['uniqueKey'],
       cacheTime: DateTime.fromMillisecondsSinceEpoch(json['cacheTime']),
       expireTime: DateTime.fromMillisecondsSinceEpoch(json['expireTime']),
-      danmakus:
-          (json['danmakus'] as List)
-              .map(
-                (item) =>
-                    Danmaku.fromJson(item['p'] as String, item['m'] as String),
-              )
-              .toList(),
+      danmakus: (json['danmakus'] as List)
+          .map(
+            (item) =>
+                Danmaku.fromJson(item['p'] as String, item['m'] as String),
+          )
+          .toList(),
       episodeId: json['episodeId'] as int,
       animeId: json['animeId'] as int,
     );
