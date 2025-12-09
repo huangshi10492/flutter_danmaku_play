@@ -169,46 +169,45 @@ class VideoPlayerService {
       await _setProperty();
       playerState.value = PlayerState.loading;
       errorMessage.value = null;
-      if (videoInfo.cached) {
-        final cachePath =
-            '${(await getApplicationSupportDirectory()).path}/offline_cache';
-        media = Media('$cachePath/${videoInfo.uniqueKey}');
-        _log.info('initialize', '加载缓存视频: $cachePath/${videoInfo.uniqueKey}');
-      } else {
-        media = Media(
-          videoInfo.currentVideoPath,
-          httpHeaders: videoInfo.headers,
-        );
-        _log.info('initialize', '加载视频: ${videoInfo.currentVideoPath}');
-      }
-      await _player.open(media!, play: false);
-      duration = await _player.stream.duration.firstWhere(
-        (d) => d != Duration.zero,
-      );
       setPlaybackSpeed(_configureService.defaultPlaySpeed.value);
       _history = await _historyService.startHistory(
         url: videoInfo.virtualVideoPath,
         headers: jsonEncode(videoInfo.headers),
-        duration: duration,
         type: videoInfo.historiesType,
         storageKey: videoInfo.storageKey,
         name: videoInfo.name,
         subtitle: videoInfo.subtitle,
       );
+      late Duration historyPosition;
+      if (_history.position > 0 &&
+          _history.duration - _history.position > 1000) {
+        historyPosition = Duration(milliseconds: _history.position);
+        final positionText = Utils.formatDuration(historyPosition);
+        _globalService.showNotification('恢复到 $positionText');
+        _log.info('initialize', '恢复播放历史: $positionText');
+      } else {
+        historyPosition = Duration.zero;
+      }
+      if (videoInfo.cached) {
+        final cachePath =
+            '${(await getApplicationSupportDirectory()).path}/offline_cache';
+        media = Media(
+          '$cachePath/${videoInfo.uniqueKey}',
+          start: historyPosition,
+        );
+        _log.info('initialize', '加载缓存视频: $cachePath/${videoInfo.uniqueKey}');
+      } else {
+        media = Media(
+          videoInfo.currentVideoPath,
+          httpHeaders: videoInfo.headers,
+          start: historyPosition,
+        );
+        _log.info('initialize', '加载视频: ${videoInfo.currentVideoPath}');
+      }
       danmakuService.history = _history;
       danmakuService.init(
         searchMode: videoInfo.historiesType == HistoriesType.streamMediaStorage,
       );
-      await _restoreProgress();
-      await _loadTracks();
-      _timerGroup.forEach((_, value) => value.init());
-      _subscriptions.addAll([
-        _player.stream.playing.listen(_onPlayingStateChanged),
-        _player.stream.completed.listen(_onCompleted),
-        _player.stream.buffering.listen(_onBufferingStateChanged),
-        _player.stream.position.listen((p) => position.value = p),
-        _player.stream.buffer.listen((b) => bufferedPosition.value = b),
-      ]);
       playerLogSubscription = _player.stream.log.listen((event) {
         switch (event.level) {
           case 'info':
@@ -221,15 +220,27 @@ class VideoPlayerService {
             _log.debug('mpv', '${event.prefix}:${event.text}');
         }
       });
+      _getChapter();
+      await _initSession();
+      await _player.open(media!, play: true);
+      playerState.value = PlayerState.playing;
+      duration = await _player.stream.duration.firstWhere(
+        (d) => d != Duration.zero,
+      );
+      _timerGroup.forEach((_, value) => value.init());
+      _subscriptions.addAll([
+        _player.stream.playing.listen(_onPlayingStateChanged),
+        _player.stream.completed.listen(_onCompleted),
+        _player.stream.buffering.listen(_onBufferingStateChanged),
+        _player.stream.position.listen((p) => position.value = p),
+        _player.stream.buffer.listen((b) => bufferedPosition.value = b),
+      ]);
+      await _loadTracks();
       audioParams = _player.state.audioParams;
       videoParams = _player.state.videoParams;
       hwdec = await (_player.platform! as NativePlayer).getProperty(
         'hwdec-current',
       );
-      _getChapter();
-      await _initSession();
-      play();
-      playerState.value = PlayerState.playing;
       _log.info('initialize', '视频播放器初始化完成');
     } catch (e, stackTrace) {
       playerState.value = PlayerState.error;
@@ -471,24 +482,6 @@ class VideoPlayerService {
       return position;
     }
     return Duration.zero;
-  }
-
-  Future<void> _restoreProgress() async {
-    try {
-      if (_history.position > 0) {
-        final position = Duration(milliseconds: _history.position);
-        // 已经播放完成
-        if (position >= duration - Duration(seconds: 1)) {
-          return;
-        }
-        await seekTo(position);
-        final positionText = Utils.formatDuration(position);
-        _globalService.showNotification('已恢复到 $positionText');
-        _log.info('restorePlaybackHistory', '恢复播放历史: $positionText');
-      }
-    } catch (e) {
-      _log.error('restorePlaybackHistory', '恢复播放历史失败', error: e);
-    }
   }
 
   Future<void> dispose() async {

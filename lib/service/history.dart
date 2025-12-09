@@ -45,7 +45,6 @@ class HistoryService {
   Future<History> startHistory({
     required String url,
     required String headers,
-    required Duration duration,
     required HistoriesType type,
     String? storageKey,
     required String name,
@@ -56,14 +55,13 @@ class HistoryService {
       final uniqueKey = CryptoUtils.generateVideoUniqueKey(url);
       final existing = getHistory(uniqueKey);
       if (existing != null) {
-        existing.duration = duration.inMilliseconds;
         existing.updateTime = DateTime.now().millisecondsSinceEpoch;
         await existing.save();
         return existing;
       }
       final history = History(
         uniqueKey: uniqueKey,
-        duration: duration.inMilliseconds,
+        duration: 0,
         position: 0,
         url: url,
         type: type,
