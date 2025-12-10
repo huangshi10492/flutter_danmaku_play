@@ -194,6 +194,8 @@ class DanmakuSettings {
   double opacity;
   // 显示时长
   double duration;
+  // 与视频同步
+  bool speedSync;
   // 字体大小
   double fontSize;
   // 字体粗细
@@ -229,6 +231,7 @@ class DanmakuSettings {
     this.strokeWidth = 1.5,
     this.opacity = 1.0,
     this.duration = 8,
+    this.speedSync = true,
     this.fontSize = 16.0,
     this.fontWeight = 4,
     this.danmakuArea = 1.0,
@@ -268,6 +271,7 @@ class DanmakuSettings {
       'strokeWidth': strokeWidth,
       'opacity': opacity,
       'duration': duration,
+      'speedSync': speedSync,
       'fontSize': fontSize,
       'danmakuArea': danmakuArea,
       'hideTop': hideTop,
@@ -283,6 +287,7 @@ class DanmakuSettings {
       strokeWidth: (json['strokeWidth'] as double?) ?? 1.5,
       opacity: (json['opacity'] as double?) ?? 1.0,
       duration: (json['duration'] as double?) ?? 8,
+      speedSync: (json['speedSync'] as bool?) ?? true,
       fontSize: (json['fontSize'] as double?) ?? 16.0,
       fontWeight: (json['fontWeight'] as int?) ?? 4,
       danmakuArea: (json['danmakuArea'] as double?) ?? 1.0,
@@ -297,6 +302,7 @@ class DanmakuSettings {
     double? strokeWidth,
     double? opacity,
     double? duration,
+    bool? speedSync,
     double? fontSize,
     double? danmakuArea,
     bool? hideTop,
@@ -318,6 +324,7 @@ class DanmakuSettings {
       strokeWidth: strokeWidth ?? this.strokeWidth,
       opacity: opacity ?? this.opacity,
       duration: duration ?? this.duration,
+      speedSync: speedSync ?? this.speedSync,
       fontSize: fontSize ?? this.fontSize,
       danmakuArea: danmakuArea ?? this.danmakuArea,
       hideTop: hideTop ?? this.hideTop,

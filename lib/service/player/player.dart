@@ -379,7 +379,8 @@ class VideoPlayerService {
   Future<void> setPlaybackSpeed(double speed) async {
     await _player.setRate(speed);
     playbackSpeed.value = speed;
-    danmakuService.setSpeed(speed);
+    _globalService.speed = speed;
+    danmakuService.updateSpeed();
   }
 
   /// 长按加速播放
@@ -389,7 +390,8 @@ class VideoPlayerService {
         ? _configureService.doublePlaySpeed.value
         : currentSpeed;
     await _player.setRate(newSpeed);
-    danmakuService.setSpeed(newSpeed);
+    _globalService.speed = newSpeed;
+    danmakuService.updateSpeed();
   }
 
   /// 切换播放/暂停

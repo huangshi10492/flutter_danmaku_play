@@ -13,6 +13,7 @@ class GlobalService {
     'DanDanPlay': 0,
     'Other': 0,
   });
+  double speed = 0;
 
   late BuildContext notificationContext;
   late BuildContext playerContext;

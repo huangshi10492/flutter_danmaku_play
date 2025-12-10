@@ -87,6 +87,16 @@ class DanmakuSettingsPanel extends StatelessWidget {
                   silderMin: 1,
                   silderMax: 17,
                 ),
+                SettingsTile.switchTile(
+                  title: '弹幕速度与视频同步',
+                  onBoolChange: (value) {
+                    danmakuService.updateDanmakuSettings(
+                      settings.copyWith(speedSync: value),
+                    );
+                    danmakuService.updateSpeed();
+                  },
+                  switchValue: settings.speedSync,
+                ),
                 SettingsTile.sliderTile(
                   title: '弹幕区域',
                   onSilderChange: (value) {

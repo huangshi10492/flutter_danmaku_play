@@ -72,12 +72,16 @@ class DanmakuService {
     lastTime = 0;
   }
 
-  void setSpeed(double speed) {
-    controller.updateOption(
-      danmakuSettings.value
-          .copyWith(duration: danmakuSettings.value.duration / speed)
-          .toDanmakuOption(),
-    );
+  void updateSpeed() {
+    if (danmakuSettings.value.speedSync) {
+      controller.updateOption(
+        danmakuSettings.value
+            .copyWith(
+              duration: danmakuSettings.value.duration / globalService.speed,
+            )
+            .toDanmakuOption(),
+      );
+    }
   }
 
   /// 根据当前播放位置更新弹幕显示
