@@ -121,6 +121,13 @@ class RightDrawerContent extends StatelessWidget {
                     configure.doublePlaySpeed.value = value;
                   },
                 ),
+                SettingsTile.switchTile(
+                  title: '跟随当前速度加速',
+                  onBoolChange: (value) {
+                    configure.doubleWithNowSpeed.value = value;
+                  },
+                  switchValue: configure.doubleWithNowSpeed.value,
+                ),
               ],
             );
           }),

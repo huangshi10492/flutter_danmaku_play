@@ -387,7 +387,8 @@ class VideoPlayerService {
   Future<void> doubleSpeed(bool isDouble) async {
     final currentSpeed = playbackSpeed.value;
     final newSpeed = isDouble
-        ? _configureService.doublePlaySpeed.value
+        ? _configureService.doublePlaySpeed.value *
+              (_configureService.doubleWithNowSpeed.value ? currentSpeed : 1)
         : currentSpeed;
     await _player.setRate(newSpeed);
     _globalService.speed = newSpeed;

@@ -46,6 +46,11 @@ class ConfigureService {
     key: 'doublePlaySpeed',
     defaultValue: 2.0,
   );
+  // 倍数播放是否跟随当前速度
+  late final Signal<bool> doubleWithNowSpeed = _config(
+    key: 'doubleWithNowSpeed',
+    defaultValue: false,
+  );
   late final Signal<int> forwardSeconds = _config(
     key: 'forwardSeconds',
     defaultValue: 10,

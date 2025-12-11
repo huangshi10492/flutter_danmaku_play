@@ -139,7 +139,10 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
               // 右方向键长按
               if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
                 _uiState.startLongPress(
-                  _configureService.doublePlaySpeed.value,
+                  _configureService.doublePlaySpeed.value *
+                      (_configureService.doubleWithNowSpeed.value
+                          ? _playerService.value.playbackSpeed.value
+                          : 1),
                 );
                 HapticFeedback.vibrate();
                 _playerService.value.doubleSpeed(true);
@@ -164,7 +167,10 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
               : VideoPlayerGestureDetector(
                   onLongPressStart: () {
                     _uiState.startLongPress(
-                      _configureService.doublePlaySpeed.value,
+                      _configureService.doublePlaySpeed.value *
+                          (_configureService.doubleWithNowSpeed.value
+                              ? _playerService.value.playbackSpeed.value
+                              : 1),
                     );
                     HapticFeedback.vibrate();
                     _playerService.value.doubleSpeed(true);
