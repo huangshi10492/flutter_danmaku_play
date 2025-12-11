@@ -35,13 +35,15 @@ class PlayerUIState {
     currentVolume.value = BrightnessVolumeService.currentVolume;
     currentBrightness.value = BrightnessVolumeService.currentBrightness;
 
-    _timeTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timeTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       currentTime.value = DateFormat('HH:mm').format(DateTime.now());
-      _battery.batteryLevel.then((value) => batteryLevel.value = value);
-      _battery.batteryState.then(
-        (value) =>
-            batteryChange.value = value == BatteryState.charging ? true : false,
-      );
+      try {
+        batteryLevel.value = await _battery.batteryLevel;
+        batteryChange.value =
+            (await _battery.batteryState) == BatteryState.charging;
+      } catch (e) {
+        // ignore
+      }
     });
   }
 
