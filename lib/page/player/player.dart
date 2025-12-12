@@ -27,6 +27,7 @@ import 'indicator.dart';
 
 class VideoPlayerPage extends StatefulWidget {
   final VideoInfo videoInfo;
+
   const VideoPlayerPage(this.videoInfo, {super.key});
 
   @override
@@ -513,10 +514,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                           ? TextButton.icon(
                               icon: const Icon(Icons.fast_forward, size: 24),
                               style: TextButton.styleFrom(
-                                textStyle: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                textStyle: const TextStyle(fontSize: 15),
                               ),
                               label: Text(
                                 '快进${_configureService.seekOPSeconds.value}秒',
@@ -539,10 +537,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                         onPressed: () =>
                             _showRightDrawer(RightDrawerType.speed),
                         style: TextButton.styleFrom(
-                          textStyle: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          textStyle: const TextStyle(fontSize: 16),
                         ),
                         child: Text('${speed.toStringAsFixed(2)}X'),
                       );
@@ -602,9 +597,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         }
       });
       return TextButton(
-        style: TextButton.styleFrom(
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-        ),
+        style: TextButton.styleFrom(textStyle: const TextStyle(fontSize: 15)),
         child: Text(text),
         onPressed: () {
           if (switchSeconds == Duration.zero) return;

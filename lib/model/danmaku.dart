@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:canvas_danmaku/canvas_danmaku.dart';
+import 'package:fldanplay/utils/utils.dart';
 import 'package:flutter/material.dart';
 
 /// 弹幕数据模型
@@ -190,40 +191,58 @@ class DanmakuComment {
 class DanmakuSettings {
   // 描边宽度
   double strokeWidth;
+
   // 透明度
   double opacity;
+
   // 显示时长
   double duration;
+
   // 与视频同步
   bool speedSync;
+
   // 字体大小
   double fontSize;
+
   // 字体粗细
   int fontWeight;
+
   // 弹幕区域
   double danmakuArea;
+
   // 隐藏顶部弹幕
   bool hideTop;
+
   // 隐藏底部弹幕
   bool hideBottom;
+
   // 隐藏滚动弹幕
   bool hideScroll;
+
   // 显示特殊弹幕
   bool hideSpecial;
+
   // 哔哩哔哩源
   bool bilibiliSource;
+
   // Gamer源
   bool gamerSource;
+
   // 弹弹play源
   bool dandanSource;
+
   // other源
   bool otherSource;
+
   // 哔哩哔哩源延迟
   int bilibiliDelay;
+
   // Gamer源延迟
   int gamerDelay;
+
   // 弹弹play源延迟
   int dandanDelay;
+
   // other源延迟
   int otherDelay;
 
@@ -263,6 +282,7 @@ class DanmakuSettings {
       strokeWidth: strokeWidth,
       massiveMode: false,
       safeArea: true,
+      fontFamily: Utils.font(null),
     );
   }
 

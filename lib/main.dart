@@ -124,10 +124,12 @@ class Application extends StatefulWidget {
 
 class _ApplicationState extends State<Application> with WidgetsBindingObserver {
   _ApplicationState();
+
   final _isDark = signal(
     WidgetsBinding.instance.platformDispatcher.platformBrightness ==
         Brightness.dark,
   );
+
   @override
   void initState() {
     super.initState();
@@ -165,18 +167,16 @@ class _ApplicationState extends State<Application> with WidgetsBindingObserver {
           materialThemeMode = ThemeMode.dark;
           break;
       }
-      var fTheme = getLightTheme(themeColor);
+      late FThemeData fTheme;
       switch (themeMode) {
         case '0':
-          fTheme = _isDark.value
-              ? getDarkTheme(themeColor)
-              : getLightTheme(themeColor);
+          fTheme = getTheme(themeColor, _isDark.value);
           break;
         case '1':
-          fTheme = getLightTheme(themeColor);
+          fTheme = getTheme(themeColor, false);
           break;
         case '2':
-          fTheme = getDarkTheme(themeColor);
+          fTheme = getTheme(themeColor, true);
           break;
       }
       return MaterialApp.router(
@@ -193,8 +193,8 @@ class _ApplicationState extends State<Application> with WidgetsBindingObserver {
           scriptCode: 'Hans',
           countryCode: "CN",
         ),
-        theme: getLightTheme(themeColor).toApproximateMaterialTheme(),
-        darkTheme: getDarkTheme(themeColor).toApproximateMaterialTheme(),
+        theme: getTheme(themeColor, false).toApproximateMaterialTheme(),
+        darkTheme: getTheme(themeColor, true).toApproximateMaterialTheme(),
         themeMode: materialThemeMode,
         builder: (context, child) => FTheme(
           data: fTheme,
