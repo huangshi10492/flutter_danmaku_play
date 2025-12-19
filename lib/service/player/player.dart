@@ -246,7 +246,6 @@ class VideoPlayerService {
       playerState.value = PlayerState.error;
       errorMessage.value = e.toString();
       _log.error('initialize', '视频播放器初始化失败', error: e, stackTrace: stackTrace);
-      rethrow;
     }
   }
 
@@ -471,9 +470,8 @@ class VideoPlayerService {
       final dir = Directory('${documentsDir.path}/screenshots');
       await dir.create(recursive: true);
       await img.encodeJpgFile('${dir.path}/${_history.uniqueKey}', thumbnail);
-    } catch (e) {
-      _log.error('saveSnapshot', '快照保存异常', error: e);
-      return;
+    } catch (e, t) {
+      _log.error('saveSnapshot', '快照保存异常', error: e, stackTrace: t);
     }
   }
 
@@ -506,8 +504,8 @@ class VideoPlayerService {
       _subscriptions.clear();
       playerLogSubscription?.cancel();
       await _player.dispose();
-    } catch (e) {
-      _log.error('dispose', '释放播放器资源失败', error: e);
+    } catch (e, t) {
+      _log.error('dispose', '释放播放器资源失败', error: e, stackTrace: t);
     }
   }
 
@@ -516,8 +514,8 @@ class VideoPlayerService {
     try {
       await loadAudioTracks();
       await loadSubtitleTracks();
-    } catch (e, stackTrace) {
-      _log.error('_loadTracks', '加载轨道信息失败', error: e, stackTrace: stackTrace);
+    } catch (e, t) {
+      _log.error('_loadTracks', '加载轨道信息失败', error: e, stackTrace: t);
     }
   }
 
@@ -548,13 +546,8 @@ class VideoPlayerService {
       final activeTrack = _player.state.track.audio;
       final activeIndex = audios.indexWhere((t) => t.id == activeTrack.id);
       activeAudioTrack.value = activeIndex;
-    } catch (e, stackTrace) {
-      _log.error(
-        'loadAudioTracks',
-        '获取音频轨道信息失败',
-        error: e,
-        stackTrace: stackTrace,
-      );
+    } catch (e, t) {
+      _log.error('loadAudioTracks', '获取音频轨道信息失败', error: e, stackTrace: t);
       audioTracks.value = [];
     }
   }
@@ -563,16 +556,15 @@ class VideoPlayerService {
   Future<void> setActiveAudioTrack(int trackIndex) async {
     final tracks = audioTracks.value;
     if (trackIndex < 0 || trackIndex >= tracks.length) {
-      throw Exception('无效的音频轨道索引: $trackIndex');
+      throw AppException('无效的音频轨道索引: $trackIndex', null);
     }
     try {
       await _player.setAudioTrack(_player.state.tracks.audio[trackIndex]);
       activeAudioTrack.value = trackIndex;
       final track = tracks[trackIndex];
       _log.info('setActiveAudioTrack', '切换音频轨道成功 - ${track.title}');
-    } catch (e) {
-      _log.error('setActiveAudioTrack', '切换音频轨道失败', error: e);
-      rethrow;
+    } catch (e, t) {
+      _log.error('setActiveAudioTrack', '切换音频轨道失败', error: e, stackTrace: t);
     }
   }
 
@@ -606,8 +598,8 @@ class VideoPlayerService {
       final activeTrack = _player.state.track.subtitle;
       final activeIndex = subtitles.indexWhere((t) => t.id == activeTrack.id);
       activeSubtitleTrack.value = activeIndex;
-    } catch (e) {
-      _log.error('loadSubtitleTracks', '获取字幕轨道信息失败', error: e);
+    } catch (e, t) {
+      _log.error('loadSubtitleTracks', '获取字幕轨道信息失败', error: e, stackTrace: t);
       subtitleTracks.value = [];
     }
   }
@@ -617,7 +609,7 @@ class VideoPlayerService {
     try {
       final tracks = subtitleTracks.value;
       if (trackIndex < 0 || trackIndex >= tracks.length) {
-        throw Exception('无效的字幕轨道索引: $trackIndex');
+        throw AppException('无效的字幕轨道索引: $trackIndex', null);
       }
       await _player.setSubtitleTrack(_player.state.tracks.subtitle[trackIndex]);
       activeSubtitleTrack.value = trackIndex;
@@ -625,11 +617,10 @@ class VideoPlayerService {
       _log.info('setActiveSubtitleTrack', '切换字幕轨道成功 - ${track.title}');
     } catch (e) {
       _log.error('setActiveSubtitleTrack', '切换字幕轨道失败', error: e);
-      rethrow;
     }
   }
 
-  /// 加载外部字幕
+  /// 加载外部字幕 TODO
   Future<void> loadExternalSubtitle(String filePath) async {
     try {
       await _player.setSubtitleTrack(SubtitleTrack.uri(filePath));
@@ -643,11 +634,9 @@ class VideoPlayerService {
       externalSubtitle.value = externalTrack;
       activeSubtitleTrack.value = subtitleTracks.value.length;
       subtitleTracks.value = [...subtitleTracks.value, externalTrack];
-
       _log.info('loadExternalSubtitle', '加载外部字幕成功 - $fileName');
-    } catch (e) {
-      _log.error('loadExternalSubtitle', '加载外部字幕失败', error: e);
-      rethrow;
+    } catch (e, t) {
+      _log.error('loadExternalSubtitle', '加载外部字幕失败', error: e, stackTrace: t);
     }
   }
 

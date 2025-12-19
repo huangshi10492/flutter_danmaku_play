@@ -294,8 +294,8 @@ class DanmakuService {
       _danmaku2Map(danmakuData.danmakus);
       globalService.showNotification('加载弹幕: ${danmakuData.danmakus.length}条');
       return true;
-    } catch (e) {
-      _log.warn('_getCachedDanmakus', '读取缓存弹幕失败', error: e);
+    } catch (e, t) {
+      _log.warn('_getCachedDanmakus', '读取缓存弹幕失败', error: e, stackTrace: t);
       return false;
     }
   }
@@ -316,9 +316,14 @@ class DanmakuService {
       _danmaku2Map(danmakus);
       _log.info('selectEpisodeAndLoadDanmaku', '搜索弹幕加载成功: ${danmakus.length}条');
       globalService.showNotification('从API加载弹幕: ${danmakus.length}条');
-    } catch (e) {
-      _log.error('selectEpisodeAndLoadDanmaku', '手动选择弹幕加载失败', error: e);
-      rethrow;
+    } catch (e, t) {
+      _log.error(
+        'selectEpisodeAndLoadDanmaku',
+        '手动选择弹幕加载失败',
+        error: e,
+        stackTrace: t,
+      );
+      globalService.showNotification('手动选择弹幕加载失败');
     }
   }
 
@@ -333,9 +338,9 @@ class DanmakuService {
       _danmaku2Map(danmakus);
       _log.info('refreshDanmaku', '刷新弹幕成功: ${danmakus.length}条');
       globalService.showNotification('刷新弹幕: ${danmakus.length}条');
-    } catch (e) {
-      _log.error('refreshDanmaku', '刷新弹幕成功', error: e);
-      rethrow;
+    } catch (e, t) {
+      _log.error('refreshDanmaku', '刷新弹幕失败', error: e, stackTrace: t);
+      globalService.showNotification('刷新弹幕失败');
     }
   }
 
@@ -373,7 +378,7 @@ class DanmakuGetter {
       );
     } catch (e, t) {
       _log.error('getBySearch', '搜索番剧失败', error: e, stackTrace: t);
-      return null;
+      throw AppException('搜索番剧失败', e);
     }
   }
 
@@ -397,7 +402,7 @@ class DanmakuGetter {
       );
     } catch (e, t) {
       _log.error('match', '匹配视频失败', error: e, stackTrace: t);
-      return null;
+      throw AppException('匹配视频失败', e);
     }
   }
 
@@ -434,8 +439,8 @@ class DanmakuGetter {
       _log.info('save', '弹幕缓存保存成功， 弹幕数量: ${danmakus.length}');
       return danmakus;
     } catch (e, t) {
-      _log.warn('_save', '保存弹幕缓存失败', error: e, stackTrace: t);
-      return [];
+      _log.error('_save', '保存弹幕缓存失败', error: e, stackTrace: t);
+      throw AppException('保存弹幕缓存失败', e);
     }
   }
 }

@@ -157,10 +157,8 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                           child: StreamMediaInfoCard(
                             title: widget.mediaItem.name,
                             mediaId: widget.mediaItem.id,
-                            imageUrl: _service.provider.getImageUrl(
-                              widget.mediaItem.id,
-                            ),
-                            headers: _service.provider.headers,
+                            imageUrl: _service.getImageUrl(widget.mediaItem.id),
+                            headers: _service.headers,
                             isLoading: _isLoading,
                             mediaDetail: _mediaDetail,
                           ),
@@ -268,8 +266,8 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
                   ).createShader(bounds);
                 },
                 child: NetworkImageWidget(
-                  url: _service.provider.getImageUrl(widget.mediaItem.id),
-                  headers: _service.provider.headers,
+                  url: _service.getImageUrl(widget.mediaItem.id),
+                  headers: _service.headers,
                   maxWidth: boxConstraints.maxWidth,
                   maxHeight: boxConstraints.maxHeight,
                 ),
@@ -295,8 +293,8 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
       history: _historyService.getHistoryByPath(episode.id),
       uniqueKey: uniqueKey,
       refreshKey: refreshKey,
-      imageUrl: _service.provider.getImageUrl(episode.id),
-      headers: _service.provider.headers,
+      imageUrl: _service.getImageUrl(episode.id),
+      headers: _service.headers,
       name: '${episode.indexNumber}. ${episode.name}',
       onOfflineDownload: () => _onDownloadEpisode(season, index),
       danmakuMatchDialog: DanmakuMatchDialog(

@@ -45,33 +45,36 @@ class Filter {
 class FileExplorerService {
   final Signal<FileExplorerProvider?> provider = signal(null);
   final path = signal('/');
-  final Signal<String?> error = signal(null);
   final listLength = signal(0);
   Storage? _storage;
   final _logger = Logger('FileExplorerService');
   final Signal<Filter> filter = signal(Filter());
+  final AsyncSignal<List<FileItem>> files = asyncSignal(AsyncLoading());
 
-  late final FutureSignal<List<FileItem>> files = futureSignal(() async {
+  static void register() {
+    final service = FileExplorerService();
+    effect(service.getData);
+    GetIt.I.registerSingleton<FileExplorerService>(service);
+  }
+
+  void getData() async {
+    files.value = AsyncLoading();
+    if (provider.value == null || _storage == null) {
+      files.value = AsyncData([]);
+      return;
+    }
     try {
-      if (provider.value == null || _storage == null) {
-        return [];
-      }
       final list = await provider.value!.listFiles(
         path.value,
         _storage!.key,
         filter.value,
       );
       listLength.value = list.length;
-      return list;
-    } catch (e) {
-      error.value = e.toString();
-      return [];
+      files.value = AsyncData(list);
+    } catch (e, t) {
+      _logger.error('files', '加载文件列表失败', error: e, stackTrace: t);
+      files.value = AsyncError(e, t);
     }
-  }, dependencies: [path, provider, filter]);
-
-  static void register() {
-    final service = FileExplorerService();
-    GetIt.I.registerSingleton<FileExplorerService>(service);
   }
 
   void setProvider(FileExplorerProvider newProvider, Storage storage) {
@@ -108,10 +111,6 @@ class FileExplorerService {
       path.value = newPath;
       filter.value = Filter();
     });
-  }
-
-  Future<void> refresh() async {
-    await files.refresh();
   }
 
   Future<VideoInfo?> selectVideo(int index) async {
@@ -242,9 +241,13 @@ class WebDAVFileExplorerProvider implements FileExplorerProvider {
       }
       list = setVideoIndex(list);
       return list;
-    } catch (e) {
-      _logger.error('listFiles', '获取文件列表失败', error: e);
-      throw Exception('获取文件列表失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('listFiles', e, t, action: '获取文件列表');
+    } on WebdavException catch (e, t) {
+      _logger.webdav('listFiles', e, t, action: '获取文件列表');
+    } catch (e, t) {
+      _logger.error('listFiles', '获取文件列表失败', error: e, stackTrace: t);
+      throw AppException('获取文件列表失败', e);
     }
   }
 
@@ -257,7 +260,7 @@ class WebDAVFileExplorerProvider implements FileExplorerProvider {
   }) async {
     try {
       if (client == null) {
-        throw Exception('WebDAV客户端未初始化');
+        throw AppException('WebDAV客户端未初始化', null);
       }
       final targetFile = File(localPath);
       await targetFile.parent.create(recursive: true);
@@ -269,15 +272,15 @@ class WebDAVFileExplorerProvider implements FileExplorerProvider {
       );
       _logger.info('downloadVideo', 'WebDAV下载完成: $path -> $localPath');
       return true;
-    } on DioException catch (e) {
+    } on DioException catch (e, t) {
       if (e.type == DioExceptionType.cancel) {
         return false;
       }
-      _logger.error('downloadVideo', 'WebDAV下载失败: $e');
-      rethrow;
-    } catch (e) {
-      _logger.error('downloadVideo', 'WebDAV下载失败: $e');
-      rethrow;
+      _logger.error('downloadVideo', 'WebDAV下载失败', error: e, stackTrace: t);
+      return false;
+    } catch (e, t) {
+      _logger.error('downloadVideo', 'WebDAV下载失败', error: e, stackTrace: t);
+      return false;
     }
   }
 
@@ -358,9 +361,9 @@ class LocalFileExplorerProvider implements FileExplorerProvider {
       }
       list = setVideoIndex(list);
       return list;
-    } catch (e) {
-      _logger.error('listFiles', '获取文件列表失败', error: e);
-      throw Exception('获取文件列表失败: ${e.toString()}');
+    } catch (e, t) {
+      _logger.error('listFiles', '获取文件列表失败', error: e, stackTrace: t);
+      throw AppException('获取文件列表失败', e);
     }
   }
 
@@ -375,7 +378,7 @@ class LocalFileExplorerProvider implements FileExplorerProvider {
       final sourceFile = File('$url$path');
       final targetFile = File(localPath);
       if (!await sourceFile.exists()) {
-        throw Exception('源文件不存在: $url$path');
+        throw AppException('源文件不存在: $url$path', null);
       }
       final fileSize = await sourceFile.length();
       await targetFile.parent.create(recursive: true);
@@ -386,7 +389,7 @@ class LocalFileExplorerProvider implements FileExplorerProvider {
         if (cancelToken?.isCancelled == true) {
           await targetSink.close();
           await targetFile.delete();
-          throw Exception('下载已取消');
+          return false;
         }
         targetSink.add(chunk);
         received += chunk.length;
@@ -395,9 +398,9 @@ class LocalFileExplorerProvider implements FileExplorerProvider {
       await targetSink.close();
       _logger.info('downloadVideo', '本地文件复制完成: $path -> $localPath');
       return true;
-    } catch (e) {
-      _logger.error('downloadVideo', '本地文件复制失败: $e');
-      rethrow;
+    } catch (e, t) {
+      _logger.error('downloadVideo', '本地文件复制失败', error: e, stackTrace: t);
+      return false;
     }
   }
 

@@ -87,7 +87,6 @@ class OfflineCacheService {
       _executeDownload(uniqueKey);
     } catch (e, t) {
       _logger.error('startDownload', '下载失败: $e', stackTrace: t);
-      rethrow;
     }
   }
 
@@ -129,7 +128,7 @@ class OfflineCacheService {
             );
             break;
           default:
-            throw Exception('不支持的媒体库类型');
+            throw AppException('不支持的媒体库类型', null);
         }
         success = await provider.downloadVideo(
           videoInfo.virtualVideoPath,
@@ -149,7 +148,7 @@ class OfflineCacheService {
             provider = LocalFileExplorerProvider(storage.url);
             break;
           default:
-            throw Exception('不支持的媒体库类型');
+            throw AppException('不支持的媒体库类型', null);
         }
         success = await provider.downloadVideo(
           '/${path.join('/')}',
@@ -158,7 +157,7 @@ class OfflineCacheService {
           cancelToken: cancelToken,
         );
       } else {
-        throw Exception('不支持的媒体库类型');
+        throw AppException('不支持的媒体库类型', null);
       }
       if (!success) return;
       final file = File(localPath);
@@ -171,7 +170,6 @@ class OfflineCacheService {
       offlineCache.status = DownloadStatus.failed;
       offlineCache.save();
       _logger.error('_executeDownload', '下载失败: $e', stackTrace: t);
-      rethrow;
     } finally {
       throttleTimer?.cancel();
       _downloadTokens.remove(videoInfo.uniqueKey);
@@ -180,11 +178,11 @@ class OfflineCacheService {
 
   Future<void> resumeDownload(String uniqueKey) async {
     if (!_cacheBox.containsKey(uniqueKey)) {
-      throw Exception('缓存记录不存在');
+      throw AppException('缓存记录不存在', null);
     }
     final cache = _cacheBox.get(uniqueKey)!;
     if (cache.status != DownloadStatus.failed) {
-      throw Exception('无法恢复非暂停/失败状态的下载');
+      throw AppException('无法恢复非暂停/失败状态的下载', null);
     }
     cache.status = DownloadStatus.downloading;
     cache.save();

@@ -8,6 +8,7 @@ import 'package:fldanplay/service/storage.dart';
 import 'package:fldanplay/service/global.dart';
 import 'package:fldanplay/utils/toast.dart';
 import 'package:fldanplay/widget/danmaku_match_dialog.dart';
+import 'package:fldanplay/widget/error_refresh.dart';
 import 'package:fldanplay/widget/icon_switch.dart';
 import 'package:fldanplay/widget/sys_app_bar.dart';
 import 'package:fldanplay/widget/video_item.dart';
@@ -104,7 +105,7 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
   }
 
   Future<void> _refresh() async {
-    await _fileExplorerService.refresh();
+    _fileExplorerService.getData();
     setState(() {});
   }
 
@@ -252,9 +253,8 @@ class _FileExplorerPageState extends State<FileExplorerPage> {
                   ],
                 );
               },
-              error: (error, stack) => Center(
-                child: Text('加载失败: ${_fileExplorerService.error.value}'),
-              ),
+              error: (error, stack) =>
+                  ErrorRefresh(error: error.toString(), onRefresh: _refresh),
               loading: () => const Center(child: CircularProgressIndicator()),
             ),
           ),

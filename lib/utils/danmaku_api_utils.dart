@@ -1,15 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
-import 'package:fldanplay/utils/log.dart';
 import 'package:fldanplay/model/danmaku.dart';
+import 'package:fldanplay/utils/log.dart';
 
 /// 弹弹play API工具类
 class DanmakuApiUtils {
   final String baseUrl;
   DanmakuApiUtils(this.baseUrl);
 
+  final Logger _logger = Logger('DanmakuApiUtils');
+
   Dio get _dio {
-    final log = Logger('DanmakuApiUtils');
     final dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
@@ -21,7 +22,7 @@ class DanmakuApiUtils {
     dio.interceptors.add(
       RetryInterceptor(
         dio: dio,
-        logPrint: (message) => log.info('DioRetryInterceptor', message),
+        logPrint: (message) => _logger.info('DioRetryInterceptor', message),
         retries: 3,
         retryDelays: const [
           Duration(seconds: 1),
@@ -50,8 +51,11 @@ class DanmakuApiUtils {
       );
       final matches = response.data['matches'] as List;
       return matches.map((match) => Episode.fromJson(match)).toList();
-    } on DioException catch (e) {
-      throw Exception('网络请求失败: ${e.message}');
+    } on DioException catch (e, t) {
+      _logger.dio('matchVideo', e, t, action: '匹配节目');
+    } catch (e, t) {
+      _logger.error('matchVideo', '匹配节目失败', error: e, stackTrace: t);
+      throw AppException('匹配节目失败', e);
     }
   }
 
@@ -67,8 +71,11 @@ class DanmakuApiUtils {
         animes.add(Anime.fromJson(anime));
       }
       return animes;
-    } on DioException catch (e) {
-      throw Exception('网络请求失败: ${e.message}');
+    } on DioException catch (e, t) {
+      _logger.dio('searchEpisodes', e, t, action: '搜索番剧');
+    } catch (e, t) {
+      _logger.error('searchEpisodes', '搜索番剧失败', error: e, stackTrace: t);
+      throw AppException('搜索番剧失败', e);
     }
   }
 
@@ -87,8 +94,11 @@ class DanmakuApiUtils {
       return comments
           .map((comment) => DanmakuComment.fromJson(comment))
           .toList();
-    } on DioException catch (e) {
-      throw Exception('网络请求失败: ${e.message}');
+    } on DioException catch (e, t) {
+      _logger.dio('getComments', e, t, action: '获取弹幕');
+    } catch (e, t) {
+      _logger.error('getComments', '获取弹幕失败', error: e, stackTrace: t);
+      throw AppException('获取弹幕失败', e);
     }
   }
 }

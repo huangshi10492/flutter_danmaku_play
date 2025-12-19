@@ -173,8 +173,8 @@ class BrightnessVolumeService {
       FlutterVolumeController.addListener((volume) {
         currentVolume = volume;
       });
-    } catch (e) {
-      _log.error('initialize', '初始化亮度音量服务失败', error: e);
+    } catch (e, t) {
+      _log.error('initialize', '初始化亮度音量服务失败', error: e, stackTrace: t);
       _systemBrightness = 0.5;
       currentBrightness = 0.5;
     }
@@ -184,11 +184,10 @@ class BrightnessVolumeService {
   static Future<void> setBrightness(double brightness) async {
     brightness = brightness.clamp(0.0, 1.0);
     currentBrightness = brightness;
-
     try {
       await ScreenBrightness().setApplicationScreenBrightness(brightness);
-    } catch (e) {
-      _log.error('setBrightness', '设置亮度失败', error: e);
+    } catch (e, t) {
+      _log.error('setBrightness', '设置亮度失败', error: e, stackTrace: t);
     }
   }
 
@@ -198,8 +197,8 @@ class BrightnessVolumeService {
     try {
       await ScreenBrightness().resetApplicationScreenBrightness();
       currentBrightness = _systemBrightness;
-    } catch (e) {
-      _log.error('resetToSystemBrightness', '重置亮度失败', error: e);
+    } catch (e, t) {
+      _log.error('resetToSystemBrightness', '重置亮度失败', error: e, stackTrace: t);
     }
   }
 

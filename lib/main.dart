@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import 'package:catcher_2/catcher_2.dart';
+import 'package:catcher_2/model/platform_type.dart';
+import 'package:fldanplay/utils/log.dart';
 import 'package:fldanplay/hive/hive_registrar.g.dart';
 import 'package:fldanplay/router.dart';
 import 'package:fldanplay/service/configure.dart';
-import 'package:fldanplay/service/logger.dart';
 import 'package:fldanplay/service/service_locator.dart';
 import 'package:fldanplay/utils/theme.dart';
 import 'package:fldanplay/utils/utils.dart';
@@ -23,24 +24,14 @@ import 'package:window_manager/window_manager.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await init();
-  final loggerService = GetIt.I.get<LoggerService>();
-  final Catcher2Options debugConfig = Catcher2Options(SilentReportMode(), [
-    FileHandler(loggerService.createNewLogFile()),
-    ConsoleHandler(
-      enableDeviceParameters: false,
-      enableApplicationParameters: false,
-      enableCustomParameters: true,
-    ),
-  ]);
-
-  final Catcher2Options releaseConfig = Catcher2Options(SilentReportMode(), [
-    FileHandler(loggerService.createNewLogFile()),
-    ConsoleHandler(),
+  final Catcher2Options config = Catcher2Options(SilentReportMode(), [
+    CatcherLogger(),
   ]);
 
   Catcher2(
-    debugConfig: debugConfig,
-    releaseConfig: releaseConfig,
+    debugConfig: config,
+    releaseConfig: config,
+    enableLogger: false,
     runAppFunction: () {
       runApp(const Application());
     },
@@ -204,4 +195,22 @@ class _ApplicationState extends State<Application> with WidgetsBindingObserver {
       );
     });
   }
+}
+
+class CatcherLogger extends ConsoleHandler {
+  final loggerService = Logger('Catcher');
+
+  @override
+  Future<bool> handle(Report report, BuildContext? context) async {
+    loggerService.error(
+      'crash',
+      report.error.toString(),
+      error: report.error,
+      stackTrace: report.stackTrace,
+    );
+    return true;
+  }
+
+  @override
+  List<PlatformType> getSupportedPlatforms() => PlatformType.values;
 }

@@ -45,32 +45,45 @@ class Filter {
 }
 
 class StreamMediaExplorerService {
-  late StreamMediaExplorerProvider provider;
-  late String libraryId;
+  final Signal<StreamMediaExplorerProvider?> provider = signal(null);
+  final Signal<String> libraryId = signal('');
   Storage? storage;
   List<EpisodeInfo> episodeList = [];
   final _logger = Logger('StreamMediaExplorerService');
   final Signal<Filter> filter = signal(Filter());
-
-  late FutureSignal<List<MediaItem>> items = futureSignal(() async {
-    try {
-      return await provider.getItems(libraryId, filter: filter.value);
-    } catch (e) {
-      throw Exception(e);
-    }
-  }, dependencies: [filter]);
+  final AsyncSignal<List<MediaItem>> items = asyncSignal(AsyncLoading());
 
   static void register() {
     final service = StreamMediaExplorerService();
+    effect(service.getData);
     GetIt.I.registerSingleton<StreamMediaExplorerService>(service);
   }
 
+  void getData() async {
+    items.value = AsyncLoading();
+    if (provider.value == null) {
+      items.value = AsyncData([]);
+      return;
+    }
+    try {
+      final list = await provider.value!.getItems(
+        libraryId.value,
+        filter: filter.value,
+      );
+      items.value = AsyncData(list);
+    } catch (e, t) {
+      _logger.error('items', '加载媒体列表失败', error: e, stackTrace: t);
+      items.value = AsyncError(e, t);
+    }
+  }
+
   void setProvider(StreamMediaExplorerProvider newProvider, Storage storage) {
-    filter.value = Filter();
-    this.storage = storage;
-    provider = newProvider;
-    libraryId = storage.mediaLibraryId!;
-    items.refresh();
+    batch(() {
+      filter.value = Filter();
+      this.storage = storage;
+      provider.value = newProvider;
+      libraryId.value = storage.mediaLibraryId!;
+    });
     _logger.info('setProvider', '设置新的媒体库提供者');
   }
 
@@ -108,16 +121,18 @@ class StreamMediaExplorerService {
     );
   }
 
+  Map<String, String> get headers => provider.value!.headers;
+
   String getImageUrl(String itemId, {String tag = 'Primary'}) {
-    return provider.getImageUrl(itemId, tag: tag);
+    return provider.value!.getImageUrl(itemId, tag: tag);
   }
 
   String getPlaybackUrl(String itemId) {
-    return provider.getStreamUrl(itemId);
+    return provider.value!.getStreamUrl(itemId);
   }
 
   Future<MediaDetail> getMediaDetail(String itemId) async {
-    return provider.getMediaDetail(itemId);
+    return provider.value!.getMediaDetail(itemId);
   }
 }
 
@@ -164,12 +179,11 @@ class JellyfinStreamMediaExplorerProvider
         res.add(MediaItem.fromJson(item));
       }
       return res;
-    } on DioException catch (e) {
-      _logger.error('getItems', '获取失败', error: e);
-      throw Exception('获取失败: ${e.message}');
-    } catch (e) {
-      _logger.error('getItems', '获取失败', error: e);
-      throw Exception('获取失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('getItems', e, t, action: '获取媒体列表');
+    } catch (e, t) {
+      _logger.error('getItems', '获取媒体列表失败', error: e, stackTrace: t);
+      throw AppException('获取媒体列表失败', e);
     }
   }
 
@@ -212,12 +226,11 @@ class JellyfinStreamMediaExplorerProvider
       }
 
       return detail;
-    } on DioException catch (e) {
-      _logger.error('getMediaDetail', '获取失败', error: e);
-      throw Exception('获取媒体详情失败: ${e.message}');
-    } catch (e) {
-      _logger.error('getMediaDetail', '获取失败', error: e);
-      throw Exception('获取媒体详情失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('getMediaDetail', e, t, action: '获取媒体详情');
+    } catch (e, t) {
+      _logger.error('getMediaDetail', '获取媒体详情失败', error: e, stackTrace: t);
+      throw AppException('获取媒体详情失败', e);
     }
   }
 
@@ -240,12 +253,11 @@ class JellyfinStreamMediaExplorerProvider
         data: {'Username': username, 'Pw': password},
       );
       return UserInfo.fromJson(response.data);
-    } on DioException catch (e) {
-      _logger.error('login', '登录失败', error: e);
-      throw Exception('登录失败: ${e.message}');
-    } catch (e) {
-      _logger.error('login', '登录失败', error: e);
-      throw Exception('登录失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('login', e, t, action: '登录');
+    } catch (e, t) {
+      _logger.error('login', '登录失败', error: e, stackTrace: t);
+      throw AppException('登录失败', e);
     }
   }
 
@@ -258,12 +270,11 @@ class JellyfinStreamMediaExplorerProvider
         res.add(CollectionItem.fromJson(item));
       }
       return res;
-    } on DioException catch (e) {
-      _logger.error('getUserViews', '获取用户视图失败', error: e);
-      throw Exception('获取用户视图失败: ${e.message}');
-    } catch (e) {
-      _logger.error('getUserViews', '获取用户视图失败', error: e);
-      throw Exception('获取用户视图失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('getUserViews', e, t, action: '获取用户视图');
+    } catch (e, t) {
+      _logger.error('getUserViews', '获取用户视图失败', error: e, stackTrace: t);
+      throw AppException('获取用户视图失败', e);
     }
   }
 
@@ -293,12 +304,11 @@ class JellyfinStreamMediaExplorerProvider
         (a, b) => (a.indexNumber ?? 0).compareTo(b.indexNumber ?? 0),
       );
       return seasons;
-    } on DioException catch (e) {
-      _logger.error('getSeasons', '获取季度信息失败', error: e);
-      throw Exception('获取季度信息失败: ${e.message}');
-    } catch (e) {
-      _logger.error('getSeasons', '获取季度信息失败', error: e);
-      throw Exception('获取季度信息失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('getSeasons', e, t, action: '获取季度信息');
+    } catch (e, t) {
+      _logger.error('getSeasons', '获取季度信息失败', error: e, stackTrace: t);
+      throw AppException('获取季度信息失败', e);
     }
   }
 
@@ -319,12 +329,11 @@ class JellyfinStreamMediaExplorerProvider
         (a, b) => (a.indexNumber ?? 0).compareTo(b.indexNumber ?? 0),
       );
       return episodes;
-    } on DioException catch (e) {
-      _logger.error('getEpisodes', '获取集数信息失败', error: e);
-      throw Exception('获取集数信息失败: ${e.message}');
-    } catch (e) {
-      _logger.error('getEpisodes', '获取集数信息失败', error: e);
-      throw Exception('获取集数信息失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('getEpisodes', e, t, action: '获取集数信息');
+    } catch (e, t) {
+      _logger.error('getEpisodes', '获取集数信息失败', error: e, stackTrace: t);
+      throw AppException('获取集数信息失败', e);
     }
   }
 
@@ -345,15 +354,15 @@ class JellyfinStreamMediaExplorerProvider
       );
       _logger.info('downloadVideo', 'Jellyfin下载完成: $itemId -> $localPath');
       return true;
-    } on DioException catch (e) {
+    } on DioException catch (e, t) {
       if (e.type == DioExceptionType.cancel) {
         return false;
       }
-      _logger.error('downloadVideo', 'Jellyfin下载失败: $e');
-      rethrow;
-    } catch (e) {
-      _logger.error('downloadVideo', 'Jellyfin下载失败: $e');
-      rethrow;
+      _logger.error('downloadVideo', 'Jellyfin下载失败', error: e, stackTrace: t);
+      return false;
+    } catch (e, t) {
+      _logger.error('downloadVideo', 'Jellyfin下载失败', error: e, stackTrace: t);
+      return false;
     }
   }
 
@@ -403,12 +412,11 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
         res.add(MediaItem.fromJson(item));
       }
       return res;
-    } on DioException catch (e) {
-      _logger.error('getItems', '获取失败', error: e);
-      throw Exception('获取失败: ${e.message}');
-    } catch (e) {
-      _logger.error('getItems', '获取失败', error: e);
-      throw Exception('获取失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('getItems', e, t, action: '获取媒体列表');
+    } catch (e, t) {
+      _logger.error('getItems', '获取媒体列表失败', error: e, stackTrace: t);
+      throw AppException('获取媒体列表失败', e);
     }
   }
 
@@ -451,12 +459,11 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
       }
 
       return detail;
-    } on DioException catch (e) {
-      _logger.error('getMediaDetail', '获取失败', error: e);
-      throw Exception('获取媒体详情失败: ${e.message}');
-    } catch (e) {
-      _logger.error('getMediaDetail', '获取失败', error: e);
-      throw Exception('获取媒体详情失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('getMediaDetail', e, t, action: '获取媒体详情');
+    } catch (e, t) {
+      _logger.error('getMediaDetail', '获取媒体详情失败', error: e, stackTrace: t);
+      throw AppException('获取媒体详情失败', e);
     }
   }
 
@@ -481,12 +488,11 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
         data: {'Username': username, 'Pw': password},
       );
       return UserInfo.fromJson(response.data);
-    } on DioException catch (e) {
-      _logger.error('login', '登录失败', error: e);
-      throw Exception('登录失败: ${e.message}');
-    } catch (e) {
-      _logger.error('login', '登录失败', error: e);
-      throw Exception('登录失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('login', e, t, action: '登录');
+    } catch (e, t) {
+      _logger.error('login', '登录失败', error: e, stackTrace: t);
+      throw AppException('登录失败', e);
     }
   }
 
@@ -499,12 +505,11 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
         res.add(CollectionItem.fromJson(item));
       }
       return res;
-    } on DioException catch (e) {
-      _logger.error('getUserViews', '获取用户视图失败', error: e);
-      throw Exception('获取用户视图失败: ${e.message}');
-    } catch (e) {
-      _logger.error('getUserViews', '获取用户视图失败', error: e);
-      throw Exception('获取用户视图失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('getUserViews', e, t, action: '获取用户视图');
+    } catch (e, t) {
+      _logger.error('getUserViews', '获取用户视图失败', error: e, stackTrace: t);
+      throw AppException('获取用户视图失败', e);
     }
   }
 
@@ -534,12 +539,11 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
         (a, b) => (a.indexNumber ?? 0).compareTo(b.indexNumber ?? 0),
       );
       return seasons;
-    } on DioException catch (e) {
-      _logger.error('getSeasons', '获取季度信息失败', error: e);
-      throw Exception('获取季度信息失败: ${e.message}');
-    } catch (e) {
-      _logger.error('getSeasons', '获取季度信息失败', error: e);
-      throw Exception('获取季度信息失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('getSeasons', e, t, action: '获取季度信息');
+    } catch (e, t) {
+      _logger.error('getSeasons', '获取季度信息失败', error: e, stackTrace: t);
+      throw AppException('获取季度信息失败', e);
     }
   }
 
@@ -560,12 +564,11 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
         (a, b) => (a.indexNumber ?? 0).compareTo(b.indexNumber ?? 0),
       );
       return episodes;
-    } on DioException catch (e) {
-      _logger.error('getEpisodes', '获取集数信息失败', error: e);
-      throw Exception('获取集数信息失败: ${e.message}');
-    } catch (e) {
-      _logger.error('getEpisodes', '获取集数信息失败', error: e);
-      throw Exception('获取集数信息失败: ${e.toString()}');
+    } on DioException catch (e, t) {
+      _logger.dio('getEpisodes', e, t, action: '获取集数信息');
+    } catch (e, t) {
+      _logger.error('getEpisodes', '获取集数信息失败', error: e, stackTrace: t);
+      throw AppException('获取集数信息失败', e);
     }
   }
 
@@ -587,15 +590,15 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
       );
       _logger.info('downloadVideo', 'Emby下载完成: $itemId -> $localPath');
       return true;
-    } on DioException catch (e) {
+    } on DioException catch (e, t) {
       if (e.type == DioExceptionType.cancel) {
         return false;
       }
-      _logger.error('downloadVideo', 'Emby下载失败: $e');
-      rethrow;
-    } catch (e) {
-      _logger.error('downloadVideo', 'Emby下载失败: $e');
-      rethrow;
+      _logger.error('downloadVideo', 'Emby下载失败', error: e, stackTrace: t);
+      return false;
+    } catch (e, t) {
+      _logger.error('downloadVideo', 'Emby下载失败', error: e, stackTrace: t);
+      return false;
     }
   }
 
