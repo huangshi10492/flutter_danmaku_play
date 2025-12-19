@@ -333,10 +333,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: "7872545770c277236fd32b022767576c562ba28366204ff1a5628853cf8f2200"
+      sha256: d974b6ba2606371ac71dd94254beefb6fa81185bde0b59bdc1df09885da85fde
       url: "https://pub.dev"
     source: hosted
-    version: "10.3.7"
+    version: "10.3.8"
   fixnum:
     dependency: transitive
     description:
@@ -452,18 +452,18 @@ packages:
     dependency: "direct main"
     description:
       name: go_router
-      sha256: c92d18e1fe994cb06d48aa786c46b142a5633067e8297cff6b5a3ac742620104
+      sha256: eff94d2a6fc79fa8b811dde79c7549808c2346037ee107a1121b4a644c745f2a
       url: "https://pub.dev"
     source: hosted
-    version: "17.0.0"
+    version: "17.0.1"
   google_fonts:
     dependency: transitive
     description:
       name: google_fonts
-      sha256: "517b20870220c48752eafa0ba1a797a092fb22df0d89535fd9991e86ee2cdd9c"
+      sha256: ba03d03bcaa2f6cb7bd920e3b5027181db75ab524f8891c8bc3aa603885b8055
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.2"
+    version: "6.3.3"
   graphs:
     dependency: transitive
     description:
@@ -476,10 +476,10 @@ packages:
     dependency: "direct main"
     description:
       name: hive_ce
-      sha256: "81d39a03c4c0ba5938260a8c3547d2e71af59defecea21793d57fc3551f0d230"
+      sha256: "412c638aeac0f003bba664884e3048b9547e541aaca13f10cc639da788184bed"
       url: "https://pub.dev"
     source: hosted
-    version: "2.15.1"
+    version: "2.16.0"
   hive_ce_flutter:
     dependency: "direct main"
     description:
@@ -492,10 +492,10 @@ packages:
     dependency: "direct dev"
     description:
       name: hive_ce_generator
-      sha256: c3d04f17b39cac9439e1c7d098d0b3fd93a488d167af2bd52746dbb5fc109411
+      sha256: fd629eefef44f3efb92dec5c422ab4c395153def0e651ed0f9bb3c8a4d4f783b
       url: "https://pub.dev"
     source: hosted
-    version: "1.10.1"
+    version: "1.11.0"
   http:
     dependency: transitive
     description:
@@ -524,10 +524,10 @@ packages:
     dependency: "direct main"
     description:
       name: image
-      sha256: "4e973fcf4caae1a4be2fa0a13157aa38a8f9cb049db6529aa00b4d71abc4d928"
+      sha256: "492bd52f6c4fbb6ee41f781ff27765ce5f627910e1e0cbecfa3d9add5562604c"
       url: "https://pub.dev"
     source: hosted
-    version: "4.5.4"
+    version: "4.7.2"
   intl:
     dependency: "direct main"
     description:
@@ -620,10 +620,10 @@ packages:
     dependency: "direct main"
     description:
       name: media_kit
-      sha256: "2a207ea7baf1a2ea2ff2016d512e572ca6fc02a937769effb5c27b4d682b4a53"
+      sha256: ae9e79597500c7ad6083a3c7b7b7544ddabfceacce7ae5c9709b0ec16a5d6643
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.3"
+    version: "1.2.6"
   media_kit_libs_android_video:
     dependency: transitive
     description:
@@ -1020,10 +1020,10 @@ packages:
     dependency: transitive
     description:
       name: sentry
-      sha256: "10a0bc25f5f21468e3beeae44e561825aaa02cdc6829438e73b9b64658ff88d9"
+      sha256: "9b2fe138df1a104f6e41d8ebf2b1e4fe39d4370d2200eb4eea29913d38b8b33b"
       url: "https://pub.dev"
     source: hosted
-    version: "9.8.0"
+    version: "9.9.1"
   shelf:
     dependency: transitive
     description:
@@ -1068,10 +1068,10 @@ packages:
     dependency: "direct main"
     description:
       name: skeletonizer
-      sha256: "5d2d44120916cc749ede54c236cef60c2478742806df0b1f065212f00721b185"
+      sha256: "83157d8e2e41f0252079cfec496281c16e4c63660052dab8d4cd72a206bb7109"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.1"
+    version: "2.1.2"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -1249,10 +1249,10 @@ packages:
     dependency: transitive
     description:
       name: uri_parser
-      sha256: ff4d2c720aca3f4f7d5445e23b11b2d15ef8af5ddce5164643f38ff962dcb270
+      sha256: "051c62e5f693de98ca9f130ee707f8916e2266945565926be3ff20659f7853ce"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.2"
   url_launcher:
     dependency: "direct main"
     description:
@@ -1353,10 +1353,10 @@ packages:
     dependency: transitive
     description:
       name: watcher
-      sha256: "592ab6e2892f67760543fb712ff0177f4ec76c031f02f5b4ff8d3fc5eb9fb61a"
+      sha256: f52385d4f73589977c80797e60fe51014f7f2b957b5e9a62c3f6ada439889249
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.4"
+    version: "1.2.0"
   web:
     dependency: transitive
     description:
