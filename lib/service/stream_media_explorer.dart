@@ -14,6 +14,7 @@ abstract class StreamMediaExplorerProvider {
   Future<List<CollectionItem>> getUserViews();
   Future<List<MediaItem>> getItems(String parentId, {required Filter filter});
   Future<MediaDetail> getMediaDetail(String itemId);
+  Future<String> getFileName(String itemId);
   Map<String, String> get headers;
   String getImageUrl(String itemId, {String tag = 'Primary'});
   String getStreamUrl(String itemId);
@@ -100,7 +101,7 @@ class StreamMediaExplorerService {
       historiesType: HistoriesType.streamMediaStorage,
       storageKey: storage!.uniqueKey,
       name: episode.name,
-      videoName: '${episode.seriesName} ${episode.indexNumber}',
+      videoName: '',
       subtitle: '${episode.seriesName} ${episode.indexNumber}',
       listLength: episodeList.length,
       videoIndex: index,
@@ -133,6 +134,10 @@ class StreamMediaExplorerService {
 
   Future<MediaDetail> getMediaDetail(String itemId) async {
     return provider.value!.getMediaDetail(itemId);
+  }
+
+  Future<String> getFileName(String itemId) async {
+    return provider.value!.getFileName(itemId);
   }
 }
 
@@ -231,6 +236,23 @@ class JellyfinStreamMediaExplorerProvider
     } catch (e, t) {
       _logger.error('getMediaDetail', '获取媒体详情失败', error: e, stackTrace: t);
       throw AppException('获取媒体详情失败', e);
+    }
+  }
+
+  @override
+  Future<String> getFileName(String itemId) async {
+    try {
+      final response = await dio.get('/Items/$itemId');
+      final List<dynamic>? mediaSources = response.data['MediaSources'];
+      if (mediaSources == null || mediaSources.isEmpty) {
+        throw Exception('MediaSources is null');
+      }
+      return mediaSources.first['Name'] as String;
+    } on DioException catch (e, t) {
+      _logger.dio('getFileName', e, t, action: '获取文件名');
+    } catch (e, t) {
+      _logger.error('getFileName', '获取文件名失败', error: e, stackTrace: t);
+      throw AppException('获取文件名失败', e);
     }
   }
 
@@ -464,6 +486,23 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
     } catch (e, t) {
       _logger.error('getMediaDetail', '获取媒体详情失败', error: e, stackTrace: t);
       throw AppException('获取媒体详情失败', e);
+    }
+  }
+
+  @override
+  Future<String> getFileName(String itemId) async {
+    try {
+      final response = await dio.get('/Users/${userInfo.userId}/Items/$itemId');
+      final List<dynamic>? mediaSources = response.data['MediaSources'];
+      if (mediaSources == null || mediaSources.isEmpty) {
+        throw Exception('MediaSources is null');
+      }
+      return mediaSources.first['Name'] as String;
+    } on DioException catch (e, t) {
+      _logger.dio('getFileName', e, t, action: '获取文件名');
+    } catch (e, t) {
+      _logger.error('getFileName', '获取文件名失败', error: e, stackTrace: t);
+      throw AppException('获取文件名失败', e);
     }
   }
 

@@ -205,9 +205,7 @@ class VideoPlayerService {
         _log.info('initialize', '加载视频: ${videoInfo.currentVideoPath}');
       }
       danmakuService.history = _history;
-      danmakuService.init(
-        searchMode: videoInfo.historiesType == HistoriesType.streamMediaStorage,
-      );
+      danmakuService.init();
       playerLogSubscription = _player.stream.log.listen((event) {
         switch (event.level) {
           case 'info':

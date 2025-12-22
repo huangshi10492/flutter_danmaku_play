@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 
 class StreamMediaDetailPage extends StatefulWidget {
   final MediaItem mediaItem;
@@ -39,6 +40,7 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
   bool _isLoading = true;
   String? _error;
   final Map<String, int> _refreshMap = {};
+  final Signal<bool> _isPlaying = signal(false);
 
   @override
   void initState() {
@@ -87,13 +89,19 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
     }
   }
 
-  void _onPlayEpisode(SeasonInfo season, int index) {
+  Future<void> _onPlayEpisode(SeasonInfo season, int index) async {
+    if (_isPlaying.value) return;
+    _isPlaying.value = true;
     try {
       _service.setVideoList(season);
       final videoInfo = _service.getVideoInfo(index);
       if (GetIt.I.get<ConfigureService>().offlineCacheFirst.value) {
         videoInfo.cached = _offlineCacheService.isCached(videoInfo.uniqueKey);
       }
+      videoInfo.videoName = await _service.getFileName(
+        videoInfo.virtualVideoPath,
+      );
+      _isPlaying.value = false;
       if (mounted) {
         final location = Uri(path: videoPlayerPath);
         context.push(location.toString(), extra: videoInfo);
@@ -102,6 +110,8 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
       if (mounted) {
         showToast(context, level: 3, title: '播放失败', description: e.toString());
       }
+    } finally {
+      _isPlaying.value = false;
     }
   }
 
@@ -117,72 +127,89 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverOverlapAbsorber(
-              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-              sliver: SliverAppBar.medium(
-                title: Text(
-                  widget.mediaItem.name,
-                  style: context.theme.typography.lg.copyWith(height: 1.2),
-                ),
-                scrolledUnderElevation: 0,
-                stretch: true,
-                centerTitle: false,
-                expandedHeight: 300 + kTextTabBarHeight + kToolbarHeight,
-                toolbarHeight: kToolbarHeight,
-                collapsedHeight:
-                    kTextTabBarHeight +
-                    kToolbarHeight +
-                    MediaQuery.paddingOf(context).top,
-                forceElevated: innerBoxIsScrolled,
-                flexibleSpace: FlexibleSpaceBar(
-                  collapseMode: CollapseMode.pin,
-                  background: Stack(
-                    children: [
-                      Positioned.fill(
-                        bottom: kTextTabBarHeight,
-                        child: _buildbackground(false),
-                      ),
-                      SafeArea(
-                        bottom: false,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            16,
-                            kToolbarHeight,
-                            16,
-                            kTextTabBarHeight,
+      body: Stack(
+        children: [
+          NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                SliverOverlapAbsorber(
+                  handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                    context,
+                  ),
+                  sliver: SliverAppBar.medium(
+                    title: Text(
+                      widget.mediaItem.name,
+                      style: context.theme.typography.lg.copyWith(height: 1.2),
+                    ),
+                    scrolledUnderElevation: 0,
+                    stretch: true,
+                    centerTitle: false,
+                    expandedHeight: 300 + kTextTabBarHeight + kToolbarHeight,
+                    toolbarHeight: kToolbarHeight,
+                    collapsedHeight:
+                        kTextTabBarHeight +
+                        kToolbarHeight +
+                        MediaQuery.paddingOf(context).top,
+                    forceElevated: innerBoxIsScrolled,
+                    flexibleSpace: FlexibleSpaceBar(
+                      collapseMode: CollapseMode.pin,
+                      background: Stack(
+                        children: [
+                          Positioned.fill(
+                            bottom: kTextTabBarHeight,
+                            child: _buildbackground(false),
                           ),
-                          child: StreamMediaInfoCard(
-                            title: widget.mediaItem.name,
-                            mediaId: widget.mediaItem.id,
-                            imageUrl: _service.getImageUrl(widget.mediaItem.id),
-                            headers: _service.headers,
-                            isLoading: _isLoading,
-                            mediaDetail: _mediaDetail,
+                          SafeArea(
+                            bottom: false,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                kToolbarHeight,
+                                16,
+                                kTextTabBarHeight,
+                              ),
+                              child: StreamMediaInfoCard(
+                                title: widget.mediaItem.name,
+                                mediaId: widget.mediaItem.id,
+                                imageUrl: _service.getImageUrl(
+                                  widget.mediaItem.id,
+                                ),
+                                headers: _service.headers,
+                                isLoading: _isLoading,
+                                mediaDetail: _mediaDetail,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
+                    bottom: TabBar(
+                      controller: _tabController,
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
+                      dividerHeight: 0,
+                      tabs: _mediaDetail == null
+                          ? []
+                          : _mediaDetail!.seasons
+                                .map((season) => Tab(text: season.name))
+                                .toList(),
+                    ),
                   ),
                 ),
-                bottom: TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  dividerHeight: 0,
-                  tabs: _mediaDetail == null
-                      ? []
-                      : _mediaDetail!.seasons
-                            .map((season) => Tab(text: season.name))
-                            .toList(),
-                ),
-              ),
-            ),
-          ];
-        },
-        body: SafeArea(top: false, child: _buildBody()),
+              ];
+            },
+            body: SafeArea(top: false, child: _buildBody()),
+          ),
+          Watch((context) {
+            if (!_isPlaying.value) {
+              return const SizedBox.shrink();
+            }
+            return Container(
+              color: Colors.black45,
+              child: const Center(child: CircularProgressIndicator()),
+            );
+          }),
+        ],
       ),
     );
   }

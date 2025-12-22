@@ -39,7 +39,7 @@ class DanmakuService {
   String cacheDir = "";
   late bool danmakuServiceEnable = configureService.danmakuServiceEnable.value;
 
-  Future<void> init({bool searchMode = false}) async {
+  Future<void> init() async {
     final documentsDir = await getApplicationSupportDirectory();
     cacheDir = Directory('${documentsDir.path}/danmaku').path;
     danmakuApiUtils = DanmakuApiUtils(configureService.danmakuServiceUrl.value);
@@ -48,7 +48,7 @@ class DanmakuService {
     danmakuSettings.value = sittings;
     controller.updateOption(sittings.toDanmakuOption());
     globalService.videoName = videoInfo.videoName;
-    loadDanmaku(searchMode: searchMode);
+    loadDanmaku();
   }
 
   void syncWithVideo(bool isPlaying) {
@@ -238,32 +238,20 @@ class DanmakuService {
   }
 
   /// 加载弹幕
-  Future<void> loadDanmaku({
-    bool searchMode = false,
-    bool force = false,
-  }) async {
+  Future<void> loadDanmaku({bool force = false}) async {
     if (!danmakuServiceEnable) return;
     try {
       if (!force) {
         final exist = await _getCachedDanmakus(videoInfo.uniqueKey);
         if (exist) return;
       }
-      DanmakuMatchResult? result;
-      if (searchMode) {
-        result = await danmakuGetter.getBySearch(
-          videoInfo.uniqueKey,
-          videoInfo.videoName,
-        );
-      }
+      DanmakuMatchResult? result = await danmakuGetter.match(
+        videoInfo.uniqueKey,
+        videoInfo.videoName,
+      );
       if (result == null) {
-        result = await danmakuGetter.match(
-          videoInfo.uniqueKey,
-          videoInfo.videoName,
-        );
-        if (result == null) {
-          globalService.showNotification('未找到弹幕');
-          return;
-        }
+        globalService.showNotification('未匹配到弹幕');
+        return;
       }
       await _getCachedDanmakus(videoInfo.uniqueKey);
     } catch (e, t) {

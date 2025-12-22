@@ -13,8 +13,8 @@ class VideoInfo {
   int listLength;
   bool canSwitch = false;
   late String uniqueKey;
-  late String videoName;
-  late String name;
+  late String videoName; // 用于弹幕匹配
+  late String name; // 显示在播放器顶部
   String? subtitle;
   bool cached = false;
 
