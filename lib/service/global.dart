@@ -39,6 +39,7 @@ class GlobalService {
   }
 
   void showNotification(String message) {
+    if (!notificationContext.mounted) return;
     showRawFToast(
       context: notificationContext,
       alignment: FToastAlignment.bottomLeft,
