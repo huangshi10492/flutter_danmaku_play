@@ -81,39 +81,43 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
         ),
         const SizedBox(height: 12),
         FTextField(
+          control: .managed(controller: searchController),
           label: Text('搜索'),
           hint: '输入关键词',
-          controller: searchController,
         ),
         const SizedBox(height: 12),
         FTextField(
+          control: .managed(controller: yearsController),
           label: Text('年份'),
           hint: '按,分隔年份，如2000,2001,2002',
-          controller: yearsController,
         ),
         const SizedBox(height: 12),
         FSelectMenuTile.fromMap(
+          selectControl: .managed(
+            initial: {status},
+            onChange: (value) => setState(() {
+              status = value.first;
+            }),
+          ),
           statusOptions,
           title: Text('连载状态'),
-          initialValue: status,
           details: Text(
             statusOptions.entries.firstWhere((e) => e.value == status).key,
           ),
-          onChange: (value) => setState(() {
-            status = value.first;
-          }),
         ),
         const SizedBox(height: 12),
         FSelectMenuTile.fromMap(
+          selectControl: .managed(
+            initial: {sortBy},
+            onChange: (value) => setState(() {
+              sortBy = value.first;
+            }),
+          ),
           sortOptions,
           title: Text('排序类型'),
-          initialValue: sortBy,
           details: Text(
             sortOptions.entries.firstWhere((e) => e.value == sortBy).key,
           ),
-          onChange: (value) => setState(() {
-            sortBy = value.first;
-          }),
         ),
         const SizedBox(height: 12),
         Row(

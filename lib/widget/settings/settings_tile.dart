@@ -259,6 +259,10 @@ class SettingsTile extends StatelessWidget with FTileMixin {
 
   Widget _buildRadioTile(BuildContext context) {
     return FSelectMenuTile.fromMap(
+      selectControl: .managed(
+        initial: {radioValue},
+        onChange: (value) => onRadioChange!(value.first!),
+      ),
       radioOptions!,
       style: selectMenuTileStyle(
         colors: context.theme.colors,
@@ -266,7 +270,6 @@ class SettingsTile extends StatelessWidget with FTileMixin {
         style: context.theme.style,
       ).call,
       title: Text(title),
-      initialValue: radioValue,
       subtitle: subtitle == null
           ? null
           : Text(subtitle!, overflow: TextOverflow.visible),
@@ -285,7 +288,6 @@ class SettingsTile extends StatelessWidget with FTileMixin {
         ),
       ),
       suffix: suffix,
-      onChange: (value) => onRadioChange!(value.first),
     );
   }
 }

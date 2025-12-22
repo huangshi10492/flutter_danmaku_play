@@ -412,23 +412,25 @@ class _FileExplorerFilterSheetState extends State<FileExplorerFilterSheet> {
         ),
         const SizedBox(height: 12),
         FTextField(
+          control: .managed(controller: searchController),
           label: Text('搜索'),
           hint: '输入关键词',
-          controller: searchController,
         ),
         const SizedBox(height: 12),
         FSelectMenuTile.fromMap(
+          selectControl: .managed(
+            initial: {displayMode},
+            onChange: (value) => setState(() {
+              displayMode = value.first;
+            }),
+          ),
           displayModeOptions,
           title: Text('连载状态'),
-          initialValue: displayMode,
           details: Text(
             displayModeOptions.entries
                 .firstWhere((e) => e.value == displayMode)
                 .key,
           ),
-          onChange: (value) => setState(() {
-            displayMode = value.first;
-          }),
         ),
         const SizedBox(height: 12),
         Row(

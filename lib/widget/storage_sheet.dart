@@ -518,8 +518,8 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: field.obscureText
               ? FTextFormField.password(
+                  control: .managed(controller: controller),
                   label: Text(field.label),
-                  controller: controller,
                   keyboardType: field.inputType,
                   validator: (value) {
                     if (field.required &&
@@ -533,8 +533,8 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                   },
                 )
               : FTextFormField(
+                  control: .managed(controller: controller),
                   label: Text(field.label),
-                  controller: controller,
                   keyboardType: field.inputType,
                   validator: (value) {
                     if (field.required &&
@@ -576,9 +576,16 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: FSelectMenuTile.fromMap(
+            selectControl: .managed(
+              initial: {_formData.selectValues[field.key]},
+              onChange: (value) {
+                setState(() {
+                  _formData.selectValues[field.key] = value.first!;
+                });
+              },
+            ),
             field.options!,
             title: Text(field.label),
-            initialValue: _formData.selectValues[field.key],
             details: Text(
               field.options!.entries
                   .firstWhere(
@@ -586,11 +593,6 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                   )
                   .key,
             ),
-            onChange: (value) {
-              setState(() {
-                _formData.selectValues[field.key] = value.first;
-              });
-            },
           ),
         );
     }
@@ -654,8 +656,8 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                   vertical: 6,
                 ),
                 child: FTextFormField(
+                  control: .managed(controller: _nameController),
                   label: Text('名称'),
-                  controller: _nameController,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return '名称不能为空';
@@ -670,10 +672,10 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                   vertical: 6,
                 ),
                 child: FTextFormField(
+                  control: .managed(controller: _uniqueKeyController),
                   label: Text('Key'),
                   readOnly: _storage.uniqueKey.isNotEmpty,
                   hint: '用于标识，不可重复，只允许字母和数字',
-                  controller: _uniqueKeyController,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Key不能为空';
@@ -735,13 +737,20 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                       vertical: 6,
                     ),
                     child: FSelectMenuTile.fromMap(
+                      selectControl: .managed(
+                        initial: {_selectedLibraryId},
+                        onChange: (value) {
+                          setState(() {
+                            _selectedLibraryId = value.first;
+                          });
+                        },
+                      ),
                       Map.fromEntries(
                         _mediaServerLibraries.map(
                           (lib) => MapEntry(lib.name, lib.id),
                         ),
                       ),
                       title: const Text('选择媒体库'),
-                      initialValue: _selectedLibraryId,
                       details: Text(
                         _selectedLibraryId != null
                             ? _mediaServerLibraries
@@ -751,11 +760,6 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                                   .name
                             : '请选择媒体库',
                       ),
-                      onChange: (value) {
-                        setState(() {
-                          _selectedLibraryId = value.first;
-                        });
-                      },
                     ),
                   ),
               ],

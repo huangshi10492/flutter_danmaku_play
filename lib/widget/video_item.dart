@@ -333,12 +333,12 @@ class _PopoverMenuState extends State<_PopoverMenu>
   @override
   Widget build(BuildContext context) {
     final controller = FPopoverController(vsync: this);
-    return FPopoverMenu(
-      popoverController: controller,
+    return FPopoverMenu.tiles(
+      control: .managed(controller: controller),
       menu: [
-        FItemGroup(
+        FTileGroup(
           children: [
-            FItem(
+            FTile(
               prefix: const Icon(FIcons.download),
               title: Text('离线保存'),
               onPress: () {
@@ -346,7 +346,7 @@ class _PopoverMenuState extends State<_PopoverMenu>
                 widget.download();
               },
             ),
-            FItem(
+            FTile(
               prefix: const Icon(FIcons.captions),
               title: Text('获取并保存弹幕'),
               onPress: () {

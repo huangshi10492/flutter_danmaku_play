@@ -35,7 +35,7 @@ dependencies:
   ffi: ^2.1.4
   
   #界面库
-  forui: ^0.16.0
+  forui: ^0.17.0
   cupertino_icons: ^1.0.8
   
   #状态库

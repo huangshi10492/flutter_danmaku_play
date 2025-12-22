@@ -24,7 +24,7 @@ class DanmakuSettingsPage extends StatelessWidget {
           direction: Axis.horizontal,
           animation: animation,
           title: Text(title),
-          body: FTextField(controller: controller),
+          body: FTextField(control: .managed(controller: controller)),
           actions: [
             FButton(
               style: FButtonStyle.outline(),

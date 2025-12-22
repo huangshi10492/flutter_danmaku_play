@@ -88,7 +88,7 @@ class _DanmakuSearchPageState extends State<DanmakuSearchPage> {
       children: [
         Expanded(
           child: FTextField(
-            controller: _searchController,
+            control: .managed(controller: _searchController),
             hint: '输入动画或剧集名称',
             clearable: (value) => value.text.isNotEmpty,
             onTapOutside: (event) {

@@ -138,7 +138,7 @@ class RootPageState extends State<RootPage> {
           return FDialog(
             title: Text('请输入视频URL'),
             direction: Axis.horizontal,
-            body: FTextField(controller: controller),
+            body: FTextField(control: .managed(controller: controller)),
             actions: [
               FButton(
                 style: FButtonStyle.outline(),
@@ -312,12 +312,12 @@ class _PopoverMenuState extends State<_PopoverMenu>
   @override
   Widget build(BuildContext context) {
     final controller = FPopoverController(vsync: this);
-    return FPopoverMenu(
-      popoverController: controller,
+    return FPopoverMenu.tiles(
+      control: .managed(controller: controller),
       menu: [
-        FItemGroup(
+        FTileGroup(
           children: [
-            FItem(
+            FTile(
               prefix: const Icon(FIcons.pencil),
               title: Text('编辑'),
               onPress: () {
@@ -325,7 +325,7 @@ class _PopoverMenuState extends State<_PopoverMenu>
                 widget.edit();
               },
             ),
-            FItem(
+            FTile(
               prefix: const Icon(FIcons.trash, color: Colors.red),
               title: Text('删除'),
               onPress: () {

@@ -18,12 +18,15 @@ class RadioSettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FSelectTileGroup<String>(
+      control: .managed(
+        controller: FMultiValueNotifier.radio(value),
+        onChange: (value) => onChange(value.first),
+      ),
       style: tileGroupStyle(
         colors: context.theme.colors,
         typography: context.theme.typography,
         style: context.theme.style,
       ),
-      selectController: FSelectTileGroupController.radio(value),
       children: options.entries
           .map(
             (e) => FSelectTile(
@@ -33,7 +36,6 @@ class RadioSettingsSection extends StatelessWidget {
             ),
           )
           .toList(),
-      onChange: (value) => onChange(value.first),
     );
   }
 }
