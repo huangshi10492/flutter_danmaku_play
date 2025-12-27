@@ -576,11 +576,11 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: FSelectMenuTile.fromMap(
-            selectControl: .managed(
-              initial: {_formData.selectValues[field.key]},
+            selectControl: .lifted(
+              value: {_formData.selectValues[field.key]},
               onChange: (value) {
                 setState(() {
-                  _formData.selectValues[field.key] = value.first!;
+                  _formData.selectValues[field.key] = value.last!;
                 });
               },
             ),
@@ -737,11 +737,11 @@ class _EditStorageSheetState extends State<EditStorageSheet> {
                       vertical: 6,
                     ),
                     child: FSelectMenuTile.fromMap(
-                      selectControl: .managed(
-                        initial: {_selectedLibraryId},
+                      selectControl: .lifted(
+                        value: {_selectedLibraryId},
                         onChange: (value) {
                           setState(() {
-                            _selectedLibraryId = value.first;
+                            _selectedLibraryId = value.last;
                           });
                         },
                       ),

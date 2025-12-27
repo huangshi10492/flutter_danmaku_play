@@ -418,10 +418,10 @@ class _FileExplorerFilterSheetState extends State<FileExplorerFilterSheet> {
         ),
         const SizedBox(height: 12),
         FSelectMenuTile.fromMap(
-          selectControl: .managed(
-            initial: {displayMode},
+          selectControl: .lifted(
+            value: {displayMode},
             onChange: (value) => setState(() {
-              displayMode = value.first;
+              displayMode = value.last;
             }),
           ),
           displayModeOptions,

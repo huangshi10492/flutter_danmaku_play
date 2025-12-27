@@ -93,10 +93,10 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
         ),
         const SizedBox(height: 12),
         FSelectMenuTile.fromMap(
-          selectControl: .managed(
-            initial: {status},
+          selectControl: .lifted(
+            value: {status},
             onChange: (value) => setState(() {
-              status = value.first;
+              status = value.last;
             }),
           ),
           statusOptions,
@@ -107,10 +107,10 @@ class _StreamMediaFilterSheetState extends State<StreamMediaFilterSheet> {
         ),
         const SizedBox(height: 12),
         FSelectMenuTile.fromMap(
-          selectControl: .managed(
-            initial: {sortBy},
+          selectControl: .lifted(
+            value: {sortBy},
             onChange: (value) => setState(() {
-              sortBy = value.first;
+              sortBy = value.last;
             }),
           ),
           sortOptions,
