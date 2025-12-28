@@ -835,6 +835,9 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     }
     if (_videoInfo.value.historiesType == HistoriesType.streamMediaStorage) {
       newVideoInfo = streamMediaExplorerService.getVideoInfo(index);
+      newVideoInfo.videoName = await streamMediaExplorerService.getFileName(
+        newVideoInfo.virtualVideoPath,
+      );
     }
     final service = _playerService.value;
     _danmakuController.clear();
