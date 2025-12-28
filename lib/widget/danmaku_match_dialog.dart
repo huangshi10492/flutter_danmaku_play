@@ -4,7 +4,14 @@ import 'package:fldanplay/utils/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-enum _DanmakuSearchState { matching, matchSuccess, search, searching, saving }
+enum _DanmakuSearchState {
+  matching,
+  downloading,
+  success,
+  search,
+  searching,
+  saving,
+}
 
 class DanmakuMatchDialog extends StatefulWidget {
   final String uniqueKey;
@@ -43,21 +50,19 @@ class _DanmakuMatchDialogState extends State<DanmakuMatchDialog> {
   Future<void> _match() async {
     var result = await danmakuGetter.match(widget.uniqueKey, widget.fileName);
     if (result == null) {
-      result = await danmakuGetter.getBySearch(
-        widget.uniqueKey,
-        widget.fileName,
-      );
-      if (result == null) {
-        setState(() {
-          _state = _DanmakuSearchState.search;
-        });
-        if (mounted) showToast(context, title: '未找到弹幕');
-        return;
-      }
+      setState(() {
+        _state = _DanmakuSearchState.search;
+      });
+      if (mounted) showToast(context, title: '未找到弹幕');
+      return;
     }
     setState(() {
-      _state = _DanmakuSearchState.matchSuccess;
-      _message = '${result!.animeTitle}\n${result.episodeTitle}';
+      _state = _DanmakuSearchState.saving;
+    });
+    await danmakuGetter.save(widget.uniqueKey, result);
+    setState(() {
+      _state = _DanmakuSearchState.success;
+      _message = '${result.animeTitle}\n${result.episodeTitle}';
     });
   }
 
@@ -99,6 +104,16 @@ class _DanmakuMatchDialogState extends State<DanmakuMatchDialog> {
         ],
       );
     }
+    if (_state == _DanmakuSearchState.downloading) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('正在下载弹幕...', style: context.theme.typography.base),
+        ],
+      );
+    }
     if (_state == _DanmakuSearchState.saving) {
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -109,7 +124,7 @@ class _DanmakuMatchDialogState extends State<DanmakuMatchDialog> {
         ],
       );
     }
-    if (_state == _DanmakuSearchState.matchSuccess) {
+    if (_state == _DanmakuSearchState.success) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -258,8 +273,7 @@ class _DanmakuMatchDialogState extends State<DanmakuMatchDialog> {
                 });
                 final result = await danmakuGetter.save(
                   widget.uniqueKey,
-                  episode.episodeId,
-                  anime.animeId,
+                  episode,
                 );
                 if (mounted) {
                   if (result.isNotEmpty) {

@@ -5,8 +5,7 @@ import 'package:forui/forui.dart';
 import 'package:get_it/get_it.dart';
 
 class DanmakuSearchPage extends StatefulWidget {
-  final void Function({required int animeId, required int episodeId})
-  onEpisodeSelected;
+  final void Function(Episode episode) onEpisodeSelected;
   final Future<List<Anime>> Function(String name) searchEpisodes;
 
   const DanmakuSearchPage({
@@ -168,10 +167,7 @@ class _DanmakuSearchPageState extends State<DanmakuSearchPage> {
                 maxLines: 2,
               ),
               onPress: () {
-                widget.onEpisodeSelected(
-                  animeId: anime.animeId,
-                  episodeId: episode.episodeId,
-                );
+                widget.onEpisodeSelected(episode);
               },
             );
           },

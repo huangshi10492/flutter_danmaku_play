@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:canvas_danmaku/danmaku_controller.dart';
 import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:fldanplay/model/danmaku.dart';
+import 'package:fldanplay/model/history.dart';
 import 'package:fldanplay/model/video_info.dart';
 import 'package:fldanplay/service/configure.dart';
 import 'package:fldanplay/service/global.dart';
@@ -12,7 +13,20 @@ import 'package:fldanplay/utils/log.dart';
 import 'package:get_it/get_it.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import '../../model/history.dart';
+
+enum DanmakuStatus {
+  none('无弹幕', 2),
+  matching('匹配中', 1),
+  downloading('下载中', 1),
+  failed('加载失败', 2),
+  fromCached('从缓存加载', 0),
+  fromApi('从API加载', 0),
+  fromLocal('从本地加载', 0);
+
+  final String label;
+  final int level; // 0: success, 1: loading, 2: error
+  const DanmakuStatus(this.label, this.level);
+}
 
 class DanmakuService {
   late DanmakuController controller;
@@ -32,9 +46,9 @@ class DanmakuService {
   Map<int, List<Danmaku>> _other = {};
   final Signal<DanmakuSettings> danmakuSettings = Signal(DanmakuSettings());
   final Signal<bool> danmakuEnabled = Signal(true);
+  final Signal<Episode> episode = Signal(Episode.fromId(0, 0));
+  final Signal<DanmakuStatus> status = Signal(.none);
   late History history;
-  int episodeId = 0;
-  int animeId = 0;
   int lastTime = 0;
   String cacheDir = "";
   late bool danmakuServiceEnable = configureService.danmakuServiceEnable.value;
@@ -244,20 +258,28 @@ class DanmakuService {
   Future<void> loadDanmaku({bool force = false}) async {
     if (!danmakuServiceEnable) return;
     try {
+      globalService.danmakuCount.value.clear();
       if (!force) {
         final exist = await _getCachedDanmakus(videoInfo.uniqueKey);
         if (exist) return;
       }
-      DanmakuMatchResult? result = await danmakuGetter.match(
+      status.value = .matching;
+      Episode? result = await danmakuGetter.match(
         videoInfo.uniqueKey,
         videoInfo.videoName,
       );
       if (result == null) {
         globalService.showNotification('未匹配到弹幕');
+        status.value = .none;
         return;
       }
-      await _getCachedDanmakus(videoInfo.uniqueKey);
+      episode.value = result;
+      status.value = .downloading;
+      final danmakus = await danmakuGetter.save(videoInfo.uniqueKey, result);
+      _danmaku2Map(danmakus);
+      status.value = .fromApi;
     } catch (e, t) {
+      status.value = .failed;
       _log.error('loadDanmaku', '加载弹幕失败', error: e, stackTrace: t);
     }
   }
@@ -271,21 +293,29 @@ class DanmakuService {
       final danmakuData = DanmakuFile.fromJsonString(jsonString);
       final expireTime = danmakuData.expireTime.millisecondsSinceEpoch;
       final now = DateTime.now().millisecondsSinceEpoch;
-      episodeId = danmakuData.episodeId;
-      animeId = danmakuData.animeId;
+      episode.value = Episode(
+        episodeId: danmakuData.episodeId,
+        animeId: danmakuData.animeId,
+        animeTitle: danmakuData.animeTitle ?? '',
+        episodeTitle: danmakuData.episodeTitle ?? '',
+      );
       if (now > expireTime) {
         _log.info('_getCachedDanmakus', '弹幕缓存已过期');
-        final result = await danmakuGetter.save(uniqueKey, episodeId, animeId);
+        status.value = .downloading;
+        final result = await danmakuGetter.save(uniqueKey, episode.value);
         if (result.isNotEmpty) {
+          status.value = .fromApi;
           _danmaku2Map(result);
           globalService.showNotification('更新弹幕: ${result.length}条');
           return true;
         }
       }
+      status.value = .fromCached;
       _danmaku2Map(danmakuData.danmakus);
       globalService.showNotification('加载弹幕: ${danmakuData.danmakus.length}条');
       return true;
     } catch (e, t) {
+      status.value = .failed;
       _log.warn('_getCachedDanmakus', '读取缓存弹幕失败', error: e, stackTrace: t);
       return false;
     }
@@ -299,15 +329,17 @@ class DanmakuService {
   /// 选择episodeId并加载弹幕
   Future<void> selectEpisodeAndLoadDanmaku(
     String uniqueKey,
-    int animeId,
-    int episodeId,
+    Episode episode,
   ) async {
     try {
-      final danmakus = await danmakuGetter.save(uniqueKey, episodeId, animeId);
+      status.value = .downloading;
+      final danmakus = await danmakuGetter.save(uniqueKey, episode);
+      status.value = .fromApi;
       _danmaku2Map(danmakus);
       _log.info('selectEpisodeAndLoadDanmaku', '搜索弹幕加载成功: ${danmakus.length}条');
       globalService.showNotification('从API加载弹幕: ${danmakus.length}条');
     } catch (e, t) {
+      status.value = .failed;
       _log.error(
         'selectEpisodeAndLoadDanmaku',
         '手动选择弹幕加载失败',
@@ -319,17 +351,19 @@ class DanmakuService {
   }
 
   Future<void> refreshDanmaku() async {
-    if (animeId == 0 || episodeId == 0) return;
+    if (!episode.value.exist()) return;
     try {
+      status.value = .downloading;
       final danmakus = await danmakuGetter.save(
         videoInfo.uniqueKey,
-        episodeId,
-        animeId,
+        episode.value,
       );
+      status.value = .fromApi;
       _danmaku2Map(danmakus);
       _log.info('refreshDanmaku', '刷新弹幕成功: ${danmakus.length}条');
       globalService.showNotification('刷新弹幕: ${danmakus.length}条');
     } catch (e, t) {
+      status.value = .failed;
       _log.error('refreshDanmaku', '刷新弹幕失败', error: e, stackTrace: t);
       globalService.showNotification('刷新弹幕失败');
     }
@@ -350,30 +384,20 @@ class DanmakuGetter {
   );
   final _log = Logger('DanmakuGetter');
 
-  Future<DanmakuMatchResult?> getBySearch(String uniqueKey, String name) async {
-    int animesId = 0;
-    int episodesId = 0;
+  Future<Episode?> getBySearch(String uniqueKey, String name) async {
     try {
       final animes = await danmakuApiUtils.searchEpisodes(name);
       if (animes.isEmpty) return null;
       final episodes = animes.first.episodes;
       if (episodes.isEmpty) return null;
-      animesId = episodes.first.animeId;
-      episodesId = episodes.first.episodeId;
-      await save(uniqueKey, episodesId, animesId);
-      return DanmakuMatchResult(
-        animeId: animesId,
-        episodeId: episodesId,
-        animeTitle: animes.first.animeTitle,
-        episodeTitle: episodes.first.episodeTitle,
-      );
+      return episodes.first;
     } catch (e, t) {
       _log.error('getBySearch', '搜索番剧失败', error: e, stackTrace: t);
       throw AppException('搜索番剧失败', e);
     }
   }
 
-  Future<DanmakuMatchResult?> match(
+  Future<Episode?> match(
     String uniqueKey,
     String fileName, {
     String? fileHash,
@@ -384,27 +408,17 @@ class DanmakuGetter {
         fileHash: fileHash,
       );
       if (episodes.isEmpty) return null;
-      await save(uniqueKey, episodes.first.episodeId, episodes.first.animeId);
-      return DanmakuMatchResult(
-        animeId: episodes.first.animeId,
-        episodeId: episodes.first.episodeId,
-        animeTitle: episodes.first.animeTitle,
-        episodeTitle: episodes.first.episodeTitle,
-      );
+      return episodes.first;
     } catch (e, t) {
       _log.error('match', '匹配视频失败', error: e, stackTrace: t);
       throw AppException('匹配视频失败', e);
     }
   }
 
-  Future<List<Danmaku>> save(
-    String uniqueKey,
-    int episodeId,
-    int animeId,
-  ) async {
+  Future<List<Danmaku>> save(String uniqueKey, Episode episode) async {
     try {
       final comments = await danmakuApiUtils.getComments(
-        episodeId,
+        episode.episodeId,
         sc: configureService.autoLanguage.value,
       );
       final danmakus = comments.map((comment) => comment.toDanmaku()).toList();
@@ -416,15 +430,17 @@ class DanmakuGetter {
       final cacheFile = File('${cacheDir.path}/$uniqueKey.json');
       final cacheData = DanmakuFile(
         uniqueKey: uniqueKey,
-        cacheTime: DateTime.now(),
         expireTime: DateTime.now().add(
           danmakus.length > 100
               ? const Duration(days: 3)
               : const Duration(days: 1),
         ),
         danmakus: danmakus,
-        episodeId: episodeId,
-        animeId: animeId,
+        episodeId: episode.episodeId,
+        animeId: episode.animeId,
+        animeTitle: episode.animeTitle,
+        episodeTitle: episode.episodeTitle,
+        from: configureService.danmakuServiceUrl.value,
       );
       await cacheFile.writeAsString(cacheData.toJsonString());
       _log.info('save', '弹幕缓存保存成功， 弹幕数量: ${danmakus.length}');

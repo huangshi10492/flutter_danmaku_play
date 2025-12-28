@@ -1,7 +1,8 @@
 import 'package:fldanplay/model/file_item.dart';
 import 'package:fldanplay/model/history.dart';
 import 'package:fldanplay/model/video_info.dart';
-import 'package:fldanplay/page/player/danmaku_source_settings.dart';
+import 'package:fldanplay/page/player/danmaku_info.dart';
+import 'package:fldanplay/page/player/danmaku_filter.dart';
 import 'package:fldanplay/page/player/track_page.dart';
 import 'package:fldanplay/page/player/danmaku_search_page.dart';
 import 'package:fldanplay/page/player/danmaku_settings.dart';
@@ -21,9 +22,10 @@ import 'package:signals_flutter/signals_flutter.dart';
 
 enum RightDrawerType {
   danmakuActions,
+  danmakuInfo,
   danmakuSearch,
   danmakuSettings,
-  danmakuSourceSettings,
+  danmakuFilter,
   episode,
   speed,
   audioTrack,
@@ -65,18 +67,20 @@ class RightDrawerContent extends StatelessWidget {
         return _buildSpeedSettings(context);
       case RightDrawerType.danmakuActions:
         return _buildDanmakuActions(context);
+      case RightDrawerType.danmakuInfo:
+        return DanmakuInfoPanel(
+          danmakuService: playerService.danmakuService,
+          playerService: playerService,
+          onDrawerChanged: onDrawerChanged,
+        );
       case RightDrawerType.danmakuSearch:
         return _buildDanmakuSearch(context);
       case RightDrawerType.danmakuSettings:
         return DanmakuSettingsPanel(
           danmakuService: playerService.danmakuService,
         );
-      case RightDrawerType.danmakuSourceSettings:
-        return DanmakuSourceSettings(
-          danmakuService: playerService.danmakuService,
-          playerService: playerService,
-          onDrawerChanged: onDrawerChanged,
-        );
+      case RightDrawerType.danmakuFilter:
+        return DanmakuFilterPanel(danmakuService: playerService.danmakuService);
       case RightDrawerType.episode:
         return _buildEpisodePanel(context);
       case RightDrawerType.audioTrack:
@@ -145,16 +149,20 @@ class RightDrawerContent extends StatelessWidget {
             children: [
               if (configure.danmakuServiceEnable.value) ...[
                 FItem(
+                  prefix: const Icon(MyIcon.danmaku, size: 20),
+                  title: Text('弹幕信息', style: context.theme.typography.base),
+                  onPress: () => onDrawerChanged(RightDrawerType.danmakuInfo),
+                ),
+                FItem(
                   prefix: const Icon(FIcons.palette, size: 20),
                   title: Text('弹幕外观', style: context.theme.typography.base),
                   onPress: () =>
                       onDrawerChanged(RightDrawerType.danmakuSettings),
                 ),
                 FItem(
-                  prefix: const Icon(MyIcon.danmakuSettings, size: 20),
-                  title: Text('弹幕源', style: context.theme.typography.base),
-                  onPress: () =>
-                      onDrawerChanged(RightDrawerType.danmakuSourceSettings),
+                  prefix: const Icon(FIcons.funnel, size: 20),
+                  title: Text('弹幕过滤与延迟', style: context.theme.typography.base),
+                  onPress: () => onDrawerChanged(RightDrawerType.danmakuFilter),
                 ),
               ],
               FItem(
@@ -163,7 +171,7 @@ class RightDrawerContent extends StatelessWidget {
                 onPress: () => onDrawerChanged(RightDrawerType.audioTrack),
               ),
               FItem(
-                prefix: const Icon(FIcons.captions, size: 20),
+                prefix: const Icon(FIcons.closedCaption, size: 20),
                 title: Text('字幕选择', style: context.theme.typography.base),
                 onPress: () => onDrawerChanged(RightDrawerType.subtitleTrack),
               ),
@@ -184,13 +192,12 @@ class RightDrawerContent extends StatelessWidget {
       searchEpisodes: (name) async {
         return playerService.danmakuService.searchEpisodes(name);
       },
-      onEpisodeSelected: ({required animeId, required episodeId}) {
+      onEpisodeSelected: (episode) {
         Navigator.pop(context); // 关闭 sheet
         _globalService.showNotification('正在加载指定弹幕...');
         playerService.danmakuService.selectEpisodeAndLoadDanmaku(
           videoInfo.uniqueKey,
-          animeId,
-          episodeId,
+          episode,
         );
       },
     );

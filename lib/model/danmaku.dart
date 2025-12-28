@@ -134,6 +134,19 @@ class Episode {
     required this.episodeTitle,
   });
 
+  factory Episode.fromId(int episodeId, int animeId) {
+    return Episode(
+      episodeId: episodeId,
+      animeId: animeId,
+      animeTitle: '',
+      episodeTitle: '',
+    );
+  }
+
+  bool exist() {
+    return episodeId > 0 && animeId > 0;
+  }
+
   /// 从JSON创建节目信息
   factory Episode.fromJson(Map<String, dynamic> json) {
     return Episode(
@@ -159,7 +172,6 @@ class Episode {
   }
 }
 
-/// 弹弹play API 弹幕评论
 class DanmakuComment {
   /// 弹幕ID
   final int cid;
@@ -366,30 +378,36 @@ class DanmakuSettings {
 
 class DanmakuFile {
   String uniqueKey;
-  DateTime cacheTime;
   DateTime expireTime;
   List<Danmaku> danmakus;
   int episodeId;
   int animeId;
+  String? animeTitle;
+  String? episodeTitle;
+  String? from;
 
   DanmakuFile({
     required this.uniqueKey,
-    required this.cacheTime,
     required this.expireTime,
     required this.danmakus,
     required this.episodeId,
     required this.animeId,
+    this.animeTitle,
+    this.episodeTitle,
+    this.from,
   });
 
   // 将对象转换为Map，用于JSON序列化
   Map<String, dynamic> toJson() {
     return {
       'uniqueKey': uniqueKey,
-      'cacheTime': cacheTime.millisecondsSinceEpoch,
       'expireTime': expireTime.millisecondsSinceEpoch,
       'danmakus': danmakus.map((d) => d.toJson()).toList(),
       'episodeId': episodeId,
       'animeId': animeId,
+      'episodeTitle': episodeTitle,
+      'animeTitle': animeTitle,
+      'from': from,
     };
   }
 
@@ -397,7 +415,6 @@ class DanmakuFile {
   factory DanmakuFile.fromJson(Map<String, dynamic> json) {
     return DanmakuFile(
       uniqueKey: json['uniqueKey'],
-      cacheTime: DateTime.fromMillisecondsSinceEpoch(json['cacheTime']),
       expireTime: DateTime.fromMillisecondsSinceEpoch(json['expireTime']),
       danmakus: (json['danmakus'] as List)
           .map(
@@ -407,6 +424,9 @@ class DanmakuFile {
           .toList(),
       episodeId: json['episodeId'] as int,
       animeId: json['animeId'] as int,
+      animeTitle: json['animeTitle'] as String?,
+      episodeTitle: json['episodeTitle'] as String?,
+      from: json['from'] as String?,
     );
   }
 
@@ -419,18 +439,4 @@ class DanmakuFile {
   factory DanmakuFile.fromJsonString(String jsonString) {
     return DanmakuFile.fromJson(jsonDecode(jsonString));
   }
-}
-
-class DanmakuMatchResult {
-  final int animeId;
-  final int episodeId;
-  final String animeTitle;
-  final String episodeTitle;
-
-  DanmakuMatchResult({
-    required this.animeId,
-    required this.episodeId,
-    required this.animeTitle,
-    required this.episodeTitle,
-  });
 }

@@ -6,6 +6,7 @@ import 'package:signals/signals_core.dart';
 
 class GlobalService {
   String videoName = '';
+  double speed = 0;
 
   final Signal<Map<String, int>> danmakuCount = signal({
     'BiliBili': 0,
@@ -13,7 +14,12 @@ class GlobalService {
     'DanDanPlay': 0,
     'Other': 0,
   });
-  double speed = 0;
+  int get danmakuCountValue {
+    return danmakuCount.value.values.fold(
+      0,
+      (previous, element) => previous + element,
+    );
+  }
 
   late BuildContext notificationContext;
   late BuildContext playerContext;

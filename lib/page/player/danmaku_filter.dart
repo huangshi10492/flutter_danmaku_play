@@ -1,7 +1,5 @@
-import 'package:fldanplay/page/player/right_drawer.dart';
 import 'package:fldanplay/service/player/danmaku.dart';
 import 'package:fldanplay/service/global.dart';
-import 'package:fldanplay/service/player/player.dart';
 import 'package:fldanplay/utils/icon.dart';
 import 'package:fldanplay/widget/icon_switch.dart';
 import 'package:fldanplay/widget/settings/settings_section.dart';
@@ -11,18 +9,10 @@ import 'package:forui/forui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
-/// 弹幕设置面板
-class DanmakuSourceSettings extends StatelessWidget {
+class DanmakuFilterPanel extends StatelessWidget {
   final DanmakuService danmakuService;
-  final VideoPlayerService playerService;
-  final void Function(RightDrawerType newType) onDrawerChanged;
 
-  const DanmakuSourceSettings({
-    super.key,
-    required this.danmakuService,
-    required this.playerService,
-    required this.onDrawerChanged,
-  });
+  const DanmakuFilterPanel({super.key, required this.danmakuService});
 
   @override
   Widget build(BuildContext context) {
@@ -37,34 +27,50 @@ class DanmakuSourceSettings extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
               child: Text(
-                '弹幕操作',
+                '按位置过滤',
                 style: TextStyle(color: context.theme.colors.mutedForeground),
               ),
             ),
-            FButton(
-              style: FButtonStyle.secondary(),
-              onPress: () => onDrawerChanged(RightDrawerType.danmakuSearch),
-              child: const Text('手动搜索获取/更换弹幕'),
-            ),
-            const SizedBox(height: 8),
-            FButton(
-              style: FButtonStyle.secondary(),
-              onPress: () {
-                Navigator.pop(context);
-                globalService.showNotification('正在匹配弹幕...');
-                playerService.danmakuService.loadDanmaku(force: true);
-              },
-              child: const Text('重新匹配'),
-            ),
-            const SizedBox(height: 8),
-            FButton(
-              style: FButtonStyle.secondary(),
-              onPress: () {
-                Navigator.pop(context);
-                globalService.showNotification('正在加载弹幕...');
-                playerService.danmakuService.refreshDanmaku();
-              },
-              child: const Text('重新加载'),
+            GridView(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                IconSwitch(
+                  value: !settings.hideScroll,
+                  onPress: () {
+                    danmakuService.updateDanmakuSettings(
+                      settings.copyWith(hideScroll: !settings.hideScroll),
+                    );
+                  },
+                  icon: Icons.arrow_forward,
+                  title: '滚动弹幕',
+                ),
+                IconSwitch(
+                  value: !settings.hideTop,
+                  onPress: () {
+                    danmakuService.updateDanmakuSettings(
+                      settings.copyWith(hideTop: !settings.hideTop),
+                    );
+                  },
+                  icon: Icons.arrow_upward,
+                  title: '顶部弹幕',
+                ),
+                IconSwitch(
+                  value: !settings.hideBottom,
+                  onPress: () {
+                    danmakuService.updateDanmakuSettings(
+                      settings.copyWith(hideBottom: !settings.hideBottom),
+                    );
+                  },
+                  icon: Icons.arrow_downward,
+                  title: '底部弹幕',
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Padding(

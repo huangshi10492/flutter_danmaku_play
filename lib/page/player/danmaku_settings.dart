@@ -1,9 +1,7 @@
 import 'package:fldanplay/service/player/danmaku.dart';
-import 'package:fldanplay/widget/icon_switch.dart';
 import 'package:fldanplay/widget/settings/settings_section.dart';
 import 'package:fldanplay/widget/settings/settings_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
 class DanmakuSettingsPanel extends StatelessWidget {
@@ -110,55 +108,6 @@ class DanmakuSettingsPanel extends StatelessWidget {
                   silderDivisions: 8,
                   silderMin: 0,
                   silderMax: 1,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-              child: Text(
-                '按位置过滤',
-                style: TextStyle(color: context.theme.colors.mutedForeground),
-              ),
-            ),
-            GridView(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-              ),
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                IconSwitch(
-                  value: !settings.hideScroll,
-                  onPress: () {
-                    danmakuService.updateDanmakuSettings(
-                      settings.copyWith(hideScroll: !settings.hideScroll),
-                    );
-                  },
-                  icon: Icons.arrow_forward,
-                  title: '滚动弹幕',
-                ),
-                IconSwitch(
-                  value: !settings.hideTop,
-                  onPress: () {
-                    danmakuService.updateDanmakuSettings(
-                      settings.copyWith(hideTop: !settings.hideTop),
-                    );
-                  },
-                  icon: Icons.arrow_upward,
-                  title: '顶部弹幕',
-                ),
-                IconSwitch(
-                  value: !settings.hideBottom,
-                  onPress: () {
-                    danmakuService.updateDanmakuSettings(
-                      settings.copyWith(hideBottom: !settings.hideBottom),
-                    );
-                  },
-                  icon: Icons.arrow_downward,
-                  title: '底部弹幕',
                 ),
               ],
             ),
