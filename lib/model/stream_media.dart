@@ -162,6 +162,7 @@ class EpisodeInfo {
   final String? seriesName;
   final String? overview;
   final int? runTimeTicks;
+  String fileName;
 
   EpisodeInfo({
     required this.id,
@@ -170,6 +171,7 @@ class EpisodeInfo {
     this.seriesName,
     this.overview,
     this.runTimeTicks,
+    required this.fileName,
   });
 
   factory EpisodeInfo.fromJson(Map<String, dynamic> json) {
@@ -180,6 +182,7 @@ class EpisodeInfo {
       seriesName: json['SeriesName'],
       overview: json['Overview'],
       runTimeTicks: json['RunTimeTicks'],
+      fileName: '',
     );
   }
 

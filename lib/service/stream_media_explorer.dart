@@ -101,7 +101,7 @@ class StreamMediaExplorerService {
       historiesType: HistoriesType.streamMediaStorage,
       storageKey: storage!.uniqueKey,
       name: episode.name,
-      videoName: '',
+      videoName: episode.fileName,
       subtitle: '${episode.seriesName} ${episode.indexNumber}',
       listLength: episodeList.length,
       videoIndex: index,
@@ -117,7 +117,7 @@ class StreamMediaExplorerService {
       historiesType: HistoriesType.streamMediaStorage,
       storageKey: storage!.uniqueKey,
       name: history.name,
-      videoName: history.name,
+      videoName: history.fileName ?? '',
       subtitle: history.subtitle,
     );
   }
@@ -134,10 +134,6 @@ class StreamMediaExplorerService {
 
   Future<MediaDetail> getMediaDetail(String itemId) async {
     return provider.value!.getMediaDetail(itemId);
-  }
-
-  Future<String> getFileName(String itemId) async {
-    return provider.value!.getFileName(itemId);
   }
 }
 
@@ -213,6 +209,7 @@ class JellyfinStreamMediaExplorerProvider
         detail.seasons = await getSeasons(dio, itemId);
       }
       if (detail.type == MediaType.movie) {
+        final fileName = await getFileName(itemId);
         detail.seasons = [
           SeasonInfo(
             id: detail.id,
@@ -224,6 +221,7 @@ class JellyfinStreamMediaExplorerProvider
                 indexNumber: 0,
                 seriesName: detail.name,
                 runTimeTicks: detail.runTimeTicks,
+                fileName: fileName,
               ),
             ],
           ),
@@ -343,7 +341,9 @@ class JellyfinStreamMediaExplorerProvider
 
       List<EpisodeInfo> episodes = [];
       for (var item in response.data['Items']) {
-        episodes.add(EpisodeInfo.fromJson(item));
+        final episode = EpisodeInfo.fromJson(item);
+        episode.fileName = await getFileName(episode.id);
+        episodes.add(episode);
       }
 
       // 按集数编号排序
@@ -463,6 +463,7 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
         detail.seasons = await getSeasons(dio, itemId);
       }
       if (detail.type == MediaType.movie) {
+        final fileName = await getFileName(itemId);
         detail.seasons = [
           SeasonInfo(
             id: detail.id,
@@ -474,6 +475,7 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
                 indexNumber: 0,
                 seriesName: detail.name,
                 runTimeTicks: detail.runTimeTicks,
+                fileName: fileName,
               ),
             ],
           ),
@@ -595,7 +597,9 @@ class EmbyStreamMediaExplorerProvider implements StreamMediaExplorerProvider {
 
       List<EpisodeInfo> episodes = [];
       for (var item in response.data['Items']) {
-        episodes.add(EpisodeInfo.fromJson(item));
+        final episode = EpisodeInfo.fromJson(item);
+        episode.fileName = await getFileName(episode.id);
+        episodes.add(episode);
       }
 
       // 按集数编号排序

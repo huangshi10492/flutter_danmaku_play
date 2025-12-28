@@ -12,6 +12,7 @@ class History extends HiveObject {
   int updateTime;
   String name;
   String? subtitle;
+  String? fileName;
 
   History({
     required this.uniqueKey,
@@ -23,6 +24,7 @@ class History extends HiveObject {
     required this.updateTime,
     required this.name,
     this.subtitle,
+    this.fileName,
   });
 
   History copyWith({
@@ -35,6 +37,7 @@ class History extends HiveObject {
     int? updateTime,
     String? name,
     String? subtitle,
+    String? fileName,
   }) {
     return History(
       uniqueKey: uniqueKey ?? this.uniqueKey,
@@ -46,6 +49,7 @@ class History extends HiveObject {
       updateTime: updateTime ?? this.updateTime,
       name: name ?? this.name,
       subtitle: subtitle ?? this.subtitle,
+      fileName: fileName ?? this.fileName,
     );
   }
 }

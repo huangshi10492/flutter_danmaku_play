@@ -49,6 +49,7 @@ class HistoryService {
     String? storageKey,
     required String name,
     String? subtitle,
+    required String fileName,
   }) async {
     return await lock.synchronized(() async {
       _logger.info('startHistory', '开始记录播放历史: $url');
@@ -69,6 +70,7 @@ class HistoryService {
         name: name,
         subtitle: subtitle,
         updateTime: DateTime.now().millisecondsSinceEpoch,
+        fileName: fileName,
       );
       await _historyBox.put(uniqueKey, history);
       return getHistory(uniqueKey)!;

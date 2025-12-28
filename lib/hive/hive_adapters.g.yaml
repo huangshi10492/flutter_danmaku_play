@@ -5,7 +5,7 @@ nextTypeId: 9
 types:
   History:
     typeId: 1
-    nextIndex: 13
+    nextIndex: 14
     fields:
       uniqueKey:
         index: 1
@@ -25,6 +25,8 @@ types:
         index: 11
       subtitle:
         index: 12
+      fileName:
+        index: 13
   HistoriesType:
     typeId: 3
     nextIndex: 7

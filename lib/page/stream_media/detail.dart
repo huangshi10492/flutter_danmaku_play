@@ -98,9 +98,6 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
       if (GetIt.I.get<ConfigureService>().offlineCacheFirst.value) {
         videoInfo.cached = _offlineCacheService.isCached(videoInfo.uniqueKey);
       }
-      videoInfo.videoName = await _service.getFileName(
-        videoInfo.virtualVideoPath,
-      );
       _isPlaying.value = false;
       if (mounted) {
         final location = Uri(path: videoPlayerPath);
@@ -326,7 +323,7 @@ class _StreamMediaDetailPageState extends State<StreamMediaDetailPage>
       onOfflineDownload: () => _onDownloadEpisode(season, index),
       danmakuMatchDialog: DanmakuMatchDialog(
         uniqueKey: uniqueKey,
-        fileName: '${episode.seriesName} ${episode.indexNumber}',
+        fileName: episode.fileName,
       ),
       onPress: () => _onPlayEpisode(season, index),
     );

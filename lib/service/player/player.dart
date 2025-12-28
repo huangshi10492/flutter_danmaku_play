@@ -177,6 +177,7 @@ class VideoPlayerService {
         storageKey: videoInfo.storageKey,
         name: videoInfo.name,
         subtitle: videoInfo.subtitle,
+        fileName: videoInfo.videoName,
       );
       late Duration historyPosition;
       if (_history.position > 0 &&

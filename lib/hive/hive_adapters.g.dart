@@ -26,13 +26,14 @@ class HistoryAdapter extends TypeAdapter<History> {
       updateTime: (fields[8] as num).toInt(),
       name: fields[11] as String,
       subtitle: fields[12] as String?,
+      fileName: fields[13] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, History obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(1)
       ..write(obj.uniqueKey)
       ..writeByte(2)
@@ -50,7 +51,9 @@ class HistoryAdapter extends TypeAdapter<History> {
       ..writeByte(11)
       ..write(obj.name)
       ..writeByte(12)
-      ..write(obj.subtitle);
+      ..write(obj.subtitle)
+      ..writeByte(13)
+      ..write(obj.fileName);
   }
 
   @override
