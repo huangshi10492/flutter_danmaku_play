@@ -218,9 +218,9 @@ class VideoPlayerService {
             _log.debug('mpv', '${event.prefix}:${event.text}');
         }
       });
-      _getChapter();
       await _initSession();
       await _player.open(media!, play: true);
+      _getChapter();
       playerState.value = PlayerState.playing;
       duration = await _player.stream.duration.firstWhere(
         (d) => d != Duration.zero,
