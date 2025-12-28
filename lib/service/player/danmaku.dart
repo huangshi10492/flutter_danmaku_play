@@ -201,6 +201,7 @@ class DanmakuService {
       switch (danmaku.source) {
         case 'BiliBili':
         case 'bilibili':
+        case 'bilibili1':
           bili++;
           if (!_bili.containsKey(key)) {
             _bili[key] = [];
@@ -208,6 +209,7 @@ class DanmakuService {
           _bili[key]!.add(danmaku);
           break;
         case 'Gamer':
+        case 'bahumut':
           gamer++;
           if (!_gamer.containsKey(key)) {
             _gamer[key] = [];
@@ -215,6 +217,7 @@ class DanmakuService {
           _gamer[key]!.add(danmaku);
           break;
         case 'DanDanPlay':
+        case 'dandan':
           dandan++;
           if (!_dandan.containsKey(key)) {
             _dandan[key] = [];
