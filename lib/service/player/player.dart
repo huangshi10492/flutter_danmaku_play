@@ -221,11 +221,11 @@ class VideoPlayerService {
       });
       await _initSession();
       await _player.open(media!, play: true);
-      _getChapter();
       playerState.value = PlayerState.playing;
       duration = await _player.stream.duration.firstWhere(
         (d) => d != Duration.zero,
       );
+      _getChapter();
       _timerGroup.forEach((_, value) => value.init());
       _subscriptions.addAll([
         _player.stream.playing.listen(_onPlayingStateChanged),
@@ -248,7 +248,7 @@ class VideoPlayerService {
     }
   }
 
-  void _getChapter() {
+  void _getChapter() async {
     final nativePlayer = (_player.platform as NativePlayer);
     final ctx = nativePlayer.ctx;
     final mpv = nativePlayer.mpv;
