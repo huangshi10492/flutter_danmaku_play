@@ -106,12 +106,12 @@ class RightDrawerContent extends StatelessWidget {
                 SettingsTile.sliderTile(
                   title: '当前播放速度',
                   details: '${speed.toStringAsFixed(2)}X',
-                  silderValue: speed,
-                  silderMin: 0.25,
-                  silderMax: 4,
-                  silderDivisions: 15,
+                  silderValue: Utils.speedToSlider(speed),
+                  silderMin: 1,
+                  silderMax: 28,
+                  silderDivisions: 27,
                   onSilderChange: (value) {
-                    playerService.setPlaybackSpeed(value);
+                    playerService.setPlaybackSpeed(Utils.sliderToSpeed(value));
                   },
                 ),
                 SettingsTile.sliderTile(

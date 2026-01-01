@@ -1,4 +1,5 @@
 import 'package:fldanplay/service/configure.dart';
+import 'package:fldanplay/utils/utils.dart';
 import 'package:fldanplay/widget/settings/radio_settings_section.dart';
 import 'package:fldanplay/widget/settings/settings_scaffold.dart';
 import 'package:fldanplay/widget/settings/settings_section.dart';
@@ -24,12 +25,16 @@ class PlayerSettingsPage extends StatelessWidget {
               children: [
                 SettingsTile.sliderTile(
                   title: '默认播放速度',
-                  silderValue: configure.defaultPlaySpeed.value,
-                  silderMin: 0.25,
-                  silderMax: 4,
-                  silderDivisions: 15,
+                  silderValue: Utils.speedToSlider(
+                    configure.defaultPlaySpeed.value,
+                  ),
+                  silderMin: 1,
+                  silderMax: 28,
+                  silderDivisions: 27,
                   onSilderChange: (value) {
-                    configure.defaultPlaySpeed.value = value;
+                    configure.defaultPlaySpeed.value = Utils.sliderToSpeed(
+                      value,
+                    );
                   },
                   details:
                       '${configure.defaultPlaySpeed.value.toStringAsFixed(2)}x',
