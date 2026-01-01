@@ -252,6 +252,7 @@ class DanmakuService {
       'DanDanPlay': dandan,
       'Other': other,
     };
+    globalService.showNotification('加载弹幕: ${danmakus.length}条');
   }
 
   /// 加载弹幕
@@ -281,6 +282,7 @@ class DanmakuService {
     } catch (e, t) {
       status.value = .failed;
       _log.error('loadDanmaku', '加载弹幕失败', error: e, stackTrace: t);
+      globalService.showNotification('加载弹幕失败');
     }
   }
 
@@ -306,13 +308,11 @@ class DanmakuService {
         if (result.isNotEmpty) {
           status.value = .fromApi;
           _danmaku2Map(result);
-          globalService.showNotification('更新弹幕: ${result.length}条');
           return true;
         }
       }
       status.value = .fromCached;
       _danmaku2Map(danmakuData.danmakus);
-      globalService.showNotification('加载弹幕: ${danmakuData.danmakus.length}条');
       return true;
     } catch (e, t) {
       status.value = .failed;
@@ -337,7 +337,6 @@ class DanmakuService {
       status.value = .fromApi;
       _danmaku2Map(danmakus);
       _log.info('selectEpisodeAndLoadDanmaku', '搜索弹幕加载成功: ${danmakus.length}条');
-      globalService.showNotification('从API加载弹幕: ${danmakus.length}条');
     } catch (e, t) {
       status.value = .failed;
       _log.error(
@@ -361,7 +360,6 @@ class DanmakuService {
       status.value = .fromApi;
       _danmaku2Map(danmakus);
       _log.info('refreshDanmaku', '刷新弹幕成功: ${danmakus.length}条');
-      globalService.showNotification('刷新弹幕: ${danmakus.length}条');
     } catch (e, t) {
       status.value = .failed;
       _log.error('refreshDanmaku', '刷新弹幕失败', error: e, stackTrace: t);
