@@ -41,7 +41,7 @@ types:
         index: 6
   Storage:
     typeId: 4
-    nextIndex: 14
+    nextIndex: 15
     fields:
       name:
         index: 0
@@ -69,6 +69,8 @@ types:
         index: 12
       ftpMode:
         index: 13
+      share:
+        index: 14
   StorageType:
     typeId: 5
     nextIndex: 6

@@ -141,6 +141,7 @@ class VideoPlayerService {
   void _listenPlayerStreams() {
     _subscriptions.add(
       _player.stream.error.listen((e) {
+        if (e.toString().isEmpty) return;
         showToast(level: 3, title: '播放器发生错误', description: e.toString());
         _log.error('mpv', '播放器发生错误', error: e);
       }),

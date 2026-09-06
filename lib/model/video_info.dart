@@ -52,7 +52,8 @@ class VideoInfo {
   }
 
   bool get unsafeUrl {
-    return currentVideoPath.startsWith('ftp');
+    return currentVideoPath.startsWith('ftp') ||
+        currentVideoPath.startsWith('smb2');
   }
 }
 

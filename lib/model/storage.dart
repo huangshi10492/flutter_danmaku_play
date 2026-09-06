@@ -6,6 +6,7 @@ class Storage extends HiveObject {
   String name;
   String uniqueKey;
   String url;
+  String? share;
   int? port;
   StorageType storageType;
   String? account;
@@ -21,6 +22,7 @@ class Storage extends HiveObject {
     required this.name,
     required this.uniqueKey,
     required this.url,
+    this.share,
     this.port,
     required this.storageType,
     this.account,
@@ -46,6 +48,7 @@ class Storage extends HiveObject {
     String? name,
     String? uniqueKey,
     String? url,
+    String? share,
     int? port,
     StorageType? storageType,
     String? account,
@@ -61,6 +64,7 @@ class Storage extends HiveObject {
       name: name ?? this.name,
       uniqueKey: uniqueKey ?? this.uniqueKey,
       url: url ?? this.url,
+      share: share ?? this.share,
       port: port ?? this.port,
       storageType: storageType ?? this.storageType,
       account: account ?? this.account,

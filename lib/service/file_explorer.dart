@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:dart_smb2/dart_smb2.dart';
 import 'package:fldanplay/model/file_item.dart';
 import 'package:fldanplay/model/history.dart';
 import 'package:fldanplay/model/storage.dart';
@@ -33,9 +34,158 @@ FileExplorerProvider? createFileExplorerProvider(Storage storage) {
   return switch (storage.storageType) {
     .webdav => WebDAVFileExplorerProvider(storage),
     .ftp => FTPFileExplorerProvider(storage),
+    .smb => SMBFileExplorerProvider(storage),
     .local => LocalFileExplorerProvider(storage.url),
     _ => null,
   };
+}
+
+class SMBFileExplorerProvider implements FileExplorerProvider {
+  final Storage storage;
+  final _logger = Logger('SMBFileExplorerProvider');
+  Smb2Pool? _pool;
+
+  SMBFileExplorerProvider(this.storage);
+
+  Smb2Pool get _client {
+    if (_pool == null) throw AppException('SMB客户端未连接', null);
+    return _pool!;
+  }
+
+  @override
+  Map<String, String> get headers => {};
+
+  @override
+  Future<void> init() async {
+    final share = storage.share;
+    if (storage.url.isEmpty || share == null || share.isEmpty) {
+      throw AppException('SMB配置不完整', null);
+    }
+    try {
+      _pool = await Smb2Pool.connect(
+        host: storage.url,
+        share: share,
+        user: storage.account?.isEmpty == true ? null : storage.account,
+        password: storage.password?.isEmpty == true ? null : storage.password,
+        workers: 1,
+        version: .any,
+      );
+      _logger.info('init', 'SMB媒体库连接成功: ${storage.url}/$share');
+    } catch (e, t) {
+      _pool = null;
+      _logger.error('init', 'SMB媒体库连接失败', error: e, stackTrace: t);
+      if (e is AppException) rethrow;
+      throw AppException('SMB连接失败', e);
+    }
+  }
+
+  String _remotePath(String path) =>
+      path.replaceFirst(RegExp(r'^/+'), '').replaceAll(RegExp(r'/+$'), '');
+
+  @override
+  String getVideoUrl(String path) {
+    final user = storage.account?.isNotEmpty == true ? storage.account : null;
+    final password = storage.password?.isNotEmpty == true
+        ? storage.password
+        : null;
+    final userInfo = user == null ? null : '$user:${password ?? ''}';
+    final remotePath = [
+      storage.share!,
+      _remotePath(path),
+    ].where((value) => value.isNotEmpty).join('/');
+    return Uri(
+      scheme: 'smb2',
+      userInfo: userInfo,
+      host: storage.url,
+      path: '/$remotePath',
+    ).toString();
+  }
+
+  @override
+  Future<List<FileItem>> listFiles(
+    String path,
+    String rootPath,
+    Filter filter,
+  ) async {
+    try {
+      final entries = await _client.listDirectory(_remotePath(path));
+      var list = <FileItem>[];
+      for (final entry in entries) {
+        if (filter.searchTerm.isNotEmpty &&
+            !entry.name.contains(filter.searchTerm)) {
+          continue;
+        }
+        final filePath = '${path == '/' ? '/' : path}${entry.name}';
+        if (entry.isDirectory) {
+          if (filter.displayMode == 2) continue;
+          list.add(
+            FileItem(
+              name: entry.name,
+              path: '$filePath/',
+              type: .folder,
+              uniqueKey: CryptoUtils.generateVideoUniqueKey('$filePath/'),
+            ),
+          );
+          continue;
+        }
+        if (filter.displayMode == 1 ||
+            FileItem.getFileType(entry.name) != .video) {
+          continue;
+        }
+        list.add(
+          FileItem(
+            name: entry.name,
+            path: filePath,
+            type: .video,
+            size: entry.size,
+            uniqueKey: CryptoUtils.generateVideoUniqueKey('$rootPath$filePath'),
+          ),
+        );
+      }
+      list.sort(_compare);
+      if (!filter.sortOrder) list = list.reversed.toList();
+      return setVideoIndex(list);
+    } catch (e, t) {
+      _logger.error('listFiles', '获取SMB文件列表失败', error: e, stackTrace: t);
+      if (e is AppException) rethrow;
+      throw AppException('获取SMB文件列表失败', e);
+    }
+  }
+
+  @override
+  Future<bool> downloadVideo(
+    String path,
+    String localPath, {
+    void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
+  }) async {
+    if (cancelToken?.isCancelled == true) return false;
+    try {
+      final targetFile = File(localPath);
+      await targetFile.parent.create(recursive: true);
+      await _client.downloadToFile(
+        _remotePath(path),
+        targetFile,
+        onProgress: onProgress,
+        isCanceled: () => cancelToken?.isCancelled == true,
+      );
+      return cancelToken?.isCancelled != true;
+    } catch (e, t) {
+      if (cancelToken?.isCancelled == true) return false;
+      _logger.error('downloadVideo', 'SMB下载失败', error: e, stackTrace: t);
+      if (e is AppException) rethrow;
+      throw AppException('SMB下载失败', e);
+    }
+  }
+
+  @override
+  void dispose() {
+    final pool = _pool;
+    _pool = null;
+    pool?.disconnect().catchError((e, t) {
+      _logger.warn('dispose', '关闭SMB连接失败', error: e, stackTrace: t);
+    });
+  }
 }
 
 class Filter {

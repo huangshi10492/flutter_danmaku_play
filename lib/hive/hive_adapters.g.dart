@@ -126,6 +126,7 @@ class StorageAdapter extends TypeAdapter<Storage> {
       name: fields[0] as String,
       uniqueKey: fields[8] as String,
       url: fields[1] as String,
+      share: fields[14] as String?,
       port: (fields[2] as num?)?.toInt(),
       storageType: fields[4] as StorageType,
       account: fields[5] as String?,
@@ -142,7 +143,7 @@ class StorageAdapter extends TypeAdapter<Storage> {
   @override
   void write(BinaryWriter writer, Storage obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -168,7 +169,9 @@ class StorageAdapter extends TypeAdapter<Storage> {
       ..writeByte(12)
       ..write(obj.useRemoteHistory)
       ..writeByte(13)
-      ..write(obj.ftpMode);
+      ..write(obj.ftpMode)
+      ..writeByte(14)
+      ..write(obj.share);
   }
 
   @override
