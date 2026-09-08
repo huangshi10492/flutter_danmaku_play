@@ -9,7 +9,7 @@ fldanplay 是一款跨平台的本地/网络媒体播放应用，支持弹幕显
 - Android
 - Windows
 - Linux
-- Android TV (须在设置中开启dpad功能)
+- Android TV (可在设置中开启dpad功能)
 
 ## 计划支持平台
 - macOS (缺少设备适配)
@@ -20,6 +20,7 @@ fldanplay 是一款跨平台的本地/网络媒体播放应用，支持弹幕显
 - 视频播放(使用[Predidit/media-kit](https://github.com/Predidit/media-kit))
   - [x] Anime4K超分辨率
   - [x] 自定义字幕字体和大小位置
+  - [x] tv版播放界面
   - [ ] 外部字幕导入
 - 弹幕显示
   - [x] 外观配置
@@ -31,8 +32,8 @@ fldanplay 是一款跨平台的本地/网络媒体播放应用，支持弹幕显
   - [x] 本地文件夹
   - [x] WebDAV
   - [x] Jellyfin/Emby
-  - [ ] FTP
-  - [ ] SMB
+  - [x] FTP
+  - [X] SMB
 - 历史记录
   - [x] Webdav同步
 - 其他
@@ -49,3 +50,11 @@ fldanplay 是一款跨平台的本地/网络媒体播放应用，支持弹幕显
 
 ## 贡献
 欢迎任何形式的贡献，包括但不限于代码提交、问题反馈等。
+
+## 鸣谢
+- [弹弹play开放平台](https://www.dandanplay.com)
+- [media-kit/media-kit](https://github.com/media-kit/media-kit)
+- [Predidit/media-kit](https://github.com/Predidit/media-kit)
+- [duobaseio/forui](https://github.com/duobaseio/forui)
+- [Predidit/Kazumi](https://github.com/Predidit/Kazumi)
+- [ales-drnz/libmpv-scripts](https://github.com/ales-drnz/libmpv-scripts): libsmb2编译参考

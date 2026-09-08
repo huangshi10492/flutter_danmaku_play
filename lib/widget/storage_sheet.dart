@@ -85,11 +85,11 @@ class SelectStorageTypeSheet extends StatelessWidget {
                   prefix: const Icon(MyIcon.ftp),
                   onPress: () => select(context, StorageType.ftp),
                 ),
-                // FItem(
-                //   title: const Text('SMB'),
-                //   prefix: const Icon(MyIcon.smb),
-                //   onPress: () => select(context, StorageType.smb),
-                // ),
+                FItem(
+                  title: const Text('SMB'),
+                  prefix: const Icon(MyIcon.smb),
+                  onPress: () => select(context, StorageType.smb),
+                ),
                 FItem(
                   title: const Text('本地文件夹'),
                   prefix: const Icon(FLucideIcons.folder),
@@ -146,6 +146,9 @@ class _StorageFormData {
               case 'url':
                 controller.text = storage.url;
                 break;
+              case 'share':
+                controller.text = storage.share ?? '';
+                break;
               case 'port':
                 controller.text = storage.port?.toString() ?? '';
                 break;
@@ -189,6 +192,9 @@ class _StorageFormData {
             switch (field.key) {
               case 'url':
                 storage.url = value;
+                break;
+              case 'share':
+                storage.share = value.isEmpty ? null : value;
                 break;
               case 'port':
                 storage.port = value.isEmpty ? null : int.tryParse(value);
@@ -275,6 +281,31 @@ List<_FieldConfig> _getConfigs(StorageType type) {
     return null;
   }
 
+  String? validateSmbHost(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    final host = value.trim();
+    if (host.contains('://') ||
+        host.contains('/') ||
+        host.contains('\\') ||
+        host.contains('@') ||
+        host.contains('?') ||
+        host.contains('#') ||
+        host.contains(RegExp(r'\s'))) {
+      return '请输入主机名或IP地址';
+    }
+    if (host.contains(':') &&
+        InternetAddress.tryParse(host)?.type != InternetAddressType.IPv6) {
+      return 'SMB不支持自定义端口';
+    }
+    return null;
+  }
+
+  String? validateSmbShare(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    if (value.contains('/') || value.contains('\\')) return '共享名不能包含路径分隔符';
+    return null;
+  }
+
   switch (type) {
     case StorageType.webdav:
       return [
@@ -315,16 +346,20 @@ List<_FieldConfig> _getConfigs(StorageType type) {
       ];
     case StorageType.smb:
       return [
-        _FieldConfig('url', 'SMB地址', required: true),
-        _FieldConfig('account', '用户名', required: true),
-        _FieldConfig('password', '密码', required: true, obscureText: true),
         _FieldConfig(
-          'smbVersion',
-          'SMB版本',
-          type: _FieldType.select,
-          options: {'SMB1': '1', 'SMB2': '2', 'SMB3': '3'},
-          description: '选择SMB协议版本',
+          'url',
+          'SMB主机',
+          required: true,
+          validator: validateSmbHost,
         ),
+        _FieldConfig(
+          'share',
+          '共享名',
+          required: true,
+          validator: validateSmbShare,
+        ),
+        _FieldConfig('account', '用户名'),
+        _FieldConfig('password', '密码', obscureText: true),
       ];
     case StorageType.local:
       return [_FieldConfig('url', '本地路径', required: true)];
