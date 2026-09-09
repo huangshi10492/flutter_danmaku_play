@@ -3,9 +3,9 @@ import 'package:fldanplay/service/global.dart';
 import 'package:fldanplay/theme/widget/adaptive_dialog.dart';
 import 'package:fldanplay/utils/dialog.dart';
 import 'package:fldanplay/utils/icon.dart';
+import 'package:fldanplay/utils/theme.dart';
 import 'package:fldanplay/utils/toast.dart';
 import 'package:fldanplay/utils/utils.dart';
-import 'package:fldanplay/widget/storage_sheet.dart';
 import 'package:fldanplay/router.dart';
 import 'package:fldanplay/service/storage.dart';
 import 'package:fldanplay/service/configure.dart';
@@ -16,6 +16,7 @@ import 'package:forui/forui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+
 import '../model/storage.dart';
 import '../model/history.dart';
 
@@ -235,24 +236,8 @@ class RootPageState extends State<RootPage> {
                   ...storages.map(
                     (storage) => _ContextMenu(
                       edit: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          enableDrag: false,
-                          builder: (context) {
-                            return AnimatedPadding(
-                              padding: EdgeInsets.only(
-                                bottom: MediaQuery.of(
-                                  context,
-                                ).viewInsets.bottom,
-                              ),
-                              duration: Duration.zero,
-                              child: EditStorageSheet(
-                                storageKey: storage.key,
-                                storageType: storage.storageType,
-                              ),
-                            );
-                          },
+                        context.push(
+                          '$storageEditPath?storage_key=${storage.key}&storage_type=${storage.storageType.name}',
                         );
                       },
                       delete: () => showConfirmDialog(
@@ -305,6 +290,43 @@ class RootPageState extends State<RootPage> {
         ),
         shape: CircleBorder(),
         child: const Icon(FLucideIcons.plus),
+      ),
+    );
+  }
+}
+
+class SelectStorageTypeSheet extends StatelessWidget {
+  const SelectStorageTypeSheet({super.key});
+
+  void select(BuildContext context, StorageType storageType) {
+    context.pop();
+    context.push('$storageEditPath?storage_type=${storageType.name}');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: SafeArea(
+        minimum: const .all(8),
+        child: Column(
+          mainAxisSize: .min,
+          children: [
+            Text('选择媒体库类型', style: context.theme.typography.body.lg),
+            const SizedBox(height: 8),
+            FItemGroup(
+              style: settingsItemGroupStyle,
+              children: StorageType.values
+                  .map(
+                    (e) => FItem(
+                      title: Text(e.label),
+                      prefix: Icon(e.icon),
+                      onPress: () => select(context, e),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        ),
       ),
     );
   }

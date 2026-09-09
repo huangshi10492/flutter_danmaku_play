@@ -1,6 +1,20 @@
+import 'package:fldanplay/utils/icon.dart';
+import 'package:forui/forui.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
-enum StorageType { webdav, ftp, smb, local, jellyfin, emby }
+enum StorageType {
+  webdav('WebDAV', FLucideIcons.server),
+  ftp('FTP', MyIcon.ftp),
+  smb('SMB', MyIcon.smb),
+  local('本地', FLucideIcons.folder),
+  jellyfin('Jellyfin', MyIcon.jellyfin),
+  emby('Emby', MyIcon.emby);
+
+  final String label;
+  final IconData icon;
+  const StorageType(this.label, this.icon);
+}
 
 class Storage extends HiveObject {
   String name;

@@ -17,6 +17,7 @@ import 'package:fldanplay/page/settings/settings.dart';
 import 'package:fldanplay/page/settings/font_manager.dart';
 import 'package:fldanplay/page/settings/maintenance_page.dart';
 import 'package:fldanplay/page/settings/sync_settings.dart';
+import 'package:fldanplay/page/storage_edit.dart';
 import 'package:fldanplay/page/stream_media/detail.dart';
 import 'package:fldanplay/page/stream_media/explorer.dart';
 import 'package:fldanplay/service/configure.dart';
@@ -28,6 +29,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 const String rootPath = '/';
+const String storageEditPath = '/storage-edit';
 const String fileExplorerPath = '/file-explorer';
 const String streamMediaExplorerPath = '/stream-media-explorer';
 const String streamMediaDetailPath = '/stream-media-detail';
@@ -46,6 +48,19 @@ final router = GoRouter(
       pageBuilder: (context, state) => SlideAndExitTransitionPage(
         key: state.pageKey,
         child: const RootPage(),
+      ),
+    ),
+    GoRoute(
+      path: storageEditPath,
+      pageBuilder: (context, state) => SlideAndExitTransitionPage(
+        key: state.pageKey,
+        child: StorageEditPage(
+          storageKey: state.uri.queryParameters['storage_key'] ?? '',
+          storageType: .values.firstWhere(
+            (e) => e.name == state.uri.queryParameters['storage_type'],
+            orElse: () => .local,
+          ),
+        ),
       ),
     ),
     GoRoute(
